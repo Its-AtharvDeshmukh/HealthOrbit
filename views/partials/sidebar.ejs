@@ -1,0 +1,40 @@
+<!-- sidebar.ejs -->
+<nav class="nav" id="sidebar">
+  <div class="nav-header">
+    <div class="brand">
+      <!-- 3-Circle Orbit Logo -->
+      <div class="orbit-mark">
+        <span class="ring"></span>
+        <span class="ring ring2"></span>
+        <span class="ring3"></span>
+      </div>
+      <span class="brand-text"><span class="txt-h">Health</span><span class="txt-o">Orbit</span></span>
+    </div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+  <div class="navlinks">
+    <a href="/dashboard" class="active"><span class="icon">📊</span><span class="link-text">Overview</span></a>
+    <a href="/xyz"><span class="icon">📄</span><span class="link-text">OCR Uploads</span></a>
+    <a href="/logout"><span class="icon">🚪</span><span class="link-text">Sign Out</span></a>
+  </div>
+  <div class="quick-upload">
+    <p>New medical document?</p>
+    <a href="/xyz" class="btn primary full-width" style="display: block; text-decoration: none; text-align: center;">Upload for OCR</a>
+  </div>
+  <div class="profile">
+    <div class="av">
+      <%= (userName && userName.length > 0) ? userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'HO' %>
+    </div>
+    <div class="profile-info">
+      <strong><%= userName || 'HealthOrbit User' %></strong>
+      <span>Health ID active</span>
+    </div>
+  </div>
+</nav>
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+</script>

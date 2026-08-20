@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthOrbit — Clinical Intelligence Workspace</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void: #084039;
+  --void-soft: #0d7a6e;
+  --paper: #f4f8f7;
+  --card: #ffffff;
+  --ink: #0f1c1a; 
+  --ink-soft: #5e736f;
+  --coral: #ef6f5b;
+  --coral-soft: #fbe4de;
+  --sage: #109485;
+  --sage-soft: #dff1ec;
+  --mist: #42b89d;
+  --line: rgba(13, 122, 110, 0.12); 
+  --radius: 20px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+.ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.3; animation: float 22s infinite alternate; }
+.orb1 { width: 500px; height: 500px; background: #a3e4d7; top: -150px; left: -100px; }
+.orb2 { width: 550px; height: 550px; background: #fcefc9; bottom: -150px; right: -100px; }
+@keyframes float { 100% { transform: translate(30px, 30px) scale(1.05); } }
+
+.shell { display: flex; width: 100vw; min-height: 100vh; position: relative; z-index: 1; }
+
+/* Navigation Sidebar */
+.nav {
+  width: 240px; position: sticky; top: 0; height: 100vh;
+  background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px);
+  display: flex; flex-direction: column; border-right: 1px solid var(--line);
+  flex-shrink: 0; z-index: 20;
+}
+.nav-header { display: flex; justify-content: space-between; align-items: center; padding: 1.8rem 1.4rem; }
+.brand { display: flex; align-items: center; gap: 0.8rem; font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.3rem; }
+.orbit-mark { position: relative; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
+.orbit-mark .ring { position: absolute; inset: 0; border-radius: 50%; border: 2px dashed var(--void-soft); animation: spin 10s linear infinite; }
+.orbit-mark .ring2 { inset: 4px; border-color: var(--coral); animation: spin 8s linear infinite reverse; }
+.orbit-mark .ring3 { width: 8px; height: 8px; border-radius: 50%; background: var(--void); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.txt-h { color: var(--void); } .txt-o { color: var(--coral); }
+
+.navlinks { display: flex; flex-direction: column; gap: 0.2rem; padding: 0 0.8rem; flex: 1; overflow-y: auto; }
+.navlinks a { 
+  text-decoration: none; color: var(--ink-soft); font-size: 0.88rem; font-weight: 600; 
+  padding: 0.65rem 0.9rem; border-radius: 12px; display: flex; align-items: center; gap: 0.75rem; 
+  transition: 0.2s; 
+}
+.navlinks a.active { background: var(--void-soft); color: #fff; box-shadow: 0 4px 12px rgba(13, 122, 110, 0.2); }
+.navlinks a:hover:not(.active) { background: rgba(255,255,255,0.8); color: var(--void); }
+
+.sidebar-footer { margin-top: auto; padding: 1rem; border-top: 1px solid var(--line); }
+.profile { display: flex; align-items: center; gap: 0.8rem; }
+.profile .av { width: 36px; height: 36px; border-radius: 50%; background: var(--void); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; }
+.profile-info strong { display: block; font-size: 0.85rem; color: var(--void); }
+.profile-info span { font-size: 0.72rem; color: var(--ink-soft); }
+
+/* Main Workspace Grid (3 Columns) */
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 2rem 2.5rem 1rem; }
+.topbar h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.7rem; color: var(--void); }
+.topbar .sub { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.2rem; }
+.actions { display: flex; gap: 0.8rem; }
+
+.btn { border: none; border-radius: 999px; padding: 0.65rem 1.25rem; font-weight: 700; font-size: 0.82rem; cursor: pointer; transition: 0.2s; font-family: inherit; }
+.btn.primary { background: var(--coral); color: #fff; box-shadow: 0 4px 15px rgba(239, 111, 91, 0.25); }
+.btn.primary:hover { background: #d95a46; transform: translateY(-1px); }
+.btn.ghost { background: var(--card); color: var(--void); border: 1px solid var(--line); }
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 3.5fr 5fr 2.5fr;
+  gap: 1.25rem;
+  padding: 1rem 2.5rem 2.5rem;
+  flex: 1;
+}
+
+.panel-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 1);
+  border-radius: var(--radius);
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(8, 64, 57, 0.05);
+  height: calc(100vh - 130px);
+}
+.panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-shrink: 0; }
+.panel-head h3 { font-family: 'Fraunces', serif; font-size: 1.15rem; color: var(--void); }
+
+/* Column 1: Document Viewer */
+.viewer-zone {
+  flex: 1;
+  background: #f8faf9;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.pdf-frame { width: 100%; height: 100%; border: none; }
+.empty-viewer { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; color: var(--ink-soft); }
+
+/* Column 2: Extraction HUD & Editable Form */
+.doc-status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--void); color: #fff; padding: 0.9rem 1.2rem;
+  border-radius: 12px; margin-bottom: 1rem; flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(8,64,57,0.1);
+}
+.doc-status-bar strong { font-size: 0.9rem; font-family: 'Fraunces', serif; }
+.pulse-badge { background: rgba(255,255,255,0.2); padding: 0.3rem 0.8rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+
+.table-scroll { flex: 1; overflow-y: auto; padding-right: 0.4rem; }
+.table-scroll::-webkit-scrollbar { width: 5px; }
+.table-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
+.data-row {
+  display: flex; flex-direction: column; gap: 0.6rem;
+  padding: 1.1rem; background: #fff; border: 1px solid var(--line);
+  border-radius: 14px; margin-bottom: 0.75rem; transition: 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.01);
+}
+.data-row:hover { border-color: var(--void-soft); box-shadow: 0 6px 16px rgba(8,64,57,0.04); }
+
+.row-top { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.row-top input { 
+  font-family: 'Fraunces', serif; font-weight: 700; color: var(--void); 
+  border: 1px solid transparent; background: transparent; font-size: 1rem; width: 65%; 
+  outline: none; border-radius: 6px; padding: 4px 6px; transition: 0.2s;
+}
+.row-top input:focus { border-color: var(--void-soft); background: var(--paper); }
+.category-tag { font-size: 0.68rem; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; background: var(--paper); padding: 3px 8px; border-radius: 6px; border: none; text-align: right; }
+
+.row-middle { display: flex; flex-direction: column; gap: 0.3rem; }
+.row-middle label { font-size: 0.7rem; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; }
+.row-middle textarea {
+  width: 100%; min-height: 70px; font-family: 'Inter', sans-serif; font-size: 0.9rem;
+  color: var(--ink); padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
+  background: #fafcfb; outline: none; resize: vertical; line-height: 1.5; transition: 0.2s;
+}
+.row-middle textarea:focus { border-color: var(--void-soft); background: #fff; box-shadow: 0 0 0 3px var(--sage-soft); }
+
+.row-bottom { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-top: 0.2rem; }
+.input-val-group { display: flex; align-items: baseline; gap: 0.4rem; }
+.input-val-group input.unit { font-size: 0.75rem; color: var(--ink-soft); font-weight: 600; width: 60px; border: 1px solid transparent; background: transparent; outline: none; }
+.input-range-group input { font-size: 0.78rem; color: var(--ink-soft); border: 1px solid transparent; background: transparent; width: 120px; outline: none; text-align: right; }
+
+.pill { display: inline-block; padding: 0.25rem 0.7rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+.pill.good { background: var(--sage-soft); color: var(--void-soft); }
+.pill.warn { background: var(--coral-soft); color: #d35400; }
+
+.ai-insight {
+  background: linear-gradient(135deg, var(--sage-soft), #fff);
+  border: 1px solid var(--mist); padding: 1.1rem; border-radius: 14px; margin-top: 1rem; flex-shrink: 0;
+}
+.ai-insight h4 { font-family: 'Fraunces', serif; color: var(--void); font-size: 0.95rem; margin-bottom: 0.3rem; }
+.ai-insight p { font-size: 0.82rem; color: var(--ink-soft); line-height: 1.5; }
+
+/* Column 3: Report Vault */
+.history-list { display: flex; flex-direction: column; gap: 0.6rem; overflow-y: auto; flex: 1; padding-right: 0.3rem; }
+.history-item {
+  display: flex; flex-direction: column; gap: 0.25rem;
+  padding: 0.85rem; background: #fff; border: 1px solid var(--line);
+  border-radius: 14px; text-decoration: none; color: inherit; transition: 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.01);
+}
+.history-item.active { border-color: var(--void-soft); background: var(--sage-soft); box-shadow: 0 4px 12px rgba(13,122,110,0.1); }
+.history-item:hover:not(.active) { background: #fafafa; border-color: var(--sage); transform: translateY(-1px); }
+.history-title { font-weight: 700; font-size: 0.85rem; color: var(--void); display: flex; align-items: center; gap: 0.4rem; }
+.history-date { font-size: 0.72rem; color: var(--ink-soft); }
+
+@media (max-width: 1280px) {
+  .workspace-grid { grid-template-columns: 1fr; }
+  .panel-card { height: auto; min-height: 500px; }
+}
+</style>
+</head>
+<body>
+
+<div class="ambient"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+
+<div class="shell">
+  <!-- NAVIGATION SIDEBAR -->
+  <nav class="nav">
+    <div class="nav-header">
+      <div class="brand">
+        <div class="orbit-mark"><span class="ring"></span><span class="ring ring2"></span><span class="ring3"></span></div>
+        <span class="brand-text"><span class="txt-h">Health</span><span class="txt-o">Orbit</span></span>
+      </div>
+    </div>
+
+    <div class="navlinks">
+      <a href="/dashboard"><span class="icon">⊞</span><span>Dashboard View</span></a>
+      <a href="#"><span class="icon">👪</span><span>Profile & Family</span></a>
+      <a href="/xyz" class="active"><span class="icon">📄</span><span>OCR Reports</span></a>
+      <a href="#"><span class="icon">🧠</span><span>AI Analysis</span></a>
+      <a href="#"><span class="icon">⌚</span><span>Wearable Data</span></a>
+      <a href="#"><span class="icon">⏱️</span><span>Health Timeline</span></a>
+      <a href="#"><span class="icon">📈</span><span>Trends & Alerts</span></a>
+      <a href="#"><span class="icon">💊</span><span>Meds & Symptoms</span></a>
+      <a href="#"><span class="icon">🪪</span><span>Insurance & ID</span></a>
+      <a href="#"><span class="icon">🤖</span><span>AI Assistant</span></a>
+      <a href="#"><span class="icon">🥗</span><span>Nutrition & Life</span></a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="profile">
+        <div class="av"><%= (userName && userName.length > 0) ? userName.substring(0, 2).toUpperCase() : 'HO' %></div>
+        <div class="profile-info"><strong><%= userName || 'User' %></strong><span>Health ID Active</span></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>Medical Document Engine</h1>
+        <div class="sub">Upload, inspect, verify, and correct your clinical reports side-by-side.</div>
+      </div>
+      <div class="actions">
+        <form id="uploadForm" action="/reports/upload" method="POST" enctype="multipart/form-data" style="display: inline;">
+          <input type="file" id="fileInput" name="reportFile" accept=".pdf,.png,.jpg,.jpeg" style="display: none;" onchange="document.getElementById('uploadForm').submit();" required>
+          <button type="button" class="btn primary" onclick="document.getElementById('fileInput').click();">+ Upload Report</button>
+        </form>
+        <a href="/logout" class="btn ghost" style="text-decoration: none;">Sign Out</a>
+      </div>
+    </div>
+
+    <div class="workspace-grid">
+      
+      <!-- COLUMN 1: LIVE DOCUMENT VIEWER -->
+      <div class="panel-card">
+        <div class="panel-head">
+          <h3>Original Document</h3>
+          <span style="font-size: 0.72rem; color: var(--ink-soft); font-weight: 600;">
+            <%= latestReport ? latestReport.originalFileName : 'No File' %>
+          </span>
+        </div>
+        <div class="viewer-zone">
+          <% if (latestReport && latestReport.storedFileName) { %>
+            <% if (latestReport.mimeType === 'application/pdf') { %>
+              <iframe class="pdf-frame" src="/uploads/<%= latestReport.storedFileName %>#toolbar=0"></iframe>
+            <% } else { %>
+              <div style="flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; padding: 0.5rem;">
+                <img src="/uploads/<%= latestReport.storedFileName %>" alt="Report Preview" style="max-width: 100%; max-height: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+              </div>
+            <% } %>
+          <% } else { %>
+            <div class="empty-viewer">
+              <span style="font-size: 2.5rem; margin-bottom: 0.5rem;">📄</span>
+              <p style="font-size: 0.9rem; font-weight: 600;">No Report Selected</p>
+              <p style="font-size: 0.78rem;">Upload a document using the top-right button.</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- COLUMN 2: EXTRACTION HUD (SPACIOUS & EXPANDABLE EDITORS) -->
+      <div class="panel-card">
+        <div class="panel-head">
+          <h3>Extraction HUD</h3>
+          <span style="font-size: 0.72rem; color: var(--void-soft); font-weight: 700;">
+            Status: <%= (latestReport && latestReport.status) ? latestReport.status.toUpperCase() : 'STANDBY' %>
+          </span>
+        </div>
+
+        <div class="doc-status-bar">
+          <strong><%= latestReport ? latestReport.originalFileName : 'Awaiting Document' %></strong>
+          <span class="pulse-badge"><%= (latestReport && latestReport.status === 'extracted') ? 'Extracted & Editable' : 'Standby' %></span>
+        </div>
+
+        <div class="table-scroll">
+          <% if (latestReport && latestReport.extractedData && latestReport.extractedData.parameters && latestReport.extractedData.parameters.length > 0) { %>
+            
+            <form action="/reports/update/<%= latestReport._id %>" method="POST" id="correctionForm">
+              <div style="margin-bottom: 0.8rem; font-size: 0.78rem; color: var(--coral); font-weight: 600; background: var(--coral-soft); padding: 8px 12px; border-radius: 8px;">
+                ✏️ Review extracted findings below. You can click and edit any finding or description before saving.
+              </div>
+
+              <% latestReport.extractedData.parameters.forEach((param, index) => { %>
+                <div class="data-row">
+                  <input type="hidden" name="params[<%= index %>][status]" value="<%= param.status %>">
+                  <input type="hidden" name="params[<%= index %>][statusClass]" value="<%= param.statusClass %>">
+
+                  <div class="row-top">
+                    <input type="text" name="params[<%= index %>][name]" value="<%= param.name %>" title="Finding / Parameter Name">
+                    <input type="text" name="params[<%= index %>][category]" value="<%= param.category || 'Clinical Finding' %>" class="category-tag" title="Category">
+                  </div>
+
+                  <!-- Expandable Textarea for Long Clinical Observations / CT Scan Findings -->
+                  <div class="row-middle">
+                    <label>Observation / Finding Description:</label>
+                    <textarea name="params[<%= index %>][value]" title="Clinical Observation"><%= param.value %></textarea>
+                  </div>
+
+                  <div class="row-bottom">
+                    <div class="input-val-group">
+                      <input type="text" class="unit" name="params[<%= index %>][unit]" value="<%= param.unit %>" title="Unit">
+                    </div>
+
+                    <div class="input-range-group">
+                      <input type="text" name="params[<%= index %>][referenceRange]" value="<%= param.referenceRange %>" title="Reference Range">
+                    </div>
+
+                    <span class="pill <%= param.statusClass || 'good' %>"><%= param.status %></span>
+                  </div>
+                </div>
+              <% }) %>
+
+              <button type="submit" class="btn primary" style="width: 100%; margin-top: 0.8rem; padding: 0.75rem;">Save & Sync Corrections</button>
+            </form>
+
+          <% } else { %>
+            <div class="empty-viewer">
+              <p style="font-weight: 600;">No extracted parameters available.</p>
+              <p style="font-size: 0.78rem;">Upload a medical report to trigger automated OCR parsing.</p>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="ai-insight">
+          <h4>AI Medical Analyst Summary</h4>
+          <p>
+            <% if (latestReport && latestReport.aiExplanation) { %>
+              <%= latestReport.aiExplanation %>
+            <% } else { %>
+              Insights and explanations will appear here once your document is processed.
+            <% } %>
+          </p>
+        </div>
+      </div>
+
+      <!-- COLUMN 3: REPORT VAULT (HISTORY) -->
+      <div class="panel-card">
+        <div class="panel-head">
+          <h3>Report Vault</h3>
+          <span style="font-size: 0.72rem; color: var(--ink-soft); font-weight: 600;"><%= reports.length %> Total</span>
+        </div>
+
+        <div class="history-list">
+          <% if (reports && reports.length > 0) { %>
+            <% reports.forEach(rep => { %>
+              <a href="/xyz?reportId=<%= rep._id %>" class="history-item <%= (latestReport && latestReport._id.toString() === rep._id.toString()) ? 'active' : '' %>">
+                <div class="history-title">📄 <%= rep.originalFileName %></div>
+                <span class="history-date"><%= new Date(rep.createdAt).toLocaleDateString() %> • <%= (rep.extractedData && rep.extractedData.parameters) ? rep.extractedData.parameters.length : 0 %> Findings</span>
+              </a>
+            <% }) %>
+          <% } else { %>
+            <div class="empty-viewer">
+              <p style="font-size: 0.78rem;">No previous reports uploaded.</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

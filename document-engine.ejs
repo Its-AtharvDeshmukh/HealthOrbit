@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthOrbit — Medical Document Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void: #084039;
+  --void-soft: #0d7a6e;
+  --paper: #f2f8f6;
+  --card: #ffffff;
+  --ink: #0f1c1a;
+  --ink-soft: #5e736f;
+  --coral: #ef6f5b;
+  --coral-soft: #fbe4de;
+  --sage: #109485;
+  --sage-soft: #dff1ec;
+  --mist: #42b89d;
+  --line: rgba(13, 122, 110, 0.15);
+  --radius: 20px;
+  --radius-sm: 12px;
+  --shadow-card: 0 8px 28px rgba(8, 64, 57, 0.06);
+  --shadow-card-hover: 0 14px 34px rgba(8, 64, 57, 0.1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(13, 122, 110, 0.2); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(13, 122, 110, 0.35); }
+
+.ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.3; animation: float 24s infinite alternate; }
+.orb1 { width: 460px; height: 460px; background: #a3e4d7; top: -140px; left: -110px; }
+.orb2 { width: 500px; height: 500px; background: #fcefc9; bottom: -160px; right: -110px; animation-delay: -8s; }
+.orb3 { width: 320px; height: 320px; background: #85c1e9; top: 40%; left: 45%; opacity: 0.14; animation-delay: -14s; }
+@keyframes float { 100% { transform: translate(40px, 40px) scale(1.1); } }
+
+.shell { display: flex; width: 100vw; min-height: 100vh; position: relative; z-index: 1; }
+
+/* ============ NAVIGATION SIDEBAR ============ */
+.nav {
+  width: 252px; position: sticky; top: 0; height: 100vh;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  display: flex; flex-direction: column;
+  border-right: 1px solid var(--line); flex-shrink: 0; z-index: 20;
+}
+.nav-header { padding: 1.7rem 1.5rem 1.4rem; border-bottom: 1px solid var(--line); }
+.brand { display: flex; align-items: center; gap: 0.7rem; font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.3rem; }
+.orbit-mark { position: relative; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.orbit-mark .ring { position: absolute; inset: 0; border-radius: 50%; border: 2px dashed var(--void-soft); animation: spin 10s linear infinite; }
+.orbit-mark .ring2 { inset: 4px; border-color: var(--coral); animation: spin 8s linear infinite reverse; }
+.orbit-mark .ring3 { width: 8px; height: 8px; border-radius: 50%; background: var(--void); box-shadow: 0 0 8px var(--mist); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.txt-h { color: var(--void); } .txt-o { color: var(--coral); }
+
+.nav-section-label {
+  padding: 1rem 1.5rem 0.4rem; font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); opacity: 0.7;
+}
+
+.navlinks { display: flex; flex-direction: column; gap: 0.15rem; padding: 0 0.9rem; flex: 1; overflow-y: auto; }
+.navlinks a {
+  text-decoration: none; color: var(--ink-soft); font-size: 0.87rem; font-weight: 600;
+  padding: 0.62rem 0.85rem; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 0.75rem;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  position: relative;
+}
+.navlinks a .icon { width: 18px; text-align: center; font-size: 0.95rem; flex-shrink: 0; }
+.navlinks a.active {
+  background: linear-gradient(135deg, var(--void-soft), var(--void));
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(13, 122, 110, 0.28);
+}
+.navlinks a:hover:not(.active) { background: rgba(16, 148, 133, 0.08); color: var(--void); transform: translateX(2px); }
+
+.sidebar-footer { padding: 1rem 0.9rem 1.2rem; border-top: 1px solid var(--line); }
+.profile { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: var(--radius-sm); transition: background 0.2s; }
+.profile:hover { background: rgba(16, 148, 133, 0.06); }
+.profile .av {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--sage), var(--void));
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.82rem; flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(8, 64, 57, 0.25);
+}
+.profile-info { min-width: 0; }
+.profile-info strong { display: block; font-size: 0.85rem; color: var(--void); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-info span { font-size: 0.72rem; color: var(--sage); font-weight: 600; display: flex; align-items: center; gap: 0.3rem; }
+.profile-info span::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--sage); box-shadow: 0 0 6px var(--sage); }
+
+/* ============ MAIN WORKSPACE ============ */
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.9rem 2.5rem 1.3rem; flex-wrap: wrap; gap: 1rem;
+}
+.topbar h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.75rem; color: var(--void); letter-spacing: -0.4px; }
+.topbar .sub { font-size: 0.86rem; color: var(--ink-soft); margin-top: 0.25rem; }
+
+.btn {
+  border: none; border-radius: 999px; padding: 0.68rem 1.3rem; font-weight: 700; font-size: 0.82rem;
+  cursor: pointer; transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  font-family: inherit; display: inline-flex; align-items: center; gap: 0.4rem;
+}
+.btn.primary { background: linear-gradient(135deg, var(--coral), #d95a46); color: #fff; box-shadow: 0 8px 20px rgba(239, 111, 91, 0.32); }
+.btn.primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(239, 111, 91, 0.4); }
+.btn.ghost { background: rgba(255,255,255,0.7); color: var(--void); border: 1px solid var(--line); text-decoration: none; }
+.btn.ghost:hover { background: #fff; border-color: var(--sage); }
+.actions { display: flex; align-items: center; gap: 0.7rem; }
+
+/* ============ 3-COLUMN WORKSPACE GRID ============ */
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 3.3fr 5.2fr 2.5fr;
+  gap: 1.35rem;
+  padding: 0.5rem 2.5rem 2.5rem;
+  flex: 1;
+  min-height: calc(100vh - 128px);
+  align-items: start;
+}
+
+.panel-card {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  height: calc(100vh - 148px);
+  min-height: 480px;
+  transition: box-shadow 0.25s ease;
+}
+.panel-card:hover { box-shadow: var(--shadow-card-hover); }
+
+.panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.1rem; gap: 0.6rem; }
+.panel-head h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.12rem; color: var(--void); }
+.panel-head .meta-tag {
+  font-size: 0.72rem; color: var(--ink-soft); font-weight: 600;
+  background: rgba(94, 115, 111, 0.08); padding: 0.28rem 0.65rem; border-radius: 999px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;
+}
+
+/* ---- Column 1: Document Viewer ---- */
+.viewer-zone {
+  flex: 1;
+  background: #f8faf9;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 0;
+}
+.pdf-frame { width: 100%; height: 100%; min-height: 400px; border: none; flex: 1; }
+.empty-viewer {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 2rem; color: var(--ink-soft); gap: 0.35rem;
+}
+.empty-viewer .emoji { font-size: 2.4rem; margin-bottom: 0.4rem; opacity: 0.6; }
+.empty-viewer p.title { font-size: 0.92rem; font-weight: 700; color: var(--void); }
+.empty-viewer p.desc { font-size: 0.78rem; max-width: 240px; line-height: 1.5; }
+
+/* ---- Column 2: Extraction HUD ---- */
+.doc-status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(135deg, var(--void), #0a5850);
+  color: #fff; padding: 0.9rem 1.2rem;
+  border-radius: 14px; margin-bottom: 1rem;
+  box-shadow: 0 8px 20px rgba(8, 64, 57, 0.22);
+}
+.doc-status-bar strong { font-size: 0.92rem; font-family: 'Fraunces', serif; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%; }
+.pulse-badge {
+  background: rgba(255,255,255,0.16); padding: 0.32rem 0.85rem; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0;
+}
+.pulse-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--mist); box-shadow: 0 0 6px var(--mist); animation: pulseDot 2s infinite; }
+@keyframes pulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.5); } }
+
+.hint-strip {
+  margin-bottom: 0.8rem; font-size: 0.78rem; color: var(--coral); font-weight: 600;
+  display: flex; align-items: center; gap: 0.4rem;
+  background: var(--coral-soft); padding: 0.5rem 0.8rem; border-radius: 10px;
+}
+
+.table-scroll { flex: 1; overflow-y: auto; padding-right: 0.3rem; min-height: 0; }
+
+.data-row {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.8rem 0.95rem; background: #fff; border: 1px solid var(--line);
+  border-radius: 12px; margin-bottom: 0.5rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.data-row:hover { border-color: var(--sage); box-shadow: 0 4px 14px rgba(16, 148, 133, 0.08); }
+.data-row:focus-within { border-color: var(--void-soft); box-shadow: 0 0 0 3px rgba(13, 122, 110, 0.12); }
+
+.col-param { width: 34%; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+.col-param input {
+  font-weight: 700; color: var(--void); border: none; background: transparent;
+  outline: none; font-size: 0.89rem; width: 100%; border-bottom: 1px solid transparent; padding-bottom: 1px;
+  transition: border-color 0.15s ease;
+}
+.col-param input:focus { border-bottom-color: var(--sage); }
+.col-param span { font-size: 0.68rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; }
+
+.col-val { width: 26%; display: flex; align-items: baseline; gap: 0.3rem; }
+.col-val input.val-input {
+  font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 1.05rem; color: var(--ink);
+  width: 62px; border: 1px solid transparent; border-radius: 6px; background: transparent; outline: none; padding: 2px 4px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.col-val input.val-input:focus { background: var(--sage-soft); border-color: var(--sage); }
+.col-val input.unit-input {
+  font-size: 0.74rem; color: var(--ink-soft); font-weight: 600; width: 42px;
+  border: 1px solid transparent; border-radius: 6px; background: transparent; outline: none; padding: 2px 4px;
+}
+.col-val input.unit-input:focus { background: var(--sage-soft); border-color: var(--sage); }
+
+.col-range { width: 22%; min-width: 0; }
+.col-range input {
+  font-size: 0.74rem; color: var(--ink-soft); border: 1px solid transparent; border-radius: 6px;
+  background: transparent; width: 100%; outline: none; padding: 2px 4px;
+}
+.col-range input:focus { background: var(--sage-soft); border-color: var(--sage); }
+
+.col-status { width: 18%; text-align: right; flex-shrink: 0; }
+.pill { display: inline-block; padding: 0.28rem 0.7rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.01em; }
+.pill.good { background: var(--sage-soft); color: var(--void-soft); }
+.pill.warn { background: var(--coral-soft); color: #d35400; }
+
+.save-btn { width: 100%; margin-top: 0.9rem; justify-content: center; padding: 0.8rem; font-size: 0.85rem; }
+
+.ai-insight {
+  background: linear-gradient(135deg, var(--sage-soft), #fdfffe);
+  border: 1px solid var(--mist); padding: 1.15rem; border-radius: 14px; margin-top: 1rem; flex-shrink: 0;
+}
+.ai-insight h4 { font-family: 'Fraunces', serif; color: var(--void); font-size: 0.95rem; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem; }
+.ai-insight p { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.55; }
+
+/* ---- Column 3: History Sidebar ---- */
+.history-list { display: flex; flex-direction: column; gap: 0.55rem; overflow-y: auto; flex: 1; min-height: 0; }
+.history-item {
+  display: flex; flex-direction: column; gap: 0.3rem;
+  padding: 0.85rem 0.9rem; background: #fff; border: 1px solid var(--line);
+  border-radius: 12px; text-decoration: none; color: inherit; transition: 0.2s;
+}
+.history-item.active { border-color: var(--void-soft); background: var(--sage-soft); box-shadow: 0 4px 14px rgba(13, 122, 110, 0.1); }
+.history-item:hover:not(.active) { background: #fafffe; border-color: var(--sage); transform: translateX(2px); }
+.history-title { font-weight: 700; font-size: 0.84rem; color: var(--void); display: flex; align-items: center; gap: 0.4rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-date { font-size: 0.71rem; color: var(--ink-soft); }
+
+@media (max-width: 1280px) {
+  .workspace-grid { grid-template-columns: 1fr; }
+  .panel-card { height: auto; min-height: 420px; }
+}
+
+@media (max-width: 900px) {
+  .nav { display: none; }
+  .topbar { padding: 1.4rem 1.25rem 1rem; }
+  .workspace-grid { padding: 0.5rem 1.25rem 1.75rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb, .orbit-mark .ring, .pulse-badge::before { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="ambient"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
+
+<div class="shell">
+  <!-- NAVIGATION -->
+  <nav class="nav">
+    <div class="nav-header">
+      <div class="brand">
+        <div class="orbit-mark"><span class="ring"></span><span class="ring ring2"></span><span class="ring3"></span></div>
+        <span class="brand-text"><span class="txt-h">Health</span><span class="txt-o">Orbit</span></span>
+      </div>
+    </div>
+
+    <div class="nav-section-label">Workspace</div>
+    <div class="navlinks">
+      <a href="/dashboard"><span class="icon">⊞</span><span>Dashboard View</span></a>
+      <a href="#"><span class="icon">👪</span><span>Profile &amp; Family</span></a>
+      <a href="/xyz" class="active"><span class="icon">📄</span><span>OCR Reports</span></a>
+      <a href="#"><span class="icon">🧠</span><span>AI Analysis</span></a>
+      <a href="#"><span class="icon">⌚</span><span>Wearable Data</span></a>
+      <a href="#"><span class="icon">⏱️</span><span>Health Timeline</span></a>
+      <a href="#"><span class="icon">📈</span><span>Trends &amp; Alerts</span></a>
+      <a href="#"><span class="icon">💊</span><span>Meds &amp; Symptoms</span></a>
+      <a href="#"><span class="icon">🪪</span><span>Insurance &amp; ID</span></a>
+      <a href="#"><span class="icon">🤖</span><span>AI Assistant</span></a>
+      <a href="#"><span class="icon">🥗</span><span>Nutrition &amp; Life</span></a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="profile">
+        <div class="av"><%= (userName && userName.length > 0) ? userName.substring(0, 2).toUpperCase() : 'HO' %></div>
+        <div class="profile-info"><strong><%= userName || 'User' %></strong><span>Health ID Active</span></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- WORKSPACE -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>Medical Document Engine</h1>
+        <div class="sub">Upload, inspect, verify, and correct your clinical reports side-by-side.</div>
+      </div>
+      <div class="actions">
+        <form id="uploadForm" action="/reports/upload" method="POST" enctype="multipart/form-data" style="display: inline;">
+          <input type="file" id="fileInput" name="reportFile" accept=".pdf,.png,.jpg,.jpeg" style="display: none;" onchange="document.getElementById('uploadForm').submit();" required>
+          <button type="button" class="btn primary" onclick="document.getElementById('fileInput').click();">+ Upload Report</button>
+        </form>
+        <a href="/logout" class="btn ghost">Sign Out</a>
+      </div>
+    </div>
+
+    <div class="workspace-grid">
+
+      <!-- COLUMN 1: LIVE DOCUMENT VIEWER -->
+      <div class="panel-card">
+        <div class="panel-head">
+          <h3>Original Document</h3>
+          <span class="meta-tag"><%= latestReport ? latestReport.originalFileName : 'No File' %></span>
+        </div>
+        <div class="viewer-zone">
+          <% if (latestReport && latestReport.storedFileName) { %>
+            <% if (latestReport.mimeType === 'application/pdf') { %>
+              <iframe class="pdf-frame" src="/uploads/<%= latestReport.storedFileName %>#toolbar=0"></iframe>
+            <% } else { %>
+              <div style="flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; padding: 1rem;">
+                <img src="/uploads/<%= latestReport.storedFileName %>" alt="Medical Report" style="max-width: 100%; max-height: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+              </div>
+            <% } %>
+          <% } else { %>
+            <div class="empty-viewer">
+              <span class="emoji">📄</span>
+              <p class="title">No Report Uploaded</p>
+              <p class="desc">Upload a PDF or Image using the button above to begin inspection.</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- COLUMN 2: EXTRACTION HUD (WITH LIVE INLINE EDITING) -->
+      <div class="panel-card">
+        <div class="panel-head">
+          <h3>Extraction HUD</h3>
+          <span class="meta-tag" style="color: var(--void-soft);">
+            Status: <%= (latestReport && latestReport.status) ? latestReport.status.toUpperCase() : 'STANDBY' %>
+          </span>
+        </div>
+
+        <div class="doc-status-bar">
+          <strong><%= latestReport ? latestReport.originalFileName : 'Awaiting Document' %></strong>
+          <span class="pulse-badge"><%= (latestReport && latestReport.status === 'extracted') ? 'Extraction Ready' : 'Standby' %></span>
+        </div>
+
+        <div class="table-scroll">
+          <% if (latestReport && latestReport.extractedData && latestReport.extractedData.parameters && latestReport.extractedData.parameters.length > 0) { %>
+
+            <form action="/reports/update/<%= latestReport._id %>" method="POST" id="correctionForm">
+              <div class="hint-strip">✏️ Click any value below to correct OCR readings, then save.</div>
+
+              <% latestReport.extractedData.parameters.forEach((param, index) => { %>
+                <div class="data-row">
+                  <input type="hidden" name="params[<%= index %>][category]" value="<%= param.category %>">
+                  <input type="hidden" name="params[<%= index %>][status]" value="<%= param.status %>">
+                  <input type="hidden" name="params[<%= index %>][statusClass]" value="<%= param.statusClass %>">
+
+                  <div class="col-param">
+                    <input type="text" name="params[<%= index %>][name]" value="<%= param.name %>" title="Metric Name">
+                    <span><%= param.category || 'Metric' %></span>
+                  </div>
+
+                  <div class="col-val">
+                    <input type="text" class="val-input" name="params[<%= index %>][value]" value="<%= param.value %>" title="Value">
+                    <input type="text" class="unit-input" name="params[<%= index %>][unit]" value="<%= param.unit %>" title="Unit">
+                  </div>
+
+                  <div class="col-range">
+                    <input type="text" name="params[<%= index %>][referenceRange]" value="<%= param.referenceRange %>" title="Reference Range">
+                  </div>
+
+                  <div class="col-status">
+                    <span class="pill <%= param.statusClass || 'good' %>"><%= param.status %></span>
+                  </div>
+                </div>
+              <% }) %>
+
+              <button type="submit" class="btn primary save-btn">Save &amp; Sync Corrections</button>
+            </form>
+
+          <% } else { %>
+            <div class="empty-viewer">
+              <span class="emoji">🧬</span>
+              <p class="title">No Extracted Parameters</p>
+              <p class="desc">Upload a report to trigger Gemini multimodal parsing.</p>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="ai-insight">
+          <h4>🧠 AI Medical Analyst Summary</h4>
+          <p>
+            <% if (latestReport && latestReport.aiExplanation) { %>
+              <%= latestReport.aiExplanation %>
+            <% } else { %>
+              Document explanations will appear here once an OCR report is uploaded.
+            <% } %>
+          </p>
+        </div>
+      </div>
+
+      <!-- COLUMN 3: UPLOAD HISTORY -->
+      <div class="panel-card">
+        <div class="panel-head">
+          <h3>Report Vault</h3>
+          <span class="meta-tag"><%= reports.length %> Total</span>
+        </div>
+
+        <div class="history-list">
+          <% if (reports && reports.length > 0) { %>
+            <% reports.forEach(rep => { %>
+              <a href="/xyz?reportId=<%= rep._id %>" class="history-item <%= (latestReport && latestReport._id.toString() === rep._id.toString()) ? 'active' : '' %>">
+                <div class="history-title"><span>📄</span><span><%= rep.originalFileName %></span></div>
+                <span class="history-date"><%= new Date(rep.createdAt).toLocaleDateString() %> • <%= (rep.extractedData && rep.extractedData.parameters) ? rep.extractedData.parameters.length : 0 %> Metrics</span>
+              </a>
+            <% }) %>
+          <% } else { %>
+            <div class="empty-viewer">
+              <span class="emoji">🗂️</span>
+              <p class="title">No Reports Yet</p>
+              <p class="desc">Your uploaded reports will be listed here.</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

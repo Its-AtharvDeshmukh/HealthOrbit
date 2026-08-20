@@ -1,0 +1,230 @@
+:root {
+  /* Official HealthOrbit Palette */
+  --void: #0b5e55; /* Dark Green/Teal */
+  --void-soft: #109485; /* Vibrant Teal */
+  --paper: #eef5f4; /* Light Airy Background */
+  --card: #ffffff;
+  
+  --ink: #111817; 
+  --ink-soft: #5e7a75;
+  
+  --coral: #f39c12; /* Orbit Orange */
+  --coral-soft: #fdecd2;
+  
+  --sage: #0d7a6e; 
+  --sage-soft: #daf0ec;
+  
+  --line: #dbe9e6; 
+  --radius: 20px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+.display { font-family: 'Fraunces', serif; }
+
+/* ---------- SHELL & SLIM RAIL (GEMINI STYLE) ---------- */
+.shell { display: flex; max-width: 1600px; margin: 0 auto; min-height: 100vh; }
+
+.rail {
+  width: 80px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.6rem 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  border-right: 1px solid var(--line);
+  background: var(--card);
+  z-index: 100;
+}
+
+/* Animated Rail Logo */
+.rail-logo { position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem;}
+.ring-m { position: absolute; inset: 0; border: 2px dashed var(--void); border-radius: 50%; animation: spin 8s linear infinite; }
+.r2 { inset: -4px; border-color: var(--coral); animation-direction: reverse; animation-duration: 12s; }
+.core-m { width: 10px; height: 10px; background: var(--void); border-radius: 50%; box-shadow: 0 0 8px var(--void-soft);}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.rail nav { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; }
+.rail a { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--ink-soft); text-decoration: none; font-size: 1.3rem; position: relative; transition: 0.2s;}
+.rail a.active { background: var(--void); color: var(--paper); box-shadow: 0 4px 10px rgba(11, 94, 85, 0.2);}
+.rail a:hover:not(.active) { background: var(--sage-soft); color: var(--void); transform: scale(1.1);}
+
+.dot-badge { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--coral); border: 2px solid var(--card);}
+.pulse { animation: pulseDot 2s infinite; }
+@keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.av { width: 40px; height: 40px; border-radius: 50%; background: var(--void); color: var(--paper); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 700; font-size: 0.9rem; }
+
+/* ---------- CONTENT & TOPBAR ---------- */
+.content { flex: 1; min-width: 0; }
+.topbar {
+  display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 3rem; border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; background: rgba(238, 245, 244, 0.85); backdrop-filter: blur(12px); z-index: 5;
+}
+.topbar h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.6rem; color: var(--void); }
+.topbar .sub { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.2rem; font-weight: 500;}
+.actions { display: flex; gap: 1rem; }
+
+/* Buttons */
+.btn { border: none; border-radius: 999px; padding: 0.7rem 1.4rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.2s; font-family: inherit;}
+.btn.primary { background: var(--coral); color: #fff; box-shadow: 0 4px 12px rgba(243, 156, 18, 0.2);}
+.btn.primary:hover { background: #d68910; transform: translateY(-2px); }
+.btn.ghost { background: var(--card); color: var(--void); border: 1px solid var(--line); }
+.btn.ghost:hover { background: var(--sage-soft); }
+.icon-btn { background: none; border: none; font-size: 1.2rem; color: var(--ink-soft); cursor: pointer; }
+
+/* ---------- BENTO GRID ENGINE ---------- */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-auto-rows: minmax(130px, auto);
+  gap: 1.2rem;
+  padding: 2.5rem 3rem 4rem;
+}
+
+/* Base Card & Mirror Shine Animation */
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.6rem;
+  position: relative; overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s;
+}
+.card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px rgba(11, 94, 85, 0.08); border-color: var(--sage); }
+
+/* The Glass Mirror Effect */
+.shine-effect::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 50%; height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-25deg);
+  transition: 0.6s;
+  z-index: 10;
+  pointer-events: none;
+}
+.c-twin.shine-effect::after { background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0) 100%); }
+.card:hover::after { left: 200%; }
+
+.card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; }
+.card h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.1rem; color: var(--void); }
+
+/* --- 1. TWIN HERO (4x2) --- */
+.c-twin { grid-column: span 4; grid-row: span 2; background: var(--void); color: var(--paper); display: flex; align-items: center; justify-content: space-between; padding: 2.5rem;}
+.twin-content { max-width: 65%; position: relative; z-index: 2;}
+.c-twin .eyebrow { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--void-soft); font-weight: 700; }
+.tag { font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 5px; background: var(--coral); color: #fff; margin-left: 0.6rem; vertical-align: middle; }
+.c-twin h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 2rem; line-height: 1.2; margin: 1rem 0; }
+.c-twin p { color: #dcebe8; font-size: 0.95rem; line-height: 1.6; }
+.twin-flags { display: flex; gap: 0.8rem; margin-top: 1.5rem; }
+.flag { font-size: 0.8rem; font-weight: 600; padding: 0.4rem 1rem; border-radius: 999px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+.flag.up { color: #f2a58f; } .flag.down { color: #a7c79a; }
+
+/* Rotating Orbit Visual inside Twin */
+.orbit-visual { width: 220px; position: relative; z-index: 2;}
+.ring-bg { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 1.5; }
+.track { fill: none; stroke-width: 4; stroke-linecap: round; }
+.track-orange { stroke: var(--coral); }
+.track-teal { stroke: var(--void-soft); }
+.track-dark { stroke: #084039; }
+.spin-slow { transform-origin: center; animation: spinSVG 15s linear infinite; }
+.spin-reverse { transform-origin: center; animation: spinSVG 10s linear infinite reverse; }
+.spin-fast { transform-origin: center; animation: spinSVG 6s linear infinite; }
+@keyframes spinSVG { 100% { transform: rotate(360deg); } }
+.center-core { fill: #fff; }
+.center-text { font-family: 'Fraunces', serif; font-weight: 800; font-size: 1.6rem; fill: var(--void); }
+
+/* --- 2. VITALS CARDS --- */
+.c-heart { grid-column: span 2; grid-row: span 1; }
+.c-spo2 { grid-column: span 2; grid-row: span 1; }
+.c-steps { grid-column: span 2; grid-row: span 2; display: flex; flex-direction: column; justify-content: space-between; text-align: center;}
+
+.vital-top { display: flex; justify-content: space-between; align-items: center; }
+.label { font-size: 0.8rem; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.value { font-family: 'Inter', sans-serif; font-size: 2.4rem; font-weight: 800; color: var(--void); display: flex; align-items: baseline; gap: 0.3rem; margin-top: 0.8rem; letter-spacing: -1px;}
+.value small { font-size: 0.95rem; color: var(--ink-soft); font-weight: 600; letter-spacing: 0;}
+.foot { font-size: 0.8rem; color: var(--ink-soft); margin-top: 0.5rem; font-weight: 500;}
+
+.pill { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.8rem; border-radius: 999px; margin-top: 0.8rem; }
+.sage-pill { background: var(--sage-soft); color: var(--sage); }
+
+/* SVG Progress Ring */
+.ring-box { width: 120px; height: 120px; margin: 1rem auto 0; }
+.svg-bg { fill: none; stroke: var(--sage-soft); stroke-width: 3.5; }
+.svg-fill { fill: none; stroke: var(--void-soft); stroke-width: 3.5; stroke-linecap: round; animation: drawRing 1.5s ease-out forwards; }
+@keyframes drawRing { 0% { stroke-dasharray: 0, 100; } }
+.center-metrics { display: flex; flex-direction: column; align-items: center; }
+
+/* Icon Animations */
+.anim-icon { font-size: 1.4rem; }
+.beating-heart { animation: beat 1.2s infinite; display: inline-block;}
+@keyframes beat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.25); } }
+.floating-drop { animation: float 3s infinite ease-in-out; display: inline-block;}
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.bounce { animation: bnc 2s infinite; display: inline-block;}
+@keyframes bnc { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+/* --- 3. PROTOCOL & REPORTS --- */
+.c-reports { grid-column: span 2; grid-row: span 2; display: flex; flex-direction: column; gap: 0.8rem;}
+.c-protocol { grid-column: span 4; grid-row: span 1; }
+
+.protocol-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.row { display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1rem; border: 1px solid var(--line); border-radius: 12px; background: rgba(250, 246, 241, 0.3); transition: 0.2s;}
+.row:hover { background: var(--paper); border-color: var(--sage-soft); }
+
+.ricon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: var(--sage-soft); font-size: 1.1rem; flex-shrink: 0; }
+.ricon.warn { background: var(--coral-soft); }
+.rtext { flex: 1; }
+.rtext strong { display: block; font-size: 0.9rem; color: var(--void); margin-bottom: 0.2rem;}
+.rtext span { font-size: 0.8rem; color: var(--ink-soft); }
+
+input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--coral); cursor: pointer; }
+
+/* --- 4. BOTTOM WIDGETS --- */
+.c-emergency { grid-column: span 2; background: var(--coral-soft); border-color: transparent; }
+.c-emergency h3 { color: #b9770e; margin-bottom: 0.5rem;}
+.c-insurance { grid-column: span 2; }
+.c-family { grid-column: span 2; }
+
+.mini-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--sage-soft); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; font-size: 1.1rem; }
+.card p.desc { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.5; margin-bottom: 1rem; }
+.card a.link { font-size: 0.85rem; font-weight: 700; color: var(--coral); text-decoration: none; }
+
+/* Assistant Strip */
+.c-assistant { grid-column: span 6; background: linear-gradient(135deg, var(--void), var(--void-soft)); color: var(--paper); display: flex; align-items: center; justify-content: space-between; padding: 2rem 2.5rem;}
+.c-assistant h3 { color: #fff; font-size: 1.4rem; margin-bottom: 0.4rem;}
+.c-assistant p { font-size: 0.95rem; color: #dcebe8; }
+
+footer.disclaimer { margin: 0 3rem 3rem; padding: 1.5rem; border: 1px dashed var(--sage); border-radius: 16px; font-size: 0.85rem; color: var(--void); line-height: 1.5; text-align: center;}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 1200px) {
+  .bento { grid-template-columns: repeat(4, 1fr); }
+  .c-twin { grid-column: span 4; }
+  .c-steps, .c-heart, .c-spo2, .c-emergency, .c-insurance, .c-family { grid-column: span 2; }
+  .c-protocol { grid-column: span 4; }
+  .c-reports { grid-column: span 4; grid-row: span 1; display: grid; grid-template-columns: 1fr 1fr; }
+  .c-assistant { grid-column: span 4; }
+}
+
+@media (max-width: 768px) {
+  .shell { flex-direction: column; }
+  .rail { width: 100%; height: auto; flex-direction: row; padding: 1rem; position: relative; justify-content: space-between;}
+  .rail nav { flex-direction: row; gap: 1rem; margin-top: 0; }
+  .rail-logo { margin-bottom: 0; }
+  .bento { grid-template-columns: 1fr; padding: 1.5rem; }
+  .c-twin, .c-steps, .c-heart, .c-spo2, .c-emergency, .c-insurance, .c-family, .c-protocol, .c-reports, .c-assistant { grid-column: span 1; }
+  .orbit-visual { display: none; }
+  .protocol-grid, .c-reports { grid-template-columns: 1fr; }
+  .c-assistant { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+}

@@ -1,0 +1,27 @@
+/* Sidebar Nav Structure */
+.nav {
+  width: 250px; position: sticky; top: 0; height: 100vh;
+  background: rgba(255,255,255,.7); backdrop-filter: blur(20px);
+  display: flex; flex-direction: column; border-right: 1px solid var(--line);
+  transition: width .4s cubic-bezier(.25,1,.5,1); overflow: hidden; z-index: 20;
+}
+
+.nav.collapsed { width: 82px; }
+
+/* 3-Ring Orbit Mark Styling */
+.orbit-mark { position: relative; width: 28px; height: 28px; flex-shrink: 0; }
+.orbit-mark .ring { position: absolute; inset: 0; border-radius: 50%; border: 1.6px dashed var(--void); animation: spin 14s linear infinite; }
+.orbit-mark .ring2 { inset: 4px; border-color: var(--coral); animation: spin 10s linear infinite reverse; }
+.orbit-mark .ring3 { position: absolute; inset: 8px; border-radius: 50%; background: var(--void); box-shadow: 0 0 8px var(--void); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.txt-h { color: var(--void); } 
+.txt-o { color: var(--coral); }
+
+/* Sidebar Shrink Transitions */
+.nav.collapsed .brand-text, .nav.collapsed .link-text, .nav.collapsed .quick-upload, .nav.collapsed .profile-info {
+  opacity:0; visibility:hidden; display:none;
+}
+.nav.collapsed .navlinks a { justify-content:center; padding:.85rem 0; }
+.nav.collapsed .profile { justify-content:center; }

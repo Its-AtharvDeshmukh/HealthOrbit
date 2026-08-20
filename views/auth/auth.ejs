@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthOrbit — AI-Powered Personal Health Intelligence Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/auth-portal.css">
+</head>
+<body>
+
+  <!-- Ambient Airy Lighting Orbs -->
+  <div class="ambient-canvas">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+  </div>
+
+  <div class="auth-viewport">
+
+    <!-- LEFT: Wider, Squareish Brand Panel with Live Scrolling Features -->
+    <section class="brand-panel">
+      <div class="brand-header">
+        <div class="logo-orbit-container">
+          <div class="orbit-ring ring-a"></div>
+          <div class="orbit-ring ring-b"></div>
+          <div class="core-nucleus"></div>
+        </div>
+        <div class="nav-logo">Health<span class="brand-highlight">Orbit</span></div>
+      </div>
+
+      <div class="hero-content">
+        <h1>Your health.<br><span class="gradient-text">In absolute orbit.</span></h1>
+        <p>Unified medical records, wearable telemetry, and autonomous AI insights secured in one dashboard.</p>
+      </div>
+
+      <!-- LIVE SCROLLING FEATURES MARQUEE -->
+      <div class="telemetry-marquee">
+        <div class="telemetry-inner">
+          <!-- Features Loop (We duplicate the list so the scroll is seamless) -->
+          <div class="feat-item"><div class="feat-icon">⚡</div><div><strong>User Profile & Auth</strong><span>Secure, permission-based access.</span></div></div>
+          <div class="feat-item"><div class="feat-icon">📄</div><div><strong>Report Management</strong><span>OCR-powered data extraction.</span></div></div>
+          <div class="feat-item"><div class="feat-icon">🤖</div><div><strong>AI Report Analysis</strong><span>Simple explanations, no jargon.</span></div></div>
+          <div class="feat-item"><div class="feat-icon">⌚</div><div><strong>Wearable Integration</strong><span>Real-time BPM & SpO₂ sync.</span></div></div>
+          <div class="feat-item"><div class="feat-icon">📊</div><div><strong>Data Normalization</strong><span>Centralized health timeline.</span></div></div>
+          <div class="feat-item"><div class="feat-icon">📈</div><div><strong>Trend & Anomaly</strong><span>AI-detected health deviations.</span></div></div>
+          <div class="feat-item"><div class="feat-icon">💊</div><div><strong>Medicine & Symptoms</strong><span>Smart reminders & history.</span></div></div>
+          <div class="feat-item"><div class="feat-icon">🛡️</div><div><strong>Insurance & Emergency</strong><span>Critical info at your fingertips.</span></div></div>
+          <div class="feat-item"><div class="feat-icon">🧠</div><div><strong>AI Health Assistant</strong><span>Your 24/7 insight engine.</span></div></div>
+          <div class="feat-item"><div class="feat-icon">🍎</div><div><strong>Nutrition & Lifestyle</strong><span>Wellness goal tracking.</span></div></div>
+          
+          <!-- Duplicated for seamless loop -->
+          <div class="feat-item"><div class="feat-icon">⚡</div><div><strong>User Profile & Auth</strong><span>Secure, permission-based access.</span></div></div>
+          <div class="feat-item"><div class="feat-icon">📄</div><div><strong>Report Management</strong><span>OCR-powered data extraction.</span></div></div>
+        </div>
+      </div>
+
+      <div class="brand-footer-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>End-to-End Encrypted Health Vault Node</span>
+      </div>
+    </section>
+
+
+
+
+
+    <!-- RIGHT: Apple Liquid Glass Form Panel -->
+    <section class="form-panel">
+      <div class="liquid-card">
+        
+        <!-- Interactive Pill Switcher -->
+        <div class="glass-tabs">
+          <button type="button" id="tabLogin" class="active" onclick="switchTab('login')">Sign In</button>
+          <button type="button" id="tabSignup" onclick="switchTab('signup')">Initialize ID</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form id="loginForm" class="auth-form active" action="/login" method="POST" novalidate>
+          <div class="form-title-group">
+            <h2>Welcome back</h2>
+            <p>Authenticate to access your health orbit.</p>
+          </div>
+
+         <div class="server-error-banner <%= locals.loginError ? 'show' : '' %>" id="loginServerMsg"><%= locals.loginError || 'Invalid credentials supplied.' %></div>
+         
+          <div class="input-group" id="loginEmailField">
+            <label for="loginEmail">Email Address</label>
+            <div class="input-wrapper">
+              <input type="email" id="loginEmail" name="email" placeholder="name@example.com" autocomplete="email" required>
+            </div>
+            <span class="error-hint">Please enter a valid email format.</span>
+          </div>
+
+          <div class="input-group" id="loginPasswordField">
+            <label for="loginPassword">Access Password</label>
+            <div class="input-wrapper">
+              <input type="password" id="loginPassword" name="password" placeholder="••••••••••••" autocomplete="current-password" required>
+            </div>
+            <span class="error-hint">Password is required.</span>
+          </div>
+
+          <div class="form-options">
+            <label class="custom-checkbox">
+              <input type="checkbox" id="rememberMe">
+              <span class="checkmark"></span>
+              <span>Keep session active</span>
+            </label>
+            <a href="#" class="forgot-link">Recover access?</a>
+          </div>
+
+          <button type="submit" class="liquid-submit-btn">
+            <span>Unlock Health Orbit</span>
+            <div class="btn-sheen"></div>
+          </button>
+
+          <div class="auth-divider"><span>or</span></div>
+
+         <a href="/auth/google" class="google-auth-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">
+    <svg class="google-icon" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+    </svg>
+    <span>Continue with Google</span>
+</a>
+
+          <div class="switch-prompt">
+            New to the ecosystem? <button type="button" onclick="switchTab('signup')">Create account</button>
+          </div>
+        </form>
+
+        <!-- SIGNUP FORM -->
+        <form id="signupForm" class="auth-form" action="/signup" method="POST" novalidate>
+          <div class="form-title-group">
+            <h2>Create Health ID</h2>
+            <p>Bring reports, vitals, and analytics into a single view[cite: 1].</p>
+          </div>
+
+         <div class="server-error-banner <%= locals.signupError ? 'show' : '' %>" id="signupServerMsg"><%= locals.signupError || 'An account with this email already exists.' %></div>
+
+          <div class="input-group" id="signupNameField">
+            <label for="signupName">Full Legal / Preferred Name</label>
+            <div class="input-wrapper">
+              <input type="text" id="signupName" name="fullName" placeholder="e.g. Dr. Alex Morgan" autocomplete="name" required>
+            </div>
+            <span class="error-hint">Full name is required.</span>
+          </div>
+
+          <div class="input-group" id="signupEmailField">
+            <label for="signupEmail">Email Address</label>
+            <div class="input-wrapper">
+              <input type="email" id="signupEmail" name="email" placeholder="name@example.com" autocomplete="email" required>
+            </div>
+            <span class="error-hint">Enter a valid email address.</span>
+          </div>
+
+          <div class="input-group" id="signupPasswordField">
+            <label for="signupPassword">Secure Password</label>
+            <div class="input-wrapper">
+              <input type="password" id="signupPassword" name="password" placeholder="Min 8 chars with 1 number" autocomplete="new-password" required>
+            </div>
+            <span class="input-helper">Minimum 8 characters including a numeric digit.</span>
+            <span class="error-hint">Password does not meet security policies.</span>
+          </div>
+
+          <div class="input-group" id="signupConfirmField">
+            <label for="signupConfirm">Confirm Password</label>
+            <div class="input-wrapper">
+              <input type="password" id="signupConfirm" name="confirmPassword" placeholder="Re-enter password" autocomplete="new-password" required>
+            </div>
+            <span class="error-hint">Passwords do not match.</span>
+          </div>
+
+          <button type="submit" class="liquid-submit-btn">
+            <span>Establish Orbit ID</span>
+            <div class="btn-sheen"></div>
+          </button>
+
+          <div class="auth-divider"><span>or</span></div>
+
+         <button type="button" class="google-auth-btn" onclick="window.location.href='/auth/google'">
+            <svg class="google-icon" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Continue with Google</span>
+          </button>
+
+          <div class="switch-prompt">
+            Already registered? <button type="button" onclick="switchTab('login')">Sign in here</button>
+          </div>
+        </form>
+
+        <div class="legal-disclaimer">
+          HealthOrbit provides clinical decision support[cite: 1]. Not a replacement for professional medical diagnosis[cite: 1].
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+<script src="/js/auth-portal.js"></script>
+</body>
+</html>
