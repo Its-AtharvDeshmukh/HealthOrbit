@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthOrbit — Meds & Symptoms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/sidebar.css">
+<style>
+:root {
+  --void: #084039; --void-soft: #0d7a6e;
+  --paper: #f2f8f6; --card: #ffffff;
+  --ink: #0f1c1a; --ink-soft: #5e736f;
+  --coral: #ef6f5b; --coral-soft: #fbe4de;
+  --sage: #109485; --sage-soft: #dff1ec;
+  --mist: #42b89d; --line: rgba(13, 122, 110, 0.15);
+  --radius: 24px;
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.95);
+  --shadow-glass: 0 10px 30px rgba(8, 64, 57, 0.05);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background: var(--paper); color: var(--ink); overflow-x: hidden; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* Ambient Orbs */
+.ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.35; animation: float 22s infinite alternate; }
+.orb1 { width: 420px; height: 420px; background: #a3e4d7; top: -120px; left: -100px; }
+.orb2 { width: 460px; height: 460px; background: #fcefc9; bottom: -140px; right: -100px; animation-delay: -6s; }
+@keyframes float { 100% { transform: translate(40px, 40px) scale(1.1); } }
+
+/* App Layout */
+.shell { display: flex; width: 100vw; min-height: 100vh; position: relative; z-index: 1; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+
+/* Topbar */
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 2.5rem 3.5rem 1rem; background: transparent; z-index: 10; }
+.topbar h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.8rem; color: var(--void); }
+.topbar .sub { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.4rem; font-weight: 500; }
+.actions { display: flex; gap: 0.8rem; align-items: center; }
+
+.btn { border: none; border-radius: 999px; padding: 0.75rem 1.4rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.2s; font-family: inherit; display: inline-flex; align-items: center; gap: 0.4rem; }
+.btn.primary { background: var(--coral); color: #fff; box-shadow: 0 4px 15px rgba(239, 111, 91, 0.2); }
+.btn.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239, 111, 91, 0.35); background: #d95a46; }
+
+/* Bento Grid */
+.bento-wrapper { padding: 1rem 3.5rem 4rem; flex: 1; }
+.bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; }
+
+.card {
+  background: var(--glass-bg); backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
+  border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 2rem;
+  overflow: hidden; position: relative; box-shadow: var(--shadow-glass);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s; display: flex; flex-direction: column;
+}
+.card::before {
+  content: ""; position: absolute; top: 0; left: -150%; width: 60%; height: 100%;
+  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.7) 45%, transparent 90%);
+  transform: skewX(-18deg); transition: left 0.7s ease; pointer-events: none; z-index: 20;
+}
+.card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(8, 64, 57, 0.1); border-color: var(--sage-soft); }
+.card:hover::before { left: 150%; }
+.card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.card h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.3rem; color: var(--void); }
+
+/* 1. ACTIVE MEDICATIONS (Spans 8 Cols) */
+.c-meds { grid-column: span 8; }
+.med-timeline { display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1rem; scrollbar-width: none; }
+.med-timeline::-webkit-scrollbar { display: none; }
+.time-block { flex: 1; min-width: 200px; background: rgba(255,255,255,0.6); border: 1px solid var(--line); border-radius: 16px; padding: 1.2rem; }
+.time-header { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px dashed var(--line);}
+
+.pill-card { background: #fff; border-radius: 12px; padding: 1rem; border: 1px solid var(--line); box-shadow: 0 4px 10px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.8rem; transition: 0.2s; cursor: pointer;}
+.pill-card:hover { border-color: var(--mist); transform: translateY(-2px);}
+.pill-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--sage-soft); color: var(--sage); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;}
+.pill-info strong { display: block; font-size: 0.95rem; color: var(--void); margin-bottom: 0.2rem;}
+.pill-info span { font-size: 0.75rem; color: var(--ink-soft); font-family: 'JetBrains Mono', monospace;}
+.status-tick { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; color: transparent; transition: 0.2s;}
+.pill-card.taken .status-tick { background: var(--sage); border-color: var(--sage); color: #fff; }
+.pill-card.taken .pill-info strong { text-decoration: line-through; opacity: 0.6;}
+
+/* 2. SYMPTOM QUICK LOG (Spans 4 Cols) */
+.c-log { grid-column: span 4; background: linear-gradient(135deg, var(--void), var(--void-soft)); color: #fff; }
+.c-log::before { background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.1) 45%, transparent 90%); }
+.c-log h3 { color: #fff; }
+.symptom-form { display: flex; flex-direction: column; gap: 1.2rem; position: relative; z-index: 2;}
+.symptom-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.s-tag { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 0.4rem 0.8rem; border-radius: 999px; font-size: 0.8rem; cursor: pointer; transition: 0.2s;}
+.s-tag:hover, .s-tag.selected { background: var(--coral); border-color: var(--coral); }
+
+.severity-slider { width: 100%; margin-top: 0.5rem; }
+.severity-labels { display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700; color: #a4c9c3; text-transform: uppercase; margin-top: 0.4rem;}
+.log-btn { width: 100%; background: #fff; color: var(--void); border: none; padding: 0.9rem; border-radius: 12px; font-weight: 800; font-family: inherit; margin-top: 0.5rem; cursor: pointer; transition: 0.2s;}
+.log-btn:hover { background: var(--mist); color: #fff;}
+
+/* 3. SYMPTOM TIMELINE (Spans 7 Cols) */
+.c-history { grid-column: span 7; }
+.history-feed { display: flex; flex-direction: column; gap: 1rem; }
+.history-item { display: flex; gap: 1rem; padding: 1.2rem; border-radius: 16px; background: rgba(255,255,255,0.5); border: 1px solid var(--line); }
+.history-date { display: flex; flex-direction: column; align-items: center; min-width: 50px; }
+.h-day { font-size: 1.2rem; font-weight: 800; color: var(--void); font-family: 'JetBrains Mono', monospace;}
+.h-month { font-size: 0.75rem; text-transform: uppercase; color: var(--ink-soft); font-weight: 700;}
+.history-content { flex: 1; border-left: 2px solid var(--mist); padding-left: 1rem; }
+.history-content h4 { font-size: 1rem; color: var(--void); margin-bottom: 0.3rem;}
+.severity-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-bottom: 0.5rem;}
+.severity-badge.mild { background: var(--sage-soft); color: var(--sage); }
+.severity-badge.moderate { background: #fdecd2; color: #d68910; }
+.history-content p { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.5;}
+
+/* 4. AI CONTRAINDICATION (Spans 5 Cols) */
+.c-ai { grid-column: span 5; }
+.ai-insight-box { background: rgba(255,255,255,0.8); border: 1px solid var(--coral-soft); border-radius: 16px; padding: 1.5rem; position: relative; overflow: hidden;}
+.ai-insight-box::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--coral); }
+.ai-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; }
+.ai-icon { width: 32px; height: 32px; background: var(--coral); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 4px 10px rgba(239, 111, 91, 0.3);}
+.ai-header strong { font-family: 'Fraunces', serif; font-size: 1.1rem; color: var(--void);}
+.ai-insight-box p { font-size: 0.9rem; color: var(--ink-soft); line-height: 1.6; margin-bottom: 1rem;}
+.ai-rx-check { background: var(--paper); border-radius: 10px; padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--void);}
+
+@media (max-width: 1200px) {
+  .bento { grid-template-columns: 1fr; }
+  .c-meds, .c-log, .c-history, .c-ai { grid-column: span 1; }
+  .med-timeline { flex-direction: column; }
+}
+@media (max-width: 768px) {
+  .shell { flex-direction: column; width: 100%; }
+  .topbar { padding: 1.2rem 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .bento-wrapper { padding: 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="ambient"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+
+<div class="shell">
+  <!-- UNIVERSAL SIDEBAR -->
+  <%- include('../partials/sidebar') %>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1>Medicines & Symptoms</h1>
+        <div class="sub">Active prescriptions, symptom journal, and AI side-effect correlation.</div>
+      </div>
+      <div class="actions">
+        <button class="btn primary">+ Add Medication</button>
+      </div>
+    </header>
+
+    <div class="bento-wrapper">
+      <div class="bento">
+
+        <!-- 1. SMART PILLBOX (Spans 8 Cols) -->
+        <div class="card c-meds">
+          <div class="card-head">
+            <h3>Active Regimen</h3>
+            <span style="font-size: 0.75rem; background: var(--sage-soft); color: var(--sage); padding: 4px 10px; border-radius: 999px; font-weight: 700;">2 Remaining Today</span>
+          </div>
+
+          <div class="med-timeline">
+            <!-- Morning -->
+            <div class="time-block">
+              <div class="time-header">🌅 Morning (08:00 AM)</div>
+              
+              <div class="pill-card taken">
+                <div class="pill-icon">💊</div>
+                <div class="pill-info">
+                  <strong>Vitamin D3 (Cholecalciferol)</strong>
+                  <span>60,000 IU • After breakfast</span>
+                </div>
+                <div class="status-tick">✓</div>
+              </div>
+
+              <div class="pill-card taken">
+                <div class="pill-icon" style="background: rgba(133, 193, 233, 0.2); color: #2980b9;">💧</div>
+                <div class="pill-info">
+                  <strong>Levothyroxine</strong>
+                  <span>50 mcg • Empty stomach</span>
+                </div>
+                <div class="status-tick">✓</div>
+              </div>
+            </div>
+
+            <!-- Afternoon -->
+            <div class="time-block">
+              <div class="time-header">☀️ Afternoon (02:00 PM)</div>
+              
+              <div class="pill-card">
+                <div class="pill-icon" style="background: var(--coral-soft); color: var(--coral);">💊</div>
+                <div class="pill-info">
+                  <strong>Ibuprofen</strong>
+                  <span>400 mg • As needed (Pain)</span>
+                </div>
+                <div class="status-tick"></div>
+              </div>
+            </div>
+
+            <!-- Evening -->
+            <div class="time-block">
+              <div class="time-header">🌙 Evening (09:00 PM)</div>
+              <div class="pill-card">
+                <div class="pill-icon" style="background: rgba(155, 89, 182, 0.2); color: #8e44ad;">💊</div>
+                <div class="pill-info">
+                  <strong>Magnesium Glycinate</strong>
+                  <span>200 mg • Before sleep</span>
+                </div>
+                <div class="status-tick"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. SYMPTOM QUICK LOG (Spans 4 Cols) -->
+        <div class="card c-log">
+          <div class="card-head">
+            <h3>Log a Symptom</h3>
+          </div>
+          
+          <div class="symptom-form">
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 700; color: #a4c9c3; text-transform: uppercase; margin-bottom: 0.5rem; display: block;">Quick Select</label>
+              <div class="symptom-tags">
+                <span class="s-tag" onclick="this.classList.toggle('selected')">Headache</span>
+                <span class="s-tag" onclick="this.classList.toggle('selected')">Nausea</span>
+                <span class="s-tag selected" onclick="this.classList.toggle('selected')">Fatigue</span>
+                <span class="s-tag" onclick="this.classList.toggle('selected')">Dizziness</span>
+                <span class="s-tag" onclick="this.classList.toggle('selected')">Joint Pain</span>
+                <span class="s-tag" onclick="this.classList.toggle('selected')">Insomnia</span>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 700; color: #a4c9c3; text-transform: uppercase; display: block;">Severity (1-10)</label>
+              <input type="range" min="1" max="10" value="4" class="severity-slider">
+              <div class="severity-labels">
+                <span>Mild</span>
+                <span>Severe</span>
+              </div>
+            </div>
+
+            <textarea placeholder="Any additional notes? (e.g., Started after lunch...)" style="width: 100%; min-height: 60px; border-radius: 10px; border: none; padding: 10px; font-family: inherit; font-size: 0.85rem; background: rgba(0,0,0,0.15); color: #fff; outline: none;"></textarea>
+
+            <button class="log-btn">Save to Journal</button>
+          </div>
+        </div>
+
+        <!-- 3. SYMPTOM TIMELINE (Spans 7 Cols) -->
+        <div class="card c-history">
+          <div class="card-head">
+            <h3>Symptom History</h3>
+          </div>
+          
+          <div class="history-feed">
+            <div class="history-item">
+              <div class="history-date">
+                <span class="h-day">21</span>
+                <span class="h-month">Aug</span>
+              </div>
+              <div class="history-content">
+                <h4>Fatigue & Mild Headache</h4>
+                <span class="severity-badge moderate">Severity: 4/10</span>
+                <p>Started feeling sluggish around 3 PM. Took an Ibuprofen.</p>
+              </div>
+            </div>
+
+            <div class="history-item">
+              <div class="history-date">
+                <span class="h-day">14</span>
+                <span class="h-month">Aug</span>
+              </div>
+              <div class="history-content" style="border-color: var(--sage);">
+                <h4>Joint Pain (Left Knee)</h4>
+                <span class="severity-badge mild">Severity: 2/10</span>
+                <p>Noticed slight stiffness after morning run. Resolved by evening.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. AI CONTRAINDICATION & ANALYSIS (Spans 5 Cols) -->
+        <div class="card c-ai">
+          <div class="card-head">
+            <h3>✨ AI Interaction Engine</h3>
+          </div>
+          
+          <div class="ai-insight-box">
+            <div class="ai-header">
+              <div class="ai-icon">💡</div>
+              <strong>Possible Correlation Detected</strong>
+            </div>
+            <p>You logged "Fatigue" and "Mild Headache" today. I noticed you recently started taking <strong>Levothyroxine</strong> (50mcg) on an empty stomach.</p>
+            
+            <div class="ai-rx-check">
+              > Checking Rx Database...<br>
+              > Levothyroxine Side Effects: Headache, fatigue, sleep changes.<br>
+              > Assessment: Common adjustment symptom.
+            </div>
+            
+            <p style="margin-top: 1rem; font-size: 0.8rem;"><em>Recommendation: Monitor for 3 more days. If severity exceeds 6/10, contact your endocrinologist.</em></p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Add simple toggle logic for pill cards to simulate "taking" a med
+  document.querySelectorAll('.pill-card').forEach(card => {
+    card.addEventListener('click', () => {
+      card.classList.toggle('taken');
+      const tick = card.querySelector('.status-tick');
+      if(card.classList.contains('taken')) {
+        tick.innerHTML = '✓';
+      } else {
+        tick.innerHTML = '';
+      }
+    });
+  });
+</script>
+</body>
+</html>

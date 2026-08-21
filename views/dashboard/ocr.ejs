@@ -3,380 +3,400 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HealthOrbit — Clinical Intelligence Workspace</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>HealthOrbit — Clinical Document Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Universal Sidebar CSS -->
+<link rel="stylesheet" href="/css/sidebar.css">
 <style>
+/* 
+==================================================================
+  STRICTLY SCOPED CSS (PREFIXED WITH 'ho-') FOR OCR WORKSPACE
+================================================================== 
+*/
 :root {
-  --void: #084039;
-  --void-soft: #0d7a6e;
-  --paper: #f4f8f7;
-  --card: #ffffff;
-  --ink: #0f1c1a; 
-  --ink-soft: #5e736f;
-  --coral: #ef6f5b;
-  --coral-soft: #fbe4de;
-  --sage: #109485;
-  --sage-soft: #dff1ec;
-  --mist: #42b89d;
-  --line: rgba(13, 122, 110, 0.12); 
-  --radius: 20px;
+  --ho-bg-airy: #edf6f4;
+  --ho-teal-900: #0b5e55;
+  --ho-teal-700: #0d7a6e;
+  --ho-teal-600: #109485;
+  --ho-mint-400: #42b89d;
+  --ho-coral: #e07a68;
+  --ho-coral-soft: #fbe4de;
+  --ho-text-main: #0f1c1a;
+  --ho-text-muted: #4e6b63;
+  --ho-danger: #d94b4b;
+  
+  /* PREMIUM APPLE LIQUID GLASS VARIABLES */
+  --ho-glass-clear: rgba(255, 255, 255, 0.45);
+  --ho-glass-solid: rgba(255, 255, 255, 0.85);
+  --ho-glass-border: rgba(255, 255, 255, 0.95);
+  --ho-glass-border-subtle: rgba(255, 255, 255, 0.5);
+  
+  --ho-radius-xl: 32px;
+  --ho-radius-lg: 20px;
+  --ho-radius-md: 12px;
+  
+  --ho-shadow-glass: 0 30px 60px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background: var(--paper);
-  color: var(--ink);
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  background-color: var(--ho-bg-airy);
+  color: var(--ho-text-main);
+  overflow: hidden; 
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
 
-.mono { font-family: 'JetBrains Mono', monospace; }
+/* ---------- AMBIENT ORBS ---------- */
+.ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
+.ho-orb-1 { width: 550px; height: 550px; background: #76d7c4; top: -100px; left: -100px; }
+.ho-orb-2 { width: 600px; height: 600px; background: #a9dfbf; bottom: -150px; right: -100px; animation-delay: -5s; }
+.ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 35%; left: 35%; opacity: 0.3; animation-delay: -10s; }
+@keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 60px) scale(1.15); } }
 
-.ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-.orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.3; animation: float 22s infinite alternate; }
-.orb1 { width: 500px; height: 500px; background: #a3e4d7; top: -150px; left: -100px; }
-.orb2 { width: 550px; height: 550px; background: #fcefc9; bottom: -150px; right: -100px; }
-@keyframes float { 100% { transform: translate(30px, 30px) scale(1.05); } }
+.ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
 
-.shell { display: flex; width: 100vw; min-height: 100vh; position: relative; z-index: 1; }
+/* ---------- MAIN WORKSPACE ---------- */
+.ho-main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; }
 
-/* Navigation Sidebar */
-.nav {
-  width: 240px; position: sticky; top: 0; height: 100vh;
-  background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px);
-  display: flex; flex-direction: column; border-right: 1px solid var(--line);
-  flex-shrink: 0; z-index: 20;
+/* TOP NAVBAR (Clear Mirror Glass) */
+.ho-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 2rem 3rem; flex-shrink: 0;
+  background: transparent;
+  z-index: 20;
 }
-.nav-header { display: flex; justify-content: space-between; align-items: center; padding: 1.8rem 1.4rem; }
-.brand { display: flex; align-items: center; gap: 0.8rem; font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.3rem; }
-.orbit-mark { position: relative; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
-.orbit-mark .ring { position: absolute; inset: 0; border-radius: 50%; border: 2px dashed var(--void-soft); animation: spin 10s linear infinite; }
-.orbit-mark .ring2 { inset: 4px; border-color: var(--coral); animation: spin 8s linear infinite reverse; }
-.orbit-mark .ring3 { width: 8px; height: 8px; border-radius: 50%; background: var(--void); }
-@keyframes spin { to { transform: rotate(360deg); } }
-.txt-h { color: var(--void); } .txt-o { color: var(--coral); }
+.ho-topbar h1 { font-weight: 800; font-size: 1.8rem; color: var(--ho-teal-900); margin-bottom: 0.3rem; letter-spacing: -0.5px;}
+.ho-topbar p { font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 500; }
+.ho-topbar-actions { display: flex; gap: 1rem; align-items: center; }
 
-.navlinks { display: flex; flex-direction: column; gap: 0.2rem; padding: 0 0.8rem; flex: 1; overflow-y: auto; }
-.navlinks a { 
-  text-decoration: none; color: var(--ink-soft); font-size: 0.88rem; font-weight: 600; 
-  padding: 0.65rem 0.9rem; border-radius: 12px; display: flex; align-items: center; gap: 0.75rem; 
-  transition: 0.2s; 
+/* Buttons */
+.ho-btn-primary {
+  background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); color: #fff;
+  border: none; border-radius: 999px; padding: 0.85rem 1.8rem; font-weight: 700; font-size: 0.95rem;
+  cursor: pointer; box-shadow: 0 10px 25px rgba(13, 122, 110, 0.25); transition: 0.25s; text-decoration: none;
 }
-.navlinks a.active { background: var(--void-soft); color: #fff; box-shadow: 0 4px 12px rgba(13, 122, 110, 0.2); }
-.navlinks a:hover:not(.active) { background: rgba(255,255,255,0.8); color: var(--void); }
+.ho-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(13, 122, 110, 0.35); }
+.ho-btn-ghost {
+  padding: 0.85rem 1.8rem; background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border);
+  border-radius: 999px; color: var(--ho-teal-900); font-weight: 700; font-size: 0.95rem;
+  cursor: pointer; text-decoration: none; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+.ho-btn-ghost:hover { background: #fff; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.1); }
 
-.sidebar-footer { margin-top: auto; padding: 1rem; border-top: 1px solid var(--line); }
-.profile { display: flex; align-items: center; gap: 0.8rem; }
-.profile .av { width: 36px; height: 36px; border-radius: 50%; background: var(--void); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; }
-.profile-info strong { display: block; font-size: 0.85rem; color: var(--void); }
-.profile-info span { font-size: 0.72rem; color: var(--ink-soft); }
-
-/* Main Workspace Grid (3 Columns) */
-.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.topbar { display: flex; justify-content: space-between; align-items: center; padding: 2rem 2.5rem 1rem; }
-.topbar h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.7rem; color: var(--void); }
-.topbar .sub { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.2rem; }
-.actions { display: flex; gap: 0.8rem; }
-
-.btn { border: none; border-radius: 999px; padding: 0.65rem 1.25rem; font-weight: 700; font-size: 0.82rem; cursor: pointer; transition: 0.2s; font-family: inherit; }
-.btn.primary { background: var(--coral); color: #fff; box-shadow: 0 4px 15px rgba(239, 111, 91, 0.25); }
-.btn.primary:hover { background: #d95a46; transform: translateY(-1px); }
-.btn.ghost { background: var(--card); color: var(--void); border: 1px solid var(--line); }
-
-.workspace-grid {
-  display: grid;
-  grid-template-columns: 3.5fr 5fr 2.5fr;
-  gap: 1.25rem;
-  padding: 1rem 2.5rem 2.5rem;
-  flex: 1;
+/* ---------- DUAL PANE WORKSPACE (50/50 Grid) ---------- */
+.ho-workspace-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+  padding: 1rem 3rem 3rem; flex: 1; min-height: 0;
 }
 
-.panel-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 1);
-  border-radius: var(--radius);
-  padding: 1.4rem;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 10px 30px rgba(8, 64, 57, 0.05);
-  height: calc(100vh - 130px);
+/* Base Panel Glass Style */
+.ho-panel {
+  background: var(--ho-glass-clear);
+  backdrop-filter: blur(50px) saturate(200%); -webkit-backdrop-filter: blur(50px) saturate(200%);
+  border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
+  padding: 2rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass);
+  height: calc(100vh - 140px); min-height: 550px;
 }
-.panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-shrink: 0; }
-.panel-head h3 { font-family: 'Fraunces', serif; font-size: 1.15rem; color: var(--void); }
 
-/* Column 1: Document Viewer */
-.viewer-zone {
-  flex: 1;
-  background: #f8faf9;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-.pdf-frame { width: 100%; height: 100%; border: none; }
-.empty-viewer { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; color: var(--ink-soft); }
+.ho-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-shrink: 0; }
+.ho-panel-header h2 { font-weight: 800; font-size: 1.3rem; color: var(--ho-teal-900); }
+.ho-badge { background: #fff; border: 1px solid var(--ho-glass-border); padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.8rem; font-weight: 700; color: var(--ho-text-muted); box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
 
-/* Column 2: Extraction HUD & Editable Form */
-.doc-status-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  background: var(--void); color: #fff; padding: 0.9rem 1.2rem;
-  border-radius: 12px; margin-bottom: 1rem; flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(8,64,57,0.1);
-}
-.doc-status-bar strong { font-size: 0.9rem; font-family: 'Fraunces', serif; }
-.pulse-badge { background: rgba(255,255,255,0.2); padding: 0.3rem 0.8rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+/* Left Pane: Document Canvas */
+.ho-doc-viewer { flex: 1; background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: var(--ho-radius-lg); overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);}
+.ho-doc-viewer iframe { width: 100%; height: 100%; border: none; }
+.ho-empty-state { text-align: center; color: var(--ho-text-muted); padding: 2rem; }
+.ho-empty-state span { font-size: 4rem; opacity: 0.5; display: block; margin-bottom: 1rem; }
 
-.table-scroll { flex: 1; overflow-y: auto; padding-right: 0.4rem; }
-.table-scroll::-webkit-scrollbar { width: 5px; }
-.table-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+/* Right Pane: Console & Tabs */
+.ho-tabs { display: flex; gap: 0.5rem; background: rgba(255, 255, 255, 0.4); padding: 6px; border-radius: 999px; margin-bottom: 1.5rem; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.6); }
+.ho-tab-btn { flex: 1; border: none; background: transparent; padding: 0.8rem 0.5rem; border-radius: 999px; font-family: inherit; font-size: 0.85rem; font-weight: 700; color: var(--ho-text-muted); cursor: pointer; transition: 0.2s; }
+.ho-tab-btn.active { background: #fff; color: var(--ho-teal-900); box-shadow: 0 4px 15px rgba(13, 122, 110, 0.1); }
 
-.data-row {
-  display: flex; flex-direction: column; gap: 0.6rem;
-  padding: 1.1rem; background: #fff; border: 1px solid var(--line);
-  border-radius: 14px; margin-bottom: 0.75rem; transition: 0.2s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.01);
-}
-.data-row:hover { border-color: var(--void-soft); box-shadow: 0 6px 16px rgba(8,64,57,0.04); }
+.ho-tab-content { display: none; flex-direction: column; flex: 1; min-height: 0; }
+.ho-tab-content.active { display: flex; animation: hoFadeIn 0.4s ease; }
+@keyframes hoFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-.row-top { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
-.row-top input { 
-  font-family: 'Fraunces', serif; font-weight: 700; color: var(--void); 
-  border: 1px solid transparent; background: transparent; font-size: 1rem; width: 65%; 
-  outline: none; border-radius: 6px; padding: 4px 6px; transition: 0.2s;
-}
-.row-top input:focus { border-color: var(--void-soft); background: var(--paper); }
-.category-tag { font-size: 0.68rem; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; background: var(--paper); padding: 3px 8px; border-radius: 6px; border: none; text-align: right; }
+/* Scrollbars */
+.ho-scroll-container { flex: 1; overflow-y: auto; padding-right: 0.5rem; }
+.ho-scroll-container::-webkit-scrollbar { width: 6px; }
+.ho-scroll-container::-webkit-scrollbar-thumb { background: rgba(13, 122, 110, 0.2); border-radius: 10px; }
 
-.row-middle { display: flex; flex-direction: column; gap: 0.3rem; }
-.row-middle label { font-size: 0.7rem; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; }
-.row-middle textarea {
-  width: 100%; min-height: 70px; font-family: 'Inter', sans-serif; font-size: 0.9rem;
-  color: var(--ink); padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
-  background: #fafcfb; outline: none; resize: vertical; line-height: 1.5; transition: 0.2s;
-}
-.row-middle textarea:focus { border-color: var(--void-soft); background: #fff; box-shadow: 0 0 0 3px var(--sage-soft); }
+/* Editable Data Cards (Apple Notes Style) */
+.ho-data-card { background: rgba(255, 255, 255, 0.9); border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-lg); padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 4px 15px rgba(13, 122, 110, 0.04); transition: 0.2s; }
+.ho-data-card:focus-within, .ho-data-card:hover { border-color: var(--ho-teal-600); background: #fff; transform: translateY(-2px); box-shadow: 0 15px 35px rgba(13, 122, 110, 0.1); }
 
-.row-bottom { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-top: 0.2rem; }
-.input-val-group { display: flex; align-items: baseline; gap: 0.4rem; }
-.input-val-group input.unit { font-size: 0.75rem; color: var(--ink-soft); font-weight: 600; width: 60px; border: 1px solid transparent; background: transparent; outline: none; }
-.input-range-group input { font-size: 0.78rem; color: var(--ink-soft); border: 1px solid transparent; background: transparent; width: 120px; outline: none; text-align: right; }
+.ho-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.ho-card-top input { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.15rem; color: var(--ho-teal-900); border: 1px solid transparent; background: transparent; width: 65%; outline: none; border-radius: 8px; padding: 4px 8px; transition: 0.2s; }
+.ho-card-top input:focus { border-color: var(--ho-teal-600); background: var(--ho-bg-airy); }
+.ho-tag { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--ho-teal-700); background: rgba(13, 122, 110, 0.1); padding: 4px 10px; border-radius: 6px; border: none; text-align: right; }
 
-.pill { display: inline-block; padding: 0.25rem 0.7rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
-.pill.good { background: var(--sage-soft); color: var(--void-soft); }
-.pill.warn { background: var(--coral-soft); color: #d35400; }
+.ho-card-mid label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--ho-text-muted); text-transform: uppercase; margin-bottom: 0.4rem; letter-spacing: 0.5px;}
+.ho-card-mid textarea { width: 100%; min-height: 80px; font-family: 'Inter', sans-serif; font-size: 0.95rem; color: var(--ho-text-main); padding: 12px 14px; border: 1px solid var(--ho-glass-border-subtle); border-radius: 12px; background: rgba(248, 252, 250, 0.8); outline: none; resize: vertical; line-height: 1.6; transition: 0.2s;}
+.ho-card-mid textarea:focus { border-color: var(--ho-teal-600); background: #fff; box-shadow: 0 0 0 4px rgba(13, 122, 110, 0.08);}
 
-.ai-insight {
-  background: linear-gradient(135deg, var(--sage-soft), #fff);
-  border: 1px solid var(--mist); padding: 1.1rem; border-radius: 14px; margin-top: 1rem; flex-shrink: 0;
-}
-.ai-insight h4 { font-family: 'Fraunces', serif; color: var(--void); font-size: 0.95rem; margin-bottom: 0.3rem; }
-.ai-insight p { font-size: 0.82rem; color: var(--ink-soft); line-height: 1.5; }
+.ho-card-bot { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed rgba(13, 122, 110, 0.15); }
+.ho-meta-group { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 600; }
+.ho-meta-group input { font-size: 0.9rem; color: var(--ho-text-main); font-weight: 600; border: 1px solid transparent; background: transparent; width: 100px; outline: none; padding: 4px 8px; border-radius: 8px; }
+.ho-meta-group input:focus { border-color: var(--ho-teal-600); background: #fff; }
 
-/* Column 3: Report Vault */
-.history-list { display: flex; flex-direction: column; gap: 0.6rem; overflow-y: auto; flex: 1; padding-right: 0.3rem; }
-.history-item {
-  display: flex; flex-direction: column; gap: 0.25rem;
-  padding: 0.85rem; background: #fff; border: 1px solid var(--line);
-  border-radius: 14px; text-decoration: none; color: inherit; transition: 0.2s;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.01);
-}
-.history-item.active { border-color: var(--void-soft); background: var(--sage-soft); box-shadow: 0 4px 12px rgba(13,122,110,0.1); }
-.history-item:hover:not(.active) { background: #fafafa; border-color: var(--sage); transform: translateY(-1px); }
-.history-title { font-weight: 700; font-size: 0.85rem; color: var(--void); display: flex; align-items: center; gap: 0.4rem; }
-.history-date { font-size: 0.72rem; color: var(--ink-soft); }
+.ho-status-pill { display: inline-block; padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.8rem; font-weight: 800; }
+.ho-status-pill.good { background: rgba(13, 122, 110, 0.15); color: var(--ho-teal-900); }
+.ho-status-pill.warn { background: var(--ho-coral-soft); color: #c0392b; }
 
-@media (max-width: 1280px) {
-  .workspace-grid { grid-template-columns: 1fr; }
-  .panel-card { height: auto; min-height: 500px; }
+/* AI & Raw Text */
+.ho-ai-box { background: linear-gradient(135deg, #fff, rgba(223, 241, 236, 0.9)); border: 1px solid var(--ho-mint-400); border-radius: var(--ho-radius-lg); padding: 2rem; box-shadow: 0 15px 35px rgba(13, 122, 110, 0.1); }
+.ho-ai-box h3 { font-size: 1.2rem; font-weight: 800; color: var(--ho-teal-900); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;}
+.ho-ai-box p { font-size: 0.95rem; color: var(--ho-text-muted); line-height: 1.7; }
+.ho-raw-text { background: rgba(255, 255, 255, 0.9); border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-lg); padding: 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--ho-text-main); line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
+
+/* Vault List */
+.ho-vault-card { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 1.5rem; background: #fff; border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-md); text-decoration: none; color: inherit; margin-bottom: 0.85rem; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+.ho-vault-card:hover { transform: translateY(-2px); border-color: var(--ho-teal-600); box-shadow: 0 10px 25px rgba(13, 122, 110, 0.1); }
+.ho-vault-card.active { border-color: var(--ho-teal-700); background: var(--ho-bg-airy); }
+.ho-vault-info { flex: 1; display: flex; flex-direction: column; gap: 0.3rem; }
+.ho-vault-info strong { font-size: 1.05rem; color: var(--ho-teal-900); font-weight: 800; }
+.ho-vault-info span { font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 600; }
+
+.ho-btn-delete { background: var(--ho-coral-soft); color: var(--ho-danger); border: 1px solid rgba(217, 75, 75, 0.3); border-radius: 10px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-size: 1.2rem; }
+.ho-btn-delete:hover { background: var(--ho-danger); color: #fff; transform: scale(1.05); }
+
+/* UPLOAD MODAL */
+.ho-modal { position: fixed; inset: 0; background: rgba(11, 94, 85, 0.5); backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 1.5rem; }
+.ho-modal-box { background: var(--ho-glass-clear); backdrop-filter: blur(50px) saturate(200%); border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl); padding: 3rem; width: 100%; max-width: 550px; box-shadow: 0 40px 80px rgba(0,0,0,0.2); }
+.ho-modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.ho-modal-head h3 { font-size: 1.5rem; font-weight: 800; color: var(--ho-teal-900); }
+.ho-modal-close { background: none; border: none; font-size: 2.5rem; color: var(--ho-text-muted); cursor: pointer; transition: 0.2s; line-height: 1;}
+.ho-modal-close:hover { color: var(--ho-danger); }
+.ho-dropzone { border: 2px dashed var(--ho-teal-600); background: rgba(255, 255, 255, 0.8); border-radius: var(--ho-radius-lg); padding: 4rem 2rem; text-align: center; cursor: pointer; transition: 0.3s ease; }
+.ho-dropzone:hover { background: #fff; border-color: var(--ho-teal-900); transform: scale(1.02); box-shadow: 0 20px 40px rgba(13, 122, 110, 0.1);}
+
+@media (max-width: 1100px) {
+  .ho-workspace-grid { grid-template-columns: 1fr; }
+  .ho-panel { height: auto; min-height: 600px; }
 }
 </style>
 </head>
 <body>
 
-<div class="ambient"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+<div class="ho-ambient-canvas">
+  <div class="ho-glow-orb ho-orb-1"></div>
+  <div class="ho-glow-orb ho-orb-2"></div>
+  <div class="ho-glow-orb ho-orb-3"></div>
+</div>
 
-<div class="shell">
-  <!-- NAVIGATION SIDEBAR -->
-  <nav class="nav">
-    <div class="nav-header">
-      <div class="brand">
-        <div class="orbit-mark"><span class="ring"></span><span class="ring ring2"></span><span class="ring3"></span></div>
-        <span class="brand-text"><span class="txt-h">Health</span><span class="txt-o">Orbit</span></span>
-      </div>
-    </div>
+<div class="ho-app-layout">
+  
+  <!-- UNIVERSAL SIDEBAR IMPORT -->
+  <%- include('../partials/sidebar') %>
 
-    <div class="navlinks">
-      <a href="/dashboard"><span class="icon">⊞</span><span>Dashboard View</span></a>
-      <a href="#"><span class="icon">👪</span><span>Profile & Family</span></a>
-      <a href="/xyz" class="active"><span class="icon">📄</span><span>OCR Reports</span></a>
-      <a href="#"><span class="icon">🧠</span><span>AI Analysis</span></a>
-      <a href="#"><span class="icon">⌚</span><span>Wearable Data</span></a>
-      <a href="#"><span class="icon">⏱️</span><span>Health Timeline</span></a>
-      <a href="#"><span class="icon">📈</span><span>Trends & Alerts</span></a>
-      <a href="#"><span class="icon">💊</span><span>Meds & Symptoms</span></a>
-      <a href="#"><span class="icon">🪪</span><span>Insurance & ID</span></a>
-      <a href="#"><span class="icon">🤖</span><span>AI Assistant</span></a>
-      <a href="#"><span class="icon">🥗</span><span>Nutrition & Life</span></a>
-    </div>
-
-    <div class="sidebar-footer">
-      <div class="profile">
-        <div class="av"><%= (userName && userName.length > 0) ? userName.substring(0, 2).toUpperCase() : 'HO' %></div>
-        <div class="profile-info"><strong><%= userName || 'User' %></strong><span>Health ID Active</span></div>
-      </div>
-    </div>
-  </nav>
-
-  <!-- MAIN WORKSPACE -->
-  <main class="main">
-    <div class="topbar">
+  <!-- SCOPED MAIN CONTENT -->
+  <main class="ho-main-content">
+    
+    <header class="ho-topbar">
       <div>
-        <h1>Medical Document Engine</h1>
-        <div class="sub">Upload, inspect, verify, and correct your clinical reports side-by-side.</div>
+        <h1>Document Intelligence Workspace</h1>
+        <p>Inspect documents, verify AI extractions, and manage your private medical vault.</p>
       </div>
-      <div class="actions">
-        <form id="uploadForm" action="/reports/upload" method="POST" enctype="multipart/form-data" style="display: inline;">
-          <input type="file" id="fileInput" name="reportFile" accept=".pdf,.png,.jpg,.jpeg" style="display: none;" onchange="document.getElementById('uploadForm').submit();" required>
-          <button type="button" class="btn primary" onclick="document.getElementById('fileInput').click();">+ Upload Report</button>
-        </form>
-        <a href="/logout" class="btn ghost" style="text-decoration: none;">Sign Out</a>
+      <div class="ho-topbar-actions">
+        <button class="ho-btn-primary" onclick="openUpload()">+ Upload Report</button>
       </div>
-    </div>
+    </header>
 
-    <div class="workspace-grid">
+    <div class="ho-workspace-grid">
       
-      <!-- COLUMN 1: LIVE DOCUMENT VIEWER -->
-      <div class="panel-card">
-        <div class="panel-head">
-          <h3>Original Document</h3>
-          <span style="font-size: 0.72rem; color: var(--ink-soft); font-weight: 600;">
-            <%= latestReport ? latestReport.originalFileName : 'No File' %>
-          </span>
+      <!-- LEFT PANE: DOCUMENT VIEWER -->
+      <section class="ho-panel">
+        <div class="ho-panel-header">
+          <h2>Original Source</h2>
+          <span class="ho-badge"><%= locals.latestReport && latestReport.originalFileName ? latestReport.originalFileName : 'No File Active' %></span>
         </div>
-        <div class="viewer-zone">
-          <% if (latestReport && latestReport.storedFileName) { %>
+
+        <div class="ho-doc-viewer">
+          <% if (locals.latestReport && latestReport.storedFileName) { %>
             <% if (latestReport.mimeType === 'application/pdf') { %>
-              <iframe class="pdf-frame" src="/uploads/<%= latestReport.storedFileName %>#toolbar=0"></iframe>
+              <iframe src="/uploads/<%= latestReport.storedFileName %>#toolbar=0"></iframe>
             <% } else { %>
-              <div style="flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; padding: 0.5rem;">
-                <img src="/uploads/<%= latestReport.storedFileName %>" alt="Report Preview" style="max-width: 100%; max-height: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-              </div>
+              <img src="/uploads/<%= latestReport.storedFileName %>" alt="Report Preview" style="max-width: 100%; max-height: 100%; padding: 1rem; border-radius: var(--ho-radius-md);">
             <% } %>
           <% } else { %>
-            <div class="empty-viewer">
-              <span style="font-size: 2.5rem; margin-bottom: 0.5rem;">📄</span>
-              <p style="font-size: 0.9rem; font-weight: 600;">No Report Selected</p>
-              <p style="font-size: 0.78rem;">Upload a document using the top-right button.</p>
+            <div class="ho-empty-state">
+              <span>📄</span>
+              <h3 style="color: var(--ho-teal-900); font-weight: 800; font-size: 1.4rem;">Awaiting Document</h3>
+              <p style="font-size: 0.95rem; margin-top: 0.8rem;">Upload a PDF or image report to begin AI extraction.</p>
             </div>
           <% } %>
         </div>
-      </div>
+      </section>
 
-      <!-- COLUMN 2: EXTRACTION HUD (SPACIOUS & EXPANDABLE EDITORS) -->
-      <div class="panel-card">
-        <div class="panel-head">
-          <h3>Extraction HUD</h3>
-          <span style="font-size: 0.72rem; color: var(--void-soft); font-weight: 700;">
-            Status: <%= (latestReport && latestReport.status) ? latestReport.status.toUpperCase() : 'STANDBY' %>
+      <!-- RIGHT PANE: CLEAR MIRROR CONSOLE -->
+      <section class="ho-panel">
+        <div class="ho-panel-header">
+          <h2>Intelligence Console</h2>
+          <span class="ho-badge" style="background: var(--ho-teal-700); color: #fff; border:none;">
+            Status: <%= locals.latestReport && latestReport.status ? latestReport.status.toUpperCase() : 'STANDBY' %>
           </span>
         </div>
 
-        <div class="doc-status-bar">
-          <strong><%= latestReport ? latestReport.originalFileName : 'Awaiting Document' %></strong>
-          <span class="pulse-badge"><%= (latestReport && latestReport.status === 'extracted') ? 'Extracted & Editable' : 'Standby' %></span>
+        <!-- Glass Tabs -->
+        <div class="ho-tabs">
+          <button class="ho-tab-btn active" onclick="switchTab('ho-tab-findings', this)">
+            🔬 Findings (<%= locals.latestReport && latestReport.extractedData && latestReport.extractedData.parameters ? latestReport.extractedData.parameters.length : 0 %>)
+          </button>
+          <button class="ho-tab-btn" onclick="switchTab('ho-tab-ai', this)">🤖 AI Summary</button>
+          <button class="ho-tab-btn" onclick="switchTab('ho-tab-raw', this)">📝 Raw Text</button>
+          <button class="ho-tab-btn" onclick="switchTab('ho-tab-vault', this)">📚 Vault (<%= locals.reports ? reports.length : 0 %>)</button>
         </div>
 
-        <div class="table-scroll">
-          <% if (latestReport && latestReport.extractedData && latestReport.extractedData.parameters && latestReport.extractedData.parameters.length > 0) { %>
-            
-            <form action="/reports/update/<%= latestReport._id %>" method="POST" id="correctionForm">
-              <div style="margin-bottom: 0.8rem; font-size: 0.78rem; color: var(--coral); font-weight: 600; background: var(--coral-soft); padding: 8px 12px; border-radius: 8px;">
-                ✏️ Review extracted findings below. You can click and edit any finding or description before saving.
+        <!-- TAB 1: FINDINGS -->
+        <div id="ho-tab-findings" class="ho-tab-content active">
+          <% if (locals.latestReport) { %>
+            <form action="/reports/update/<%= latestReport._id %>" method="POST" style="display: flex; flex-direction: column; height: 100%;">
+              
+              <div class="ho-scroll-container">
+                <div style="margin-bottom: 1.5rem; font-size: 0.85rem; color: var(--ho-teal-900); background: rgba(223, 241, 236, 0.9); padding: 14px 18px; border-radius: 12px; font-weight: 700; display: flex; gap: 0.8rem; align-items: center;">
+                  <span style="font-size: 1.2rem;">✏️</span> Review findings below. Click any field to edit before saving.
+                </div>
+
+                <% if (latestReport.extractedData && latestReport.extractedData.parameters && latestReport.extractedData.parameters.length > 0) { %>
+                  <% latestReport.extractedData.parameters.forEach(function(param, index) { %>
+                    <div class="ho-data-card">
+                      <input type="hidden" name="params[<%= index %>][status]" value="<%= param.status || 'Optimal' %>">
+                      <input type="hidden" name="params[<%= index %>][statusClass]" value="<%= param.statusClass || 'good' %>">
+
+                      <div class="ho-card-top">
+                        <input type="text" name="params[<%= index %>][name]" value="<%= param.name %>" placeholder="Finding Name">
+                        <input type="text" name="params[<%= index %>][category]" value="<%= param.category || 'Observation' %>" class="ho-tag" style="border:none;">
+                      </div>
+
+                      <div class="ho-card-mid">
+                        <label>Observation / Measured Value:</label>
+                        <textarea name="params[<%= index %>][value]"><%= param.value %></textarea>
+                      </div>
+
+                      <div class="ho-card-bot">
+                        <div class="ho-meta-group"><span>Unit:</span><input type="text" name="params[<%= index %>][unit]" value="<%= param.unit %>"></div>
+                        <div class="ho-meta-group"><span>Ref:</span><input type="text" name="params[<%= index %>][referenceRange]" value="<%= param.referenceRange %>"></div>
+                        <span class="ho-status-pill <%= param.statusClass || 'good' %>"><%= param.status || 'Standard' %></span>
+                      </div>
+                    </div>
+                  <% }) %>
+                <% } else { %>
+                  <div class="ho-data-card">
+                    <input type="hidden" name="params[0][status]" value="Attention">
+                    <input type="hidden" name="params[0][statusClass]" value="warn">
+                    <div class="ho-card-top">
+                      <input type="text" name="params[0][name]" value="Scan Result" placeholder="Finding Name">
+                      <input type="text" name="params[0][category]" value="General" class="ho-tag" style="border:none;">
+                    </div>
+                    <div class="ho-card-mid">
+                      <label>Observation / Measured Value:</label>
+                      <textarea name="params[0][value]"><%= latestReport.extractedData ? latestReport.extractedData.rawText : 'Document uploaded successfully.' %></textarea>
+                    </div>
+                    <div class="ho-card-bot">
+                      <div class="ho-meta-group"><span>Unit:</span><input type="text" name="params[0][unit]" value="text"></div>
+                      <div class="ho-meta-group"><span>Ref:</span><input type="text" name="params[0][referenceRange]" value="Review"></div>
+                      <span class="ho-status-pill warn">Review</span>
+                    </div>
+                  </div>
+                <% } %>
               </div>
+              
+              <button type="submit" class="ho-btn-primary" style="width: 100%; margin-top: 1.5rem; padding: 1.1rem; font-size: 1rem; flex-shrink: 0;">Save & Sync Corrections</button>
+            </form>
+          <% } else { %>
+            <div class="ho-empty-state" style="margin-top: 2rem;">
+              <h3 style="color: var(--ho-teal-900); font-weight: 800; font-size: 1.2rem;">No Extracted Data</h3>
+              <p style="font-size: 0.95rem; margin-top: 0.5rem;">Upload a report to trigger automated parsing.</p>
+            </div>
+          <% } %>
+        </div>
 
-              <% latestReport.extractedData.parameters.forEach((param, index) => { %>
-                <div class="data-row">
-                  <input type="hidden" name="params[<%= index %>][status]" value="<%= param.status %>">
-                  <input type="hidden" name="params[<%= index %>][statusClass]" value="<%= param.statusClass %>">
+        <!-- TAB 2: AI SUMMARY -->
+        <div id="ho-tab-ai" class="ho-tab-content">
+          <div class="ho-scroll-container">
+            <div class="ho-ai-box">
+              <h3><span>✨</span> Medical Analyst Summary</h3>
+              <p>
+                <%= (locals.latestReport && latestReport.aiExplanation) ? latestReport.aiExplanation : 'Clinical summaries will appear here once your document is analyzed.' %>
+              </p>
+            </div>
+            <div style="background: rgba(255, 255, 255, 0.8); border: 1.5px dashed rgba(13, 122, 110, 0.3); border-radius: var(--ho-radius-md); padding: 1.5rem; font-size: 0.85rem; color: var(--ho-text-muted); line-height: 1.6;">
+              🔒 <strong>Decision Support Notice:</strong> HealthOrbit provides automated summaries. AI observations do not replace professional physician diagnosis or medical evaluation.
+            </div>
+          </div>
+        </div>
 
-                  <div class="row-top">
-                    <input type="text" name="params[<%= index %>][name]" value="<%= param.name %>" title="Finding / Parameter Name">
-                    <input type="text" name="params[<%= index %>][category]" value="<%= param.category || 'Clinical Finding' %>" class="category-tag" title="Category">
-                  </div>
+        <!-- TAB 3: RAW TEXT -->
+        <div id="ho-tab-raw" class="ho-tab-content">
+          <div class="ho-scroll-container">
+            <div class="ho-raw-text"><%= (locals.latestReport && latestReport.extractedData && latestReport.extractedData.rawText) ? latestReport.extractedData.rawText : 'No raw text available for this document.' %></div>
+          </div>
+        </div>
 
-                  <!-- Expandable Textarea for Long Clinical Observations / CT Scan Findings -->
-                  <div class="row-middle">
-                    <label>Observation / Finding Description:</label>
-                    <textarea name="params[<%= index %>][value]" title="Clinical Observation"><%= param.value %></textarea>
-                  </div>
-
-                  <div class="row-bottom">
-                    <div class="input-val-group">
-                      <input type="text" class="unit" name="params[<%= index %>][unit]" value="<%= param.unit %>" title="Unit">
+        <!-- TAB 4: VAULT (WITH DELETE) -->
+        <div id="ho-tab-vault" class="ho-tab-content">
+          <div class="ho-scroll-container">
+            <% if (locals.reports && reports.length > 0) { %>
+              <% reports.forEach(function(rep) { %>
+                <div class="ho-vault-card <%= locals.latestReport && latestReport._id.toString() === rep._id.toString() ? 'active' : '' %>">
+                  <a href="/xyz?reportId=<%= rep._id %>" style="text-decoration:none; flex:1;">
+                    <div class="ho-vault-info">
+                      <strong>📄 <%= rep.originalFileName %></strong>
+                      <span><%= new Date(rep.createdAt).toLocaleDateString() %> • <%= rep.extractedData && rep.extractedData.parameters ? rep.extractedData.parameters.length : 0 %> Findings</span>
                     </div>
-
-                    <div class="input-range-group">
-                      <input type="text" name="params[<%= index %>][referenceRange]" value="<%= param.referenceRange %>" title="Reference Range">
-                    </div>
-
-                    <span class="pill <%= param.statusClass || 'good' %>"><%= param.status %></span>
-                  </div>
+                  </a>
+                  <form action="/reports/delete/<%= rep._id %>" method="POST" style="margin:0; padding-left: 1.5rem;">
+                    <button type="submit" class="ho-btn-delete" title="Delete Report">🗑️</button>
+                  </form>
                 </div>
               <% }) %>
-
-              <button type="submit" class="btn primary" style="width: 100%; margin-top: 0.8rem; padding: 0.75rem;">Save & Sync Corrections</button>
-            </form>
-
-          <% } else { %>
-            <div class="empty-viewer">
-              <p style="font-weight: 600;">No extracted parameters available.</p>
-              <p style="font-size: 0.78rem;">Upload a medical report to trigger automated OCR parsing.</p>
-            </div>
-          <% } %>
-        </div>
-
-        <div class="ai-insight">
-          <h4>AI Medical Analyst Summary</h4>
-          <p>
-            <% if (latestReport && latestReport.aiExplanation) { %>
-              <%= latestReport.aiExplanation %>
             <% } else { %>
-              Insights and explanations will appear here once your document is processed.
+              <div class="ho-empty-state"><p style="font-weight: 600;">No previous documents found.</p></div>
             <% } %>
-          </p>
-        </div>
-      </div>
-
-      <!-- COLUMN 3: REPORT VAULT (HISTORY) -->
-      <div class="panel-card">
-        <div class="panel-head">
-          <h3>Report Vault</h3>
-          <span style="font-size: 0.72rem; color: var(--ink-soft); font-weight: 600;"><%= reports.length %> Total</span>
+          </div>
         </div>
 
-        <div class="history-list">
-          <% if (reports && reports.length > 0) { %>
-            <% reports.forEach(rep => { %>
-              <a href="/xyz?reportId=<%= rep._id %>" class="history-item <%= (latestReport && latestReport._id.toString() === rep._id.toString()) ? 'active' : '' %>">
-                <div class="history-title">📄 <%= rep.originalFileName %></div>
-                <span class="history-date"><%= new Date(rep.createdAt).toLocaleDateString() %> • <%= (rep.extractedData && rep.extractedData.parameters) ? rep.extractedData.parameters.length : 0 %> Findings</span>
-              </a>
-            <% }) %>
-          <% } else { %>
-            <div class="empty-viewer">
-              <p style="font-size: 0.78rem;">No previous reports uploaded.</p>
-            </div>
-          <% } %>
-        </div>
-      </div>
+      </section>
 
     </div>
   </main>
 </div>
+
+<!-- UPLOAD MODAL -->
+<div class="ho-modal" id="hoUploadModal">
+  <div class="ho-modal-box">
+    <div class="ho-modal-head">
+      <h3>Upload Medical Report</h3>
+      <button class="ho-modal-close" onclick="closeUpload()">×</button>
+    </div>
+    <form id="hoModalUploadForm" action="/reports/upload" method="POST" enctype="multipart/form-data">
+      <div class="ho-dropzone" onclick="document.getElementById('hoModalFileInput').click();">
+        <span style="font-size: 4rem; display: block; margin-bottom: 1.5rem;">☁️</span>
+        <strong style="font-size: 1.2rem; color: var(--ho-teal-900);">Click to select or drag document</strong>
+        <p style="font-size: 0.9rem; color: var(--ho-text-muted); margin-top: 0.8rem; font-weight: 600;">Supported: PDF, PNG, JPG (Max 25MB)</p>
+        <input type="file" id="hoModalFileInput" name="reportFile" accept=".pdf,.png,.jpg,.jpeg" style="display:none;" onchange="document.getElementById('hoModalUploadForm').submit();" required>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function switchTab(tabId, btn) {
+    document.querySelectorAll('.ho-tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.ho-tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function openUpload() { document.getElementById('hoUploadModal').style.display = 'flex'; }
+  function closeUpload() { document.getElementById('hoUploadModal').style.display = 'none'; }
+</script>
 
 </body>
 </html>

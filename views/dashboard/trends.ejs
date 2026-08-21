@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthOrbit — Trends & Alerts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/sidebar.css">
+<style>
+:root {
+  --void: #084039;
+  --void-soft: #0d7a6e;
+  --paper: #f2f8f6;
+  --card: #ffffff;
+  --ink: #0f1c1a;
+  --ink-soft: #5e736f;
+  --coral: #ef6f5b;
+  --coral-soft: #fbe4de;
+  --sage: #109485;
+  --sage-soft: #dff1ec;
+  --mist: #42b89d;
+  --line: rgba(13, 122, 110, 0.15);
+  --radius: 24px;
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.95);
+  --shadow-glass: 0 10px 30px rgba(8, 64, 57, 0.05);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background: var(--paper); color: var(--ink); overflow-x: hidden; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* Ambient Orbs */
+.ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.35; animation: float 22s infinite alternate; }
+.orb1 { width: 420px; height: 420px; background: #a3e4d7; top: -120px; left: -100px; }
+.orb2 { width: 460px; height: 460px; background: #fcefc9; bottom: -140px; right: -100px; animation-delay: -6s; }
+@keyframes float { 100% { transform: translate(40px, 40px) scale(1.1); } }
+
+/* App Layout */
+.shell { display: flex; width: 100vw; min-height: 100vh; position: relative; z-index: 1; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+
+/* Topbar */
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 2.5rem 3.5rem 1rem; background: transparent; z-index: 10; }
+.topbar h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.8rem; color: var(--void); }
+.topbar .sub { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.4rem; font-weight: 500; }
+.actions { display: flex; gap: 0.8rem; align-items: center; }
+
+.btn { border: none; border-radius: 999px; padding: 0.75rem 1.4rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.2s; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; }
+.btn.primary { background: var(--coral); color: #fff; box-shadow: 0 4px 15px rgba(239, 111, 91, 0.2); }
+.btn.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239, 111, 91, 0.35); background: #d95a46; }
+.btn.ghost { background: rgba(255, 255, 255, 0.7); color: var(--void); border: 1px solid var(--line); }
+.btn.ghost:hover { background: #fff; border-color: var(--void-soft); }
+
+/* Bento Grid */
+.bento-wrapper { padding: 1rem 3.5rem 4rem; flex: 1; }
+.bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; }
+
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  overflow: hidden;
+  position: relative;
+  box-shadow: var(--shadow-glass);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s;
+  display: flex;
+  flex-direction: column;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: -150%; width: 60%; height: 100%;
+  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.7) 45%, transparent 90%);
+  transform: skewX(-18deg);
+  transition: left 0.7s ease;
+  pointer-events: none;
+  z-index: 20;
+}
+.card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(8, 64, 57, 0.1); border-color: var(--sage-soft); }
+.card:hover::before { left: 150%; }
+
+.card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.card h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.3rem; color: var(--void); }
+
+/* 1. Main Trend Chart (Spans 8 Cols) */
+.c-chart { grid-column: span 8; }
+.chart-filter-bar { display: flex; gap: 0.5rem; background: rgba(13, 122, 110, 0.06); padding: 4px; border-radius: 999px; }
+.chart-tab { background: transparent; border: none; padding: 0.45rem 1rem; border-radius: 999px; font-weight: 700; font-size: 0.8rem; color: var(--ink-soft); cursor: pointer; transition: 0.2s; font-family: inherit; }
+.chart-tab.active { background: #fff; color: var(--void); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+.chart-visual-box {
+  width: 100%;
+  min-height: 270px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  position: relative;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.chart-svg-main { position: absolute; inset: 0; width: 100%; height: 100%; padding: 1.5rem 1.5rem 2rem 3.5rem; overflow: visible; }
+.baseline-band { fill: rgba(66, 184, 157, 0.08); stroke: rgba(66, 184, 157, 0.3); stroke-dasharray: 4 4; }
+.trend-path { fill: none; stroke: var(--coral); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 6px 12px rgba(239, 111, 91, 0.35)); }
+
+.chart-axis-y { position: absolute; left: 1rem; top: 1.5rem; bottom: 2rem; display: flex; flex-direction: column; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--ink-soft); font-weight: 600; }
+.chart-axis-x { position: absolute; left: 3.5rem; right: 1.5rem; bottom: 0.6rem; display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--ink-soft); font-weight: 600; }
+.chart-legend { display: flex; gap: 1.2rem; align-items: center; margin-top: 1rem; font-size: 0.78rem; font-weight: 600; color: var(--ink-soft); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 0.3rem; }
+
+/* 2. Anomaly Alerts Center (Spans 4 Cols) */
+.c-alerts { grid-column: span 4; }
+.alert-feed { display: flex; flex-direction: column; gap: 0.9rem; flex: 1; overflow-y: auto; }
+.alert-card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1.1rem 1.2rem;
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+  transition: 0.2s;
+}
+.alert-card:hover { transform: translateY(-2px); border-color: var(--coral); background: #fff; box-shadow: 0 8px 20px rgba(239, 111, 91, 0.1); }
+.alert-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+.alert-icon.warn { background: var(--coral-soft); color: var(--coral); }
+.alert-icon.info { background: var(--sage-soft); color: var(--sage); }
+
+.alert-body strong { display: block; font-size: 0.92rem; color: var(--void); margin-bottom: 0.2rem; font-weight: 700; }
+.alert-body p { font-size: 0.8rem; color: var(--ink-soft); line-height: 1.45; }
+.alert-time { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--ink-soft); margin-top: 0.4rem; display: block; }
+
+/* 3. Multi-Metric Correlation Matrix (Spans 6 Cols) */
+.c-matrix { grid-column: span 6; }
+.matrix-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.matrix-card {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.matrix-header { display: flex; justify-content: space-between; align-items: center; }
+.matrix-header strong { font-size: 0.9rem; color: var(--void); }
+.matrix-score { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
+.matrix-score.neg { background: var(--coral-soft); color: #c0392b; }
+.matrix-score.pos { background: var(--sage-soft); color: var(--sage); }
+.matrix-desc { font-size: 0.8rem; color: var(--ink-soft); line-height: 1.45; }
+
+/* 4. AI Trend Synthesis (Spans 6 Cols) */
+.c-synthesis { grid-column: span 6; background: linear-gradient(135deg, var(--void), var(--void-soft)); color: #fff; border: none; }
+.c-synthesis::before { background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.12) 45%, transparent 90%); }
+.c-synthesis h3 { color: #fff; }
+.synthesis-box { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 1rem; }
+.synthesis-text { font-size: 0.95rem; color: #dcebe8; line-height: 1.65; }
+.synthesis-tags { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.synth-pill { font-size: 0.75rem; font-weight: 700; background: rgba(255, 255, 255, 0.12); padding: 0.35rem 0.85rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.2); }
+
+@media (max-width: 1200px) {
+  .bento { grid-template-columns: 1fr; }
+  .c-chart, .c-alerts, .c-matrix, .c-synthesis { grid-column: span 1; }
+}
+@media (max-width: 768px) {
+  .shell { flex-direction: column; width: 100%; }
+  .topbar { padding: 1.2rem 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .bento-wrapper { padding: 1.5rem; }
+  .matrix-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="ambient"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+
+<div class="shell">
+  <!-- UNIVERSAL SIDEBAR IMPORT -->
+  <%- include('../partials/sidebar') %>
+
+  <!-- MAIN EXPANDING DASHBOARD -->
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1>Trends & Anomaly Detection</h1>
+        <div class="sub">Longitudinal pattern recognition comparing historical baselines against live telemetry[cite: 3].</div>
+      </div>
+      <div class="actions">
+        <a href="/ai-analysis" class="btn ghost">AI Explanation</a>
+        <button class="btn primary" onclick="window.print()">Export Report</button>
+      </div>
+    </header>
+
+    <div class="bento-wrapper">
+      <div class="bento">
+
+        <!-- 1. TIME-SERIES VISUALIZER (Spans 8 Cols) -->
+        <div class="card c-chart">
+          <div class="card-head">
+            <h3>Longitudinal Multi-Point Analysis</h3>
+            <div class="chart-filter-bar">
+              <button class="chart-tab active" onclick="switchMetric('bpm')">BPM</button>
+              <button class="chart-tab" onclick="switchMetric('spo2')">SpO₂</button>
+              <button class="chart-tab" onclick="switchMetric('sleep')">Sleep</button>
+              <button class="chart-tab" onclick="switchMetric('steps')">Steps</button>
+            </div>
+          </div>
+
+          <div class="chart-visual-box">
+            <div class="chart-axis-y">
+              <span>95</span>
+              <span>85</span>
+              <span>75</span>
+              <span>65</span>
+              <span>55</span>
+            </div>
+
+            <!-- SVG Time Series Curve -->
+            <svg class="chart-svg-main" viewBox="0 0 700 200" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="trendGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="var(--mist)" />
+                  <stop offset="60%" stop-color="var(--sage)" />
+                  <stop offset="100%" stop-color="var(--coral)" />
+                </linearGradient>
+              </defs>
+
+              <!-- Safe Baseline Target Band (65 - 75 BPM) -->
+              <rect x="0" y="80" width="700" height="60" class="baseline-band" />
+
+              <!-- User Trend Line with Smooth Interpolation -->
+              <path class="trend-path" d="M 10,130 C 120,135 180,120 280,125 C 380,130 460,95 560,70 C 620,55 670,40 690,45" stroke="url(#trendGrad)" />
+
+              <!-- Data Node Points -->
+              <circle cx="280" cy="125" r="5" fill="#fff" stroke="var(--sage)" stroke-width="3" />
+              <circle cx="560" cy="70" r="5" fill="#fff" stroke="var(--coral)" stroke-width="3" />
+              <circle cx="690" cy="45" r="6" fill="var(--coral)" stroke="#fff" stroke-width="2" />
+            </svg>
+
+            <div class="chart-axis-x">
+              <span>Week 1</span>
+              <span>Week 2</span>
+              <span>Week 3</span>
+              <span>Week 4</span>
+              <span>Week 5</span>
+              <span>Week 6</span>
+            </div>
+          </div>
+
+          <div class="chart-legend">
+            <div><span class="legend-dot" style="background: var(--coral);"></span> Recorded Values</div>
+            <div><span class="legend-dot" style="background: rgba(66, 184, 157, 0.4);"></span> Historical Baseline Window (65–75 BPM)[cite: 3]</div>
+          </div>
+        </div>
+
+        <!-- 2. ANOMALY ALERTS FEED (Spans 4 Cols) -->
+        <div class="card c-alerts">
+          <div class="card-head">
+            <h3>Detected Deviations</h3>
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--coral); background: var(--coral-soft); padding: 3px 8px; border-radius: 6px;">2 Active</span>
+          </div>
+
+          <div class="alert-feed">
+            <div class="alert-card">
+              <div class="alert-icon warn">⚠️</div>
+              <div class="alert-body">
+                <strong>Elevated Resting BPM</strong>
+                <p>Resting heart rate shifted from historical baseline (68–72 BPM) to 82 BPM over the last 14 days[cite: 3].</p>
+                <span class="alert-time">Detected: Today, 08:30 AM</span>
+              </div>
+            </div>
+
+            <div class="alert-card">
+              <div class="alert-icon warn">📉</div>
+              <div class="alert-body">
+                <strong>Sleep Duration Reduction</strong>
+                <p>Deep sleep duration decreased by 1.2 hrs/night compared to previous 30-day baseline[cite: 3].</p>
+                <span class="alert-time">Detected: Aug 18, 2026</span>
+              </div>
+            </div>
+
+            <div class="alert-card">
+              <div class="alert-icon info">✓</div>
+              <div class="alert-body">
+                <strong>Oxygen Saturation Optimal</strong>
+                <p>SpO₂ values remain consistent within normal physiological range (98–99%)[cite: 3].</p>
+                <span class="alert-time">Status: Stable</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. CORRELATION MATRIX (Spans 6 Cols) -->
+        <div class="card c-matrix">
+          <div class="card-head">
+            <h3>Cross-Metric Correlation Hub</h3>
+            <span style="font-size: 0.75rem; color: var(--ink-soft); font-weight: 600;">Module 7 Engine</span>
+          </div>
+
+          <div class="matrix-grid">
+            <div class="matrix-card">
+              <div class="matrix-header">
+                <strong>Sleep vs. Heart Rate</strong>
+                <span class="matrix-score neg">r = -0.74</span>
+              </div>
+              <p class="matrix-desc">Strong inverse correlation: nights with under 6.5h sleep consistently precede elevated morning BPM spikes[cite: 3].</p>
+            </div>
+
+            <div class="matrix-card">
+              <div class="matrix-header">
+                <strong>Steps vs. Active Energy</strong>
+                <span class="matrix-score pos">r = +0.88</span>
+              </div>
+              <p class="matrix-desc">Direct linear alignment: active calorie burn targets correlate predictably with step cadence goals[cite: 3].</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. AI TREND SYNTHESIS (Spans 6 Cols) -->
+        <div class="card c-synthesis">
+          <div class="card-head">
+            <h3>✨ Longitudinal AI Twin Analysis</h3>
+          </div>
+          <div class="synthesis-box">
+            <p class="synthesis-text">
+              "Multiple health measurements have changed compared with your previous records[cite: 3]. Over the past 6 weeks, your activity cadence remained steady, but resting heart rate shifted upwards alongside a reduction in total sleep volume[cite: 3]. This is not a diagnosis — always discuss these trends with your qualified physician[cite: 3]."
+            </p>
+            <div class="synthesis-tags">
+              <span class="synth-pill">Baseline Deviation: Moderate</span>
+              <span class="synth-pill">Confidence: 94.8%</span>
+              <span class="synth-pill">Doctor Summary Ready</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  function switchMetric(metric) {
+    document.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+</script>
+</body>
+</html>

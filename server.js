@@ -76,7 +76,9 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     passport.use(new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: '/auth/google/callback'
+        
+        callbackURL: 'http://localhost:3000/auth/google/callback'
+        
     }, async (accessToken, refreshToken, profile, done) => {
         try {
             const email = profile.emails && profile.emails[0] ? profile.emails[0].value.toLowerCase() : null;
@@ -131,6 +133,201 @@ app.get('/', (req, res) => {
         return res.redirect('/dashboard');
     }
     res.redirect('/auth');
+});
+
+// ==========================================
+// HEALTH TIMELINE & REPLAY ROUTE (MODULE 9 & 16)
+// ==========================================
+app.get('/timeline', requireAuth, async (req, res) => {
+    try {
+        const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        res.render('dashboard/timeline.ejs', { 
+            userName: req.session.userName || (req.user ? req.user.fullName : 'User'),
+            userEmail: req.session.userEmail || (req.user ? req.user.email : '')
+        });
+    } catch (error) {
+        console.error('[HealthOrbit] Timeline Load Error:', error);
+        res.redirect('/dashboard');
+    }
+});
+
+// ==========================================
+// TRENDS & ANOMALIES ROUTE (MODULE 6 & 7)
+// ==========================================
+app.get('/trends', requireAuth, async (req, res) => {
+    try {
+        const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        const measurements = await HealthMeasurement.find({ userId: activeUserId })
+            .sort({ recordedAt: -1 })
+            .limit(30);
+
+        res.render('dashboard/trends.ejs', { 
+            userName: req.session.userName || (req.user ? req.user.fullName : 'User'),
+            userEmail: req.session.userEmail || (req.user ? req.user.email : ''),
+            measurements
+        });
+    } catch (error) {
+        console.error('[HealthOrbit] Trends Load Error:', error);
+        res.redirect('/dashboard');
+    }
+});
+
+// ==========================================
+// MEDICINES & SYMPTOMS ROUTE (MODULE 8)
+// ==========================================
+app.get('/medicines', requireAuth, async (req, res) => {
+    try {
+        res.render('dashboard/medicines.ejs', { 
+            userName: req.session.userName || (req.user ? req.user.fullName : 'User'),
+            userEmail: req.session.userEmail || (req.user ? req.user.email : '')
+        });
+    } catch (error) {
+        console.error('[HealthOrbit] Medicines Load Error:', error);
+        res.redirect('/dashboard');
+    }
+});
+
+// ==========================================
+// INSURANCE & DIGITAL ID ROUTE
+// ==========================================
+app.get('/insurance', requireAuth, (req, res) => {
+    try {
+        res.render('dashboard/insurance.ejs', { 
+            userName: req.session.userName || (req.user ? req.user.fullName : 'User'),
+            userEmail: req.session.userEmail || (req.user ? req.user.email : '')
+        });
+    } catch (error) {
+        console.error('[HealthOrbit] Insurance Load Error:', error);
+        res.redirect('/dashboard');
+    }
+});
+
+// ==========================================
+// AI HEALTH ASSISTANT ROUTE (MODULE 10)
+// ==========================================
+app.get('/ai-assistant', requireAuth, (req, res) => {
+    try {
+        res.render('dashboard/ai-assistant.ejs', { 
+            userName: req.session.userName || (req.user ? req.user.fullName : 'User'),
+            userEmail: req.session.userEmail || (req.user ? req.user.email : '')
+        });
+    } catch (error) {
+        console.error('[HealthOrbit] AI Assistant Load Error:', error);
+        res.redirect('/dashboard');
+    }
+});
+
+// ==========================================
+// NUTRITION & LIFESTYLE ROUTE (MODULE 10)
+// ==========================================
+app.get('/nutrition', requireAuth, (req, res) => {
+    try {
+        res.render('dashboard/nutrition.ejs', { 
+            userName: req.session.userName || (req.user ? req.user.fullName : 'User'),
+            userEmail: req.session.userEmail || (req.user ? req.user.email : '')
+        });
+    } catch (error) {
+        console.error('[HealthOrbit] Nutrition Load Error:', error);
+        res.redirect('/dashboard');
+    }
+});
+
+// ==========================================
+// PROFILE & FAMILY ROUTE
+// ==========================================
+// ==========================================
+// PROFILE & FAMILY ROUTE
+// ==========================================
+app.get('/profile', requireAuth, async (req, res) => {
+    try {
+        res.render('profile/profile.ejs', { 
+            userName: req.session.userName || (req.user ? req.user.fullName : 'User'),
+            userEmail: req.session.userEmail || (req.user ? req.user.email : '')
+        });
+    } catch (error) {
+        console.error('[HealthOrbit] Profile Load Error:', error);
+        res.redirect('/dashboard');
+    }
+});
+
+// --- ADD THIS NEW POST ROUTE ---
+app.post('/profile', requireAuth, async (req, res) => {
+    try {
+        const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        const { fullName } = req.body;
+        
+        if (fullName) {
+            // Update the User in the database
+            await User.findByIdAndUpdate(activeUserId, { fullName: fullName.trim() });
+            // Update the current session so the UI reflects the change immediately
+            req.session.userName = fullName.trim();
+        }
+        
+        // Redirect back to the profile page to see the changes
+        return res.redirect('/profile');
+    } catch (error) {
+        console.error('[HealthOrbit] Profile Update Error:', error);
+        return res.redirect('/profile');
+    }
+});
+// -------------------------------
+
+// ==========================================
+// AI ANALYSIS & TRENDS ROUTE (MODULE 6 & 7)
+// ==========================================
+app.get('/ai-analysis', requireAuth, async (req, res) => {
+    try {
+        const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        const healthHistory = await HealthMeasurement.find({ userId: activeUserId }).sort({ recordedAt: 1 });
+
+        res.render('dashboard/ai-analysis.ejs', { 
+            userName: req.session.userName || (req.user ? req.user.fullName : 'User'),
+            userEmail: req.session.userEmail || (req.user ? req.user.email : ''),
+            healthHistory: healthHistory 
+        });
+    } catch (error) {
+        console.error('[HealthOrbit] AI Analysis Load Error:', error);
+        res.redirect('/dashboard'); 
+    }
+});
+
+// ==========================================
+// WEARABLE TELEMETRY ROUTE (MODULE 4)
+// ==========================================
+app.get('/wearables', requireAuth, async (req, res) => {
+    try {
+        const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        const latestWearables = await HealthMeasurement.find({ 
+            userId: activeUserId,
+            source: { $regex: /Report|Device|Wearable/i } 
+        }).sort({ recordedAt: -1 }).limit(10);
+
+        res.render('dashboard/wearables.ejs', { 
+            userName: req.session.userName || (req.user ? req.user.fullName : 'User'),
+            userEmail: req.session.userEmail || (req.user ? req.user.email : ''),
+            wearables: latestWearables
+        });
+    } catch (error) {
+        console.error('[HealthOrbit] Wearables Load Error:', error);
+        res.redirect('/dashboard');
+    }
+});
+
+// ==========================================
+// REPORT DELETE ROUTE
+// ==========================================
+app.post('/reports/delete/:id', requireAuth, async (req, res) => {
+    try {
+        const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        
+        await MedicalReport.findOneAndDelete({ _id: req.params.id, userId: activeUserId });
+        await HealthMeasurement.deleteMany({ source: `Report:${req.params.id}`, userId: activeUserId });
+        
+        return res.redirect('/ocr');
+    } catch (error) {
+        console.error('[HealthOrbit] Delete Error:', error);
+        return res.redirect('/ocr');
+    }
 });
 
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
@@ -204,7 +401,7 @@ app.get('/logout', (req, res) => {
 });
 
 // ==========================================
-// WORKSPACE & OCR ROUTES (USER ISOLATED)
+// WORKSPACE & OCR ROUTES 
 // ==========================================
 
 app.get('/dashboard', requireAuth, async (req, res) => {
@@ -225,12 +422,11 @@ app.get('/dashboard', requireAuth, async (req, res) => {
     }
 });
 
-app.get('/xyz', requireAuth, async (req, res) => {
+app.get('/ocr', requireAuth, async (req, res) => {
     try {
         const activeUserId = req.session.userId || (req.user ? req.user._id : null);
         const selectedReportId = req.query.reportId;
         
-        // Retrieve strictly this user's reports
         const reports = await MedicalReport.find({ userId: activeUserId }).sort({ createdAt: -1 });
 
         let latestReport = null;
@@ -252,16 +448,36 @@ app.get('/xyz', requireAuth, async (req, res) => {
     }
 });
 
+// ==========================================
+// CLOUDINARY UPLOAD ROUTE
+// ==========================================
 app.post('/reports/upload', requireAuth, upload.single('reportFile'), async (req, res) => {
     try {
-        if (!req.file) return res.redirect('/xyz');
-
+        if (!req.file) return res.redirect('/ocr');
         const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        
+        let fileUrl = req.file.filename; // Default Local Storage filename
+        
+        // Secure Cloud Upload if Cloudinary is configured in .env
+        if (process.env.CLOUDINARY_API_KEY) {
+            const cloudinary = require('cloudinary').v2;
+            cloudinary.config({
+                cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+                api_key: process.env.CLOUDINARY_API_KEY,
+                api_secret: process.env.CLOUDINARY_API_SECRET
+            });
+            try {
+                const cloudRes = await cloudinary.uploader.upload(req.file.path, { resource_type: 'auto', folder: 'healthorbit' });
+                fileUrl = cloudRes.secure_url;
+            } catch (err) { 
+                console.warn('[HealthOrbit] Cloud upload failed, using local storage.', err.message); 
+            }
+        }
 
         const newReport = new MedicalReport({
             userId: activeUserId,
             originalFileName: req.file.originalname,
-            storedFileName: req.file.filename,
+            storedFileName: fileUrl, // <--- Stores Cloud URL or Local filename
             filePath: req.file.path,
             mimeType: req.file.mimetype,
             fileSizeBytes: req.file.size,
@@ -292,10 +508,10 @@ app.post('/reports/upload', requireAuth, upload.single('reportFile'), async (req
             }
         }
 
-        return res.redirect(`/xyz?reportId=${newReport._id}`);
+        return res.redirect(`/ocr?reportId=${newReport._id}`);
     } catch (error) {
         console.error('[HealthOrbit] Upload Error:', error);
-        return res.redirect('/xyz');
+        return res.redirect('/ocr');
     }
 });
 
@@ -305,7 +521,7 @@ app.post('/reports/update/:id', requireAuth, async (req, res) => {
         const activeUserId = req.session.userId || (req.user ? req.user._id : null);
         
         const report = await MedicalReport.findOne({ _id: reportId, userId: activeUserId });
-        if (!report) return res.redirect('/xyz');
+        if (!report) return res.redirect('/ocr');
 
         const { params } = req.body;
         const updatedParameters = params ? Object.values(params) : [];
@@ -326,10 +542,10 @@ app.post('/reports/update/:id', requireAuth, async (req, res) => {
             });
         }
 
-        return res.redirect(`/xyz?reportId=${report._id}`);
+        return res.redirect(`/ocr?reportId=${report._id}`);
     } catch (error) {
         console.error('[HealthOrbit] Manual Correction Error:', error);
-        return res.redirect('/xyz');
+        return res.redirect('/ocr');
     }
 });
 

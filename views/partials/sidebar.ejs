@@ -1,40 +1,283 @@
-<!-- sidebar.ejs -->
-<nav class="nav" id="sidebar">
-  <div class="nav-header">
-    <div class="brand">
-      <!-- 3-Circle Orbit Logo -->
-      <div class="orbit-mark">
-        <span class="ring"></span>
-        <span class="ring ring2"></span>
-        <span class="ring3"></span>
+<!-- views/partials/sidebar.ejs -->
+<style>
+/* ==========================================================
+   HEALTHORBIT FLOATING ISLAND GLASS SIDEBAR
+   ========================================================== */
+.ho-sidebar-root {
+  width: 76px;
+  height: calc(100vh - 2.5rem);
+  position: sticky;
+  top: 1.25rem;
+  margin-left: 1.25rem;
+  margin-bottom: 1.25rem;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  z-index: 100;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease;
+  box-shadow: 0 20px 40px rgba(13, 122, 110, 0.06);
+  overflow: hidden;
+}
+
+/* Hover Expansion Effect */
+.ho-sidebar-root:hover {
+  width: 260px;
+  box-shadow: 0 30px 60px rgba(13, 122, 110, 0.15);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.ho-sb-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.5rem 1.15rem 1.2rem;
+  border-bottom: 1px solid rgba(13, 122, 110, 0.08);
+  white-space: nowrap;
+}
+
+/* Logo Animation */
+.ho-logo-box {
+  width: 32px;
+  height: 32px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ho-ring-1 {
+  position: absolute;
+  inset: 0;
+  border: 1.5px dashed #0d7a6e;
+  border-radius: 50%;
+  animation: hoSpinSlow 12s linear infinite;
+}
+.ho-ring-2 {
+  position: absolute;
+  inset: -4px;
+  border: 1.5px dashed #e07a68;
+  border-radius: 50%;
+  animation: hoSpinFast 8s linear infinite reverse;
+}
+.ho-nucleus {
+  width: 7px;
+  height: 7px;
+  background: #0b5e55;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #42b89d;
+}
+@keyframes hoSpinSlow { 100% { transform: rotate(360deg); } }
+@keyframes hoSpinFast { 100% { transform: rotate(360deg); } }
+
+.ho-brand-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: #0b5e55;
+  letter-spacing: -0.5px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+.ho-sidebar-root:hover .ho-brand-title {
+  opacity: 1;
+  visibility: visible;
+}
+.ho-brand-highlight { color: #e07a68; }
+
+/* Navigation Links */
+.ho-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.8rem 0.6rem;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+.ho-nav-links::-webkit-scrollbar { display: none; }
+
+.ho-nav-links a {
+  text-decoration: none;
+  color: #4e6b63;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.ho-nav-links a .icon {
+  font-size: 1.15rem;
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.ho-nav-links a .link-text {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+.ho-sidebar-root:hover .ho-nav-links a .link-text {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Active & Hover States */
+.ho-nav-links a.active {
+  background: linear-gradient(135deg, #0d7a6e, #0b5e55);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(13, 122, 110, 0.25);
+}
+.ho-nav-links a:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.75);
+  color: #0b5e55;
+  transform: translateX(3px);
+}
+
+/* Footer Profile */
+.ho-sb-footer {
+  padding: 0.8rem 0.6rem 1rem;
+  border-top: 1px solid rgba(13, 122, 110, 0.08);
+  white-space: nowrap;
+}
+.ho-user-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem;
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+.ho-user-box:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+.ho-user-av {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #0b5e55;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+  box-shadow: 0 3px 8px rgba(11,94,85,0.2);
+}
+.ho-user-meta {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+.ho-sidebar-root:hover .ho-user-meta {
+  opacity: 1;
+  visibility: visible;
+}
+.ho-user-meta strong { display: block; font-size: 0.85rem; color: #0b5e55; }
+.ho-user-meta span { font-size: 0.68rem; color: #4e6b63; font-weight: 600; }
+
+@media (max-width: 768px) {
+  .ho-sidebar-root { width: 100% !important; height: auto; margin: 0; border-radius: 0; flex-direction: row; align-items: center; justify-content: space-between; padding: 0.4rem 0.8rem; border-right: none; border-bottom: 1.5px solid rgba(255,255,255,0.9); }
+  .ho-nav-links { flex-direction: row; overflow-x: auto; gap: 0.4rem; padding: 0.2rem; }
+  .ho-nav-links a .link-text, .ho-brand-title, .ho-sb-footer { display: none !important; }
+}
+
+
+.ho-signout-btn {
+  text-decoration: none;
+  color: #d94b4b;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  transition: background 0.2s ease;
+  background: rgba(217, 75, 75, 0.06);
+}
+.ho-signout-btn:hover {
+  background: rgba(217, 75, 75, 0.15);
+}
+.ho-signout-btn .signout-text {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+}
+.ho-sidebar-root:hover .ho-signout-btn .signout-text {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (max-width: 768px) {
+  .ho-sidebar-root { width: 100% !important; height: auto; margin: 0; position: relative; top: 0; left: 0; border-radius: 0; flex-direction: row; align-items: center; justify-content: space-between; padding: 0.4rem 0.8rem; border-right: none; border-bottom: 1.5px solid rgba(255,255,255,0.9); }
+  .ho-nav-links { flex-direction: row; overflow-x: auto; gap: 0.4rem; padding: 0.2rem; }
+  .ho-nav-links a .link-text, .ho-brand-title, .ho-sb-footer { display: none !important; }
+}
+
+</style>
+
+<aside class="ho-sidebar-root" id="sidebar">
+  <div class="ho-sb-header">
+    <div class="ho-logo-box">
+      <div class="ho-ring-1"></div>
+      <div class="ho-ring-2"></div>
+      <div class="ho-nucleus"></div>
+    </div>
+    <div class="ho-brand-title">Health<span class="ho-brand-highlight">Orbit</span></div>
+  </div>
+
+  <nav class="ho-nav-links">
+    <a href="/dashboard"><span class="icon">⊞</span><span class="link-text">Dashboard View</span></a>
+    <a href="/profile"><span class="icon">👪</span><span class="link-text">Profile & Family</span></a>
+    <a href="/ocr"><span class="icon">📄</span><span class="link-text">OCR Reports</span></a>
+    <a href="/ai-analysis"><span class="icon">🧠</span><span class="link-text">AI Analysis</span></a>
+    <a href="/wearables"><span class="icon">⌚</span><span class="link-text">Wearable Data</span></a>
+    <a href="/timeline"><span class="icon">⏱️</span><span class="link-text">Health Timeline</span></a>
+    <a href="/trends"><span class="icon">📈</span><span class="link-text">Trends & Alerts</span></a>
+    <a href="/medicines"><span class="icon">💊</span><span class="link-text">Meds & Symptoms</span></a>
+    <a href="/insurance"><span class="icon">🪪</span><span class="link-text">Insurance & ID</span></a>
+    <a href="/ai-assistant"><span class="icon">🤖</span><span class="link-text">AI Assistant</span></a>
+    <a href="/nutrition"><span class="icon">🥗</span><span class="link-text">Nutrition & Life</span></a>
+  </nav>
+
+  <div class="ho-sb-footer">
+    <div class="ho-user-box">
+      <div class="ho-user-av"><%= locals.userName && userName.length > 0 ? userName.substring(0, 2).toUpperCase() : 'AT' %></div>
+      <div class="ho-user-meta">
+        <strong><%= locals.userName || 'Atharv' %></strong>
+        <span>Health ID Active</span>
       </div>
-      <span class="brand-text"><span class="txt-h">Health</span><span class="txt-o">Orbit</span></span>
     </div>
-    <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-    </button>
+
+    <a href="/logout" class="ho-signout-btn" title="Sign Out">
+      <span class="icon">🚪</span>
+      <span class="signout-text">Sign Out</span>
+    </a>
   </div>
-  <div class="navlinks">
-    <a href="/dashboard" class="active"><span class="icon">📊</span><span class="link-text">Overview</span></a>
-    <a href="/xyz"><span class="icon">📄</span><span class="link-text">OCR Uploads</span></a>
-    <a href="/logout"><span class="icon">🚪</span><span class="link-text">Sign Out</span></a>
-  </div>
-  <div class="quick-upload">
-    <p>New medical document?</p>
-    <a href="/xyz" class="btn primary full-width" style="display: block; text-decoration: none; text-align: center;">Upload for OCR</a>
-  </div>
-  <div class="profile">
-    <div class="av">
-      <%= (userName && userName.length > 0) ? userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'HO' %>
-    </div>
-    <div class="profile-info">
-      <strong><%= userName || 'HealthOrbit User' %></strong>
-      <span>Health ID active</span>
-    </div>
-  </div>
-</nav>
+</aside>
+
 <script>
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('collapsed');
-    }
+  document.addEventListener("DOMContentLoaded", () => {
+      const currentPath = window.location.pathname;
+      const navLinks = document.querySelectorAll('.ho-nav-links a');
+      
+      navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === currentPath) {
+              link.classList.add('active');
+          }
+      });
+  });
 </script>

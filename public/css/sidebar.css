@@ -1,27 +1,61 @@
-/* Sidebar Nav Structure */
+/* public/css/sidebar.css */
+
+/* ---------- SIDEBAR BASE ---------- */
 .nav {
-  width: 250px; position: sticky; top: 0; height: 100vh;
-  background: rgba(255,255,255,.7); backdrop-filter: blur(20px);
-  display: flex; flex-direction: column; border-right: 1px solid var(--line);
-  transition: width .4s cubic-bezier(.25,1,.5,1); overflow: hidden; z-index: 20;
+  width: 260px; position: sticky; top: 0; height: 100vh;
+  background: transparent; display: flex; flex-direction: column;
+  border-right: 1px solid rgba(13, 122, 110, 0.15);
+  transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  overflow: hidden; z-index: 20; flex-shrink: 0;
 }
 
-.nav.collapsed { width: 82px; }
+/* ---------- BRANDING & LOGO (From Auth Page) ---------- */
+.nav-header { display: flex; justify-content: space-between; align-items: center; padding: 1.8rem 1.4rem; }
+.brand-header { display: flex; align-items: center; gap: 0.8rem; }
 
-/* 3-Ring Orbit Mark Styling */
-.orbit-mark { position: relative; width: 28px; height: 28px; flex-shrink: 0; }
-.orbit-mark .ring { position: absolute; inset: 0; border-radius: 50%; border: 1.6px dashed var(--void); animation: spin 14s linear infinite; }
-.orbit-mark .ring2 { inset: 4px; border-color: var(--coral); animation: spin 10s linear infinite reverse; }
-.orbit-mark .ring3 { position: absolute; inset: 8px; border-radius: 50%; background: var(--void); box-shadow: 0 0 8px var(--void); }
+.logo-orbit-container { width: 32px; height: 32px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.orbit-ring { position: absolute; inset: 0; border: 1.5px dashed #0d7a6e; border-radius: 50%; animation: spinOrbit 15s linear infinite; }
+.ring-b { inset: -4px; border-color: #ef6f5b; animation-direction: reverse; animation-duration: 20s; }
+.core-nucleus { width: 8px; height: 8px; background: #0d7a6e; border-radius: 50%; }
+@keyframes spinOrbit { 100% { transform: rotate(360deg); } }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+.nav-logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.3rem; color: #0b5e55; letter-spacing: -0.5px; }
+.brand-highlight { color: #e07a68; }
 
-.txt-h { color: var(--void); } 
-.txt-o { color: var(--coral); }
+.sidebar-toggle { background: none; border: none; color: #5e736f; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+.sidebar-toggle:hover { color: #084039; transform: scale(1.1); }
 
-/* Sidebar Shrink Transitions */
-.nav.collapsed .brand-text, .nav.collapsed .link-text, .nav.collapsed .quick-upload, .nav.collapsed .profile-info {
-  opacity:0; visibility:hidden; display:none;
+/* ---------- NAVIGATION LINKS ---------- */
+.navlinks { 
+    display: flex; flex-direction: column; gap: 0.2rem; 
+    padding: 0 0.8rem 1rem; flex: 1; margin-top: 1rem;
+    overflow-y: auto; overflow-x: hidden;
+    scrollbar-width: none; -ms-overflow-style: none;
 }
-.nav.collapsed .navlinks a { justify-content:center; padding:.85rem 0; }
-.nav.collapsed .profile { justify-content:center; }
+.navlinks::-webkit-scrollbar { width: 0px; background: transparent; }
+
+.navlinks a { 
+    text-decoration: none; color: #5e736f; font-size: 0.9rem; font-weight: 600; 
+    padding: 0.7rem 1rem; border-radius: 12px; display: flex; align-items: center; gap: 0.8rem; 
+    transition: 0.2s; white-space: nowrap; 
+}
+.navlinks a .icon { font-size: 1.2rem; flex-shrink: 0; }
+
+/* Active & Hover States */
+.navlinks a.active { background: #0d7a6e; color: #fff; box-shadow: 0 4px 12px rgba(13, 122, 110, 0.2); }
+.navlinks a:hover:not(.active) { background: rgba(255,255,255,0.6); color: #0d7a6e; transform: translateX(4px); }
+
+/* ---------- BOTTOM PROFILE SECTION ---------- */
+.sidebar-footer { margin-top: auto; background: transparent; }
+.profile { display: flex; align-items: center; gap: 0.8rem; padding: 1.2rem 1rem; border-top: 1px solid rgba(13, 122, 110, 0.15); white-space: nowrap; }
+.profile .av { width: 38px; height: 38px; border-radius: 50%; background: #084039; color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 600; font-size: 0.9rem; flex-shrink: 0; }
+.profile-info strong { display: block; font-size: 0.9rem; color: #084039; }
+.profile-info span { font-size: 0.75rem; color: #5e736f; }
+
+/* ---------- COLLAPSED STATE (PHYSICS) ---------- */
+.nav.collapsed { width: 78px; }
+.nav.collapsed .nav-logo, .nav.collapsed .link-text, .nav.collapsed .profile-info { opacity: 0; visibility: hidden; display: none; }
+.nav.collapsed .navlinks a { justify-content: center; padding: 0.85rem 0; }
+.nav.collapsed .profile { justify-content: center; padding: 1.5rem 0; }
+.nav.collapsed .nav-header { padding: 1.8rem 0; flex-direction: column; gap: 1.5rem; justify-content: center;}
+.nav.collapsed .sidebar-toggle { margin: 0 auto; }

@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthOrbit — Profile & Authorized Sharing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Universal Floating Island Sidebar CSS -->
+<link rel="stylesheet" href="/css/sidebar.css">
+<style>
+/* 
+==================================================================
+  STRICTLY SCOPED CSS (PREFIXED WITH 'ho-') TO PREVENT LAYOUT BUGS
+================================================================== 
+*/
+:root {
+  --ho-bg-airy: #edf6f4;
+  --ho-teal-900: #0b5e55;
+  --ho-teal-700: #0d7a6e;
+  --ho-teal-600: #109485;
+  --ho-mint-400: #42b89d;
+  --ho-coral-accent: #e07a68;
+  --ho-coral-soft: #fbe4de;
+  --ho-text-main: #0f1c1a;
+  --ho-text-muted: #4e6b63;
+  --ho-danger: #d94b4b;
+  
+  /* AUTH PORTAL CLEAR MIRROR GLASS VARIABLES */
+  --ho-glass-clear: rgba(255, 255, 255, 0.55);
+  --ho-glass-solid: rgba(255, 255, 255, 0.85);
+  --ho-glass-border: rgba(255, 255, 255, 0.9);
+  --ho-glass-border-subtle: rgba(200, 225, 218, 0.6);
+  
+  --ho-radius-xl: 28px;
+  --ho-radius-lg: 16px;
+  --ho-radius-md: 10px;
+  
+  --ho-shadow-glass: 0 30px 60px rgba(13, 122, 110, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  margin: 0; padding: 0;
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  background-color: var(--ho-bg-airy);
+  color: var(--ho-text-main);
+  overflow-x: hidden; 
+  -webkit-font-smoothing: antialiased;
+}
+
+.ho-mono { font-family: 'JetBrains Mono', monospace; }
+
+/* ---------- AMBIENT ORBS ---------- */
+.ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.65; animation: hoFloatOrb 18s ease-in-out infinite alternate; }
+.ho-orb-1 { width: 500px; height: 500px; background: #76d7c4; top: -100px; left: -80px; }
+.ho-orb-2 { width: 550px; height: 550px; background: #a9dfbf; bottom: -120px; right: -80px; animation-delay: -5s; }
+.ho-orb-3 { width: 350px; height: 350px; background: #85c1e9; top: 40%; left: 35%; opacity: 0.3; animation-delay: -10s; }
+@keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(40px, 50px) scale(1.15); } }
+
+.ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
+
+/* ---------- MAIN WORKSPACE ---------- */
+.ho-main-content { 
+  flex: 1; min-width: 0; display: flex; flex-direction: column; 
+  height: 100vh; overflow-y: auto; 
+}
+
+/* TOP NAVBAR */
+.ho-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 2.5rem 3rem 1rem; flex-shrink: 0; position: sticky; top: 0;
+  background: transparent; border: none; box-shadow: none; z-index: 20;
+}
+.ho-topbar h1 { font-weight: 800; font-size: 1.85rem; color: var(--ho-text-main); margin-bottom: 0.2rem; letter-spacing: -0.6px; }
+.ho-topbar p { font-size: 0.95rem; color: var(--ho-text-muted); font-weight: 500; }
+.ho-topbar-actions { display: flex; gap: 0.85rem; align-items: center; }
+
+/* Buttons */
+.ho-liquid-btn {
+  position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center;
+  gap: 0.5rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--ho-teal-700) 0%, var(--ho-teal-900) 100%);
+  color: #fff; border: none; border-radius: var(--ho-radius-md); font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 8px 20px rgba(13, 122, 110, 0.22); transition: all 0.25s ease; text-decoration: none;
+}
+.ho-liquid-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(13, 122, 110, 0.32); }
+.ho-btn-sheen { position: absolute; top: 0; left: -120%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent); transform: skewX(-25deg); animation: hoButtonSheen 5s ease-in-out infinite; }
+@keyframes hoButtonSheen { 0% { left: -120%; } 20% { left: 220%; } 100% { left: 220%; } }
+
+.ho-ghost-btn {
+  padding: 0.75rem 1.3rem; background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border);
+  border-radius: var(--ho-radius-md); color: var(--ho-teal-900); font-weight: 700; font-size: 0.88rem;
+  cursor: pointer; text-decoration: none; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+.ho-ghost-btn:hover { background: #fff; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.1); transform: translateY(-1px); }
+
+/* ---------- BENTO GRID (Profile Layout) ---------- */
+.ho-bento-grid {
+  display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem;
+  padding: 1rem 3rem 3rem; flex: 1;
+}
+
+/* Base Panel Glass Style */
+.ho-liquid-panel {
+  background: var(--ho-glass-clear); backdrop-filter: blur(45px) saturate(210%); -webkit-backdrop-filter: blur(45px) saturate(210%);
+  border: 1.5px solid var(--ho-glass-border); border-top-color: #fff; border-left-color: #fff;
+  border-radius: var(--ho-radius-xl); padding: 2.2rem; display: flex; flex-direction: column; 
+  box-shadow: var(--ho-shadow-glass); position: relative; overflow: hidden;
+}
+.ho-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-shrink: 0; }
+.ho-panel-header h2 { font-weight: 800; font-size: 1.3rem; color: var(--ho-teal-900); letter-spacing: -0.4px; }
+
+/* 1. IDENTITY PANEL (Spans 5) */
+.ho-panel-identity { grid-column: span 5; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.ho-hero-avatar {
+  width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, var(--ho-teal-600), var(--ho-teal-900));
+  color: white; display: flex; align-items: center; justify-content: center; font-size: 2.8rem; font-weight: 800; border: 4px solid #fff;
+  box-shadow: 0 15px 35px rgba(13, 122, 110, 0.25); margin-bottom: 1.5rem;
+}
+.ho-hero-name { font-size: 1.6rem; font-weight: 800; color: var(--ho-teal-900); letter-spacing: -0.5px; margin-bottom: 0.5rem; }
+.ho-hero-id {
+  display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--ho-mono); font-size: 0.85rem; color: var(--ho-teal-700); background: rgba(255, 255, 255, 0.8);
+  padding: 0.4rem 1.2rem; border-radius: 999px; font-weight: 700; border: 1px solid var(--ho-glass-border-subtle); margin-bottom: 2rem;
+}
+
+.ho-stats-row { display: flex; gap: 1rem; width: 100%; margin-bottom: 1.5rem; }
+.ho-stat-box { flex: 1; background: rgba(255,255,255,0.7); border: 1.5px solid var(--ho-glass-border); border-radius: var(--ho-radius-lg); padding: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+.ho-stat-box span { display: block; font-size: 0.75rem; color: var(--ho-text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; margin-bottom: 0.4rem;}
+.ho-stat-box strong { font-size: 1.4rem; color: var(--ho-teal-900); font-weight: 800; font-family: var(--ho-mono); }
+
+.ho-contact-list { width: 100%; text-align: left; background: rgba(255,255,255,0.5); border: 1.5px solid var(--ho-glass-border-subtle); border-radius: var(--ho-radius-lg); padding: 1.5rem; }
+.ho-contact-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; font-size: 0.95rem; font-weight: 600; color: var(--ho-text-main); }
+.ho-contact-row:last-child { margin-bottom: 0; }
+.ho-contact-icon { width: 36px; height: 36px; border-radius: 10px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.04); border: 1px solid var(--ho-glass-border-subtle); color: var(--ho-teal-700); }
+
+/* 2. FAMILY ACCESS HUB (Spans 7) */
+.ho-panel-family { grid-column: span 7; }
+.ho-security-badge { background: var(--ho-coral-soft); color: var(--ho-danger); padding: 0.35rem 1rem; border-radius: 999px; font-size: 0.75rem; font-weight: 800; border: 1px solid rgba(217, 75, 75, 0.3); }
+.ho-family-desc { font-size: 0.95rem; color: var(--ho-text-muted); line-height: 1.6; margin-bottom: 1.5rem; font-weight: 500; }
+
+.ho-family-card {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.85); border: 1.5px solid var(--ho-glass-border);
+  border-radius: var(--ho-radius-lg); padding: 1.2rem 1.5rem; margin-bottom: 1rem;
+  transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+.ho-family-card:hover { background: #fff; border-color: var(--ho-teal-600); transform: translateY(-2px); box-shadow: 0 10px 25px rgba(13, 122, 110, 0.08); }
+
+.ho-member-id { display: flex; align-items: center; gap: 1rem; }
+.ho-member-av { width: 48px; height: 48px; border-radius: 50%; background: var(--ho-teal-50); color: var(--ho-teal-700); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; border: 1.5px solid rgba(13, 122, 110, 0.2); }
+.ho-member-details strong { display: block; font-size: 1.05rem; color: var(--ho-teal-900); font-weight: 800; }
+.ho-member-details span { font-size: 0.8rem; color: var(--ho-text-muted); font-weight: 600; }
+
+/* iOS Toggles */
+.ho-permissions { display: flex; gap: 1.2rem; align-items: center; }
+.ho-perm-item { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+.ho-perm-label { font-size: 0.7rem; font-weight: 800; color: var(--ho-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.ho-toggle { position: relative; display: inline-block; width: 42px; height: 24px; }
+.ho-toggle input { opacity: 0; width: 0; height: 0; }
+.ho-toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(13, 122, 110, 0.15); transition: .3s; border-radius: 24px; border: 1.5px solid rgba(13, 122, 110, 0.2); }
+.ho-toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 2px; bottom: 1.5px; background-color: white; transition: .3s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+.ho-toggle input:checked + .ho-toggle-slider { background-color: var(--ho-teal-600); border-color: var(--ho-teal-600); }
+.ho-toggle input:checked + .ho-toggle-slider:before { transform: translateX(18px); }
+.ho-toggle input:disabled + .ho-toggle-slider { opacity: 0.5; cursor: not-allowed; }
+
+/* Add Member Button */
+.ho-dashed-btn {
+  width: 100%; border: 2.5px dashed var(--ho-teal-600); background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--ho-radius-lg); padding: 1.2rem; display: flex; align-items: center; justify-content: center; gap: 0.8rem;
+  color: var(--ho-teal-900); font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: 0.25s; margin-top: 0.5rem;
+}
+.ho-dashed-btn:hover { background: rgba(255, 255, 255, 0.9); border-color: var(--ho-teal-900); transform: scale(1.01); }
+
+/* 3. SECURITY & QR (Spans 5) */
+.ho-panel-qr { grid-column: span 5; }
+.ho-qr-container { display: flex; align-items: center; gap: 1.5rem; background: rgba(255, 255, 255, 0.8); border: 1.5px solid var(--ho-glass-border); border-radius: var(--ho-radius-lg); padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+.ho-qr-img { width: 100px; height: 100px; background: #fff; border-radius: 12px; padding: 5px; border: 1.5px solid var(--ho-glass-border-subtle); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+.ho-qr-text h4 { color: var(--ho-teal-900); font-size: 1.05rem; font-weight: 800; margin-bottom: 0.4rem; }
+.ho-qr-text p { font-size: 0.85rem; color: var(--ho-text-muted); line-height: 1.5; margin-bottom: 1rem; font-weight: 500;}
+
+/* 4. ACCOUNT SETTINGS (Spans 7) */
+.ho-panel-settings { grid-column: span 7; }
+.ho-settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.ho-setting-card {
+  background: rgba(255, 255, 255, 0.85); border: 1.5px solid var(--ho-glass-border); border-radius: var(--ho-radius-lg);
+  padding: 1.25rem; display: flex; align-items: center; gap: 1rem; transition: 0.25s ease; cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+.ho-setting-card:hover { background: #fff; border-color: var(--ho-teal-600); transform: translateY(-2px); box-shadow: 0 10px 25px rgba(13, 122, 110, 0.08); }
+.ho-setting-icon { width: 44px; height: 44px; background: var(--ho-teal-50); border: 1.5px solid rgba(13, 122, 110, 0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--ho-teal-700); }
+.ho-setting-text strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.2rem; }
+.ho-setting-text span { font-size: 0.8rem; color: var(--ho-text-muted); font-weight: 500; }
+
+/* =========================================================
+   NEW: EDIT PROFILE MODAL & TOAST STYLES
+========================================================= */
+
+/* Removed the green light, replaced with professional dark slate blur */
+.ho-modal-overlay {
+  position: fixed; inset: 0; 
+  background: rgba(15, 23, 42, 0.4); 
+  backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center; z-index: 100; padding: 1.5rem;
+  animation: hoFadeIn 0.3s ease;
+}
+@keyframes hoFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Solid white modal box for perfect readability */
+.ho-modal-box {
+  background: #ffffff; 
+  border: 1px solid var(--ho-glass-border); 
+  border-radius: var(--ho-radius-xl); 
+  padding: 2.5rem; width: 100%; max-width: 680px; max-height: 90vh;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); 
+  display: flex; flex-direction: column; position: relative;
+}
+
+.ho-modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-shrink: 0; }
+.ho-modal-head h3 { font-size: 1.4rem; font-weight: 800; color: var(--ho-teal-900); letter-spacing: -0.5px; }
+.ho-modal-close { background: none; border: none; font-size: 2.2rem; color: var(--ho-text-muted); cursor: pointer; transition: 0.2s; line-height: 1; margin-top: -5px;}
+.ho-modal-close:hover { color: var(--ho-danger); transform: scale(1.1); }
+
+.ho-modal-body { flex: 1; overflow-y: auto; padding-right: 0.5rem; }
+.ho-modal-body::-webkit-scrollbar { width: 6px; }
+.ho-modal-body::-webkit-scrollbar-thumb { background: rgba(13, 122, 110, 0.2); border-radius: 10px; }
+
+.ho-form-section { background: #f8fafc; border: 1px solid #e2e8f0; padding: 1.5rem; border-radius: var(--ho-radius-lg); margin-bottom: 1.5rem; }
+.ho-section-title { font-size: 0.85rem; font-weight: 800; color: var(--ho-teal-700); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+
+.ho-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.ho-form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+.ho-form-group label { font-size: 0.8rem; font-weight: 700; color: var(--ho-teal-900); }
+
+/* Crisp, readable inputs */
+.ho-input {
+  width: 100%; padding: 0.85rem 1rem; border: 1px solid #cbd5e1;
+  border-radius: var(--ho-radius-md); font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 500;
+  color: var(--ho-teal-900); background: #ffffff; outline: none; transition: 0.2s;
+}
+.ho-input:focus { border-color: var(--ho-teal-600); box-shadow: 0 0 0 4px rgba(16, 148, 133, 0.1); }
+
+.ho-add-member-box { background: #ffffff; border: 1.5px dashed var(--ho-teal-600); border-radius: var(--ho-radius-lg); padding: 1.5rem; margin-top: 1.5rem; }
+
+.ho-modal-footer { display: flex; justify-content: flex-end; gap: 1rem; padding-top: 1.5rem; margin-top: 0.5rem; border-top: 1px solid #e2e8f0; flex-shrink: 0; }
+
+/* Success Toast Notification */
+.ho-toast {
+  position: fixed; bottom: 2rem; right: 2rem;
+  background: var(--ho-teal-900); color: #fff;
+  padding: 1rem 1.5rem; border-radius: 12px;
+  font-weight: 600; font-size: 0.95rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  transform: translateY(100px); opacity: 0;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1000; display: flex; align-items: center; gap: 0.6rem;
+}
+.ho-toast.show { transform: translateY(0); opacity: 1; }
+
+@media (max-width: 1200px) {
+  .ho-bento-grid { grid-template-columns: 1fr; }
+  .ho-panel-identity, .ho-panel-family, .ho-panel-qr, .ho-panel-settings { grid-column: span 1; }
+  .ho-permissions { flex-wrap: wrap; }
+}
+@media (max-width: 768px) {
+  .ho-main-content { overflow: visible; height: auto; }
+  .ho-topbar { flex-direction: column; align-items: flex-start; padding: 1.5rem; gap: 1rem; }
+  .ho-bento-grid { padding: 1.5rem; }
+  .ho-family-card { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+  .ho-settings-grid { grid-template-columns: 1fr; }
+  .ho-form-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="ho-ambient-canvas">
+  <div class="ho-glow-orb ho-orb-1"></div>
+  <div class="ho-glow-orb ho-orb-2"></div>
+  <div class="ho-glow-orb ho-orb-3"></div>
+</div>
+
+<div class="ho-app-layout">
+  
+  <!-- UNIVERSAL FLOATING SIDEBAR -->
+  <%- include('../partials/sidebar') %>
+
+  <!-- MAIN CONTENT -->
+  <main class="ho-main-content">
+    
+    <!-- TOP BAR (Completely transparent, no background) -->
+    <header class="ho-topbar">
+      <div>
+        <h1>Profile & Authorized Sharing</h1>
+        <p>Manage your identity, security, and family access permissions.</p>
+      </div>
+      <div class="ho-topbar-actions">
+        <!-- TRIGGER EDIT PROFILE MODAL -->
+        <button class="ho-ghost-btn" onclick="openEditModal()">Edit Profile</button>
+      </div>
+    </header>
+
+    <div class="ho-bento-grid">
+
+      <!-- 1. USER IDENTITY (Left Panel) -->
+      <section class="ho-liquid-panel ho-panel-identity">
+        <div class="ho-panel-header" style="width: 100%;"><h2>My Identity</h2></div>
+        
+        <div class="ho-hero-avatar">
+          <%= locals.userName && userName.length > 0 ? userName.substring(0, 2).toUpperCase() : 'AD' %>
+        </div>
+        <div class="ho-hero-name"><%= locals.userName || 'Atharv Manoj Deshmukh' %></div>
+        <div class="ho-hero-id">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--ho-mint-400);"></span> 
+          ID: HO-9824-AX
+        </div>
+
+        <div class="ho-stats-row">
+          <div class="ho-stat-box">
+            <span>Age</span>
+            <strong>21</strong>
+          </div>
+          <div class="ho-stat-box">
+            <span>Blood Group</span>
+            <strong style="color: var(--ho-coral-accent);">O+</strong>
+          </div>
+        </div>
+
+        <div class="ho-contact-list">
+          <div class="ho-contact-row">
+            <div class="ho-contact-icon">📍</div>
+            <div>Nagpur, Maharashtra, India</div>
+          </div>
+          <div class="ho-contact-row">
+            <div class="ho-contact-icon">🎓</div>
+            <div>RTMNU Engineering</div>
+          </div>
+          <div class="ho-contact-row">
+            <div class="ho-contact-icon">✉️</div>
+            <div><%= locals.userEmail || 'atharv@healthorbit.com' %></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. FAMILY ACCESS HUB (Right Panel) -->
+      <section class="ho-liquid-panel ho-panel-family">
+        <div class="ho-panel-header">
+            <h2>Family Health Network</h2>
+            <span class="ho-security-badge">Zero Default Sharing</span>
+        </div>
+        <p class="ho-family-desc">Family members do not automatically see everything. You explicitly authorize which modules they can view.</p>
+
+        <!-- Family Member 1 -->
+        <div class="ho-family-card">
+          <div class="ho-member-id">
+            <div class="ho-member-av" style="background: var(--ho-teal-50); color: var(--ho-teal-700);">M</div>
+            <div class="ho-member-details">
+              <strong>Mother</strong>
+              <span>Connected • Last active 2h ago</span>
+            </div>
+          </div>
+          
+          <div class="ho-permissions">
+            <div class="ho-perm-item">
+              <span class="ho-perm-label">Emergency</span>
+              <label class="ho-toggle">
+                <input type="checkbox" checked disabled>
+                <span class="ho-toggle-slider"></span>
+              </label>
+            </div>
+            <div class="ho-perm-item">
+              <span class="ho-perm-label">Insurance</span>
+              <label class="ho-toggle">
+                <input type="checkbox" checked>
+                <span class="ho-toggle-slider"></span>
+              </label>
+            </div>
+            <div class="ho-perm-item">
+              <span class="ho-perm-label">Symptoms</span>
+              <label class="ho-toggle">
+                <input type="checkbox" checked>
+                <span class="ho-toggle-slider"></span>
+              </label>
+            </div>
+            <div class="ho-perm-item">
+              <span class="ho-perm-label">Reports</span>
+              <label class="ho-toggle">
+                <input type="checkbox">
+                <span class="ho-toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Family Member 2 -->
+        <div class="ho-family-card">
+          <div class="ho-member-id">
+            <div class="ho-member-av" style="background: rgba(224, 122, 104, 0.1); color: var(--ho-coral-accent); border-color: rgba(224, 122, 104, 0.3);">F</div>
+            <div class="ho-member-details">
+              <strong>Father</strong>
+              <span>Connected • Last active 1d ago</span>
+            </div>
+          </div>
+          
+          <div class="ho-permissions">
+            <div class="ho-perm-item">
+              <span class="ho-perm-label">Emergency</span>
+              <label class="ho-toggle">
+                <input type="checkbox" checked disabled>
+                <span class="ho-toggle-slider"></span>
+              </label>
+            </div>
+            <div class="ho-perm-item">
+              <span class="ho-perm-label">Insurance</span>
+              <label class="ho-toggle">
+                <input type="checkbox" checked>
+                <span class="ho-toggle-slider"></span>
+              </label>
+            </div>
+            <div class="ho-perm-item">
+              <span class="ho-perm-label">Symptoms</span>
+              <label class="ho-toggle">
+                <input type="checkbox">
+                <span class="ho-toggle-slider"></span>
+              </label>
+            </div>
+            <div class="ho-perm-item">
+              <span class="ho-perm-label">Reports</span>
+              <label class="ho-toggle">
+                <input type="checkbox">
+                <span class="ho-toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <button class="ho-dashed-btn">
+          <span style="font-size: 1.3rem;">🔗</span> Generate Secure Invite Link
+        </button>
+
+      </section>
+
+      <!-- 3. SECURITY & QR -->
+      <section class="ho-liquid-panel ho-panel-qr">
+        <div class="ho-panel-header"><h2>Emergency ID</h2></div>
+        <div class="ho-qr-container">
+          <!-- SVG QR Code Placeholder -->
+          <svg class="ho-qr-img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100" height="100" fill="#fff"/>
+            <rect x="10" y="10" width="30" height="30" fill="#0b5e55"/>
+            <rect x="15" y="15" width="20" height="20" fill="#ffffff"/>
+            <rect x="20" y="20" width="10" height="10" fill="#0b5e55"/>
+            <rect x="60" y="10" width="30" height="30" fill="#0b5e55"/>
+            <rect x="65" y="15" width="20" height="20" fill="#ffffff"/>
+            <rect x="70" y="20" width="10" height="10" fill="#0b5e55"/>
+            <rect x="10" y="60" width="30" height="30" fill="#0b5e55"/>
+            <rect x="15" y="65" width="20" height="20" fill="#ffffff"/>
+            <rect x="20" y="70" width="10" height="10" fill="#0b5e55"/>
+            <rect x="50" y="50" width="10" height="10" fill="#0b5e55"/>
+            <rect x="70" y="60" width="20" height="10" fill="#0b5e55"/>
+            <rect x="60" y="80" width="30" height="10" fill="#0b5e55"/>
+          </svg>
+          <div class="ho-qr-text">
+            <h4>Emergency Scan Code</h4>
+            <p>Generates a secure QR containing only blood group, allergies, and emergency contacts.</p>
+            <button class="ho-liquid-btn" style="padding: 0.5rem 1rem;">View Full Card</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. ACCOUNT SETTINGS -->
+      <section class="ho-liquid-panel ho-panel-settings">
+        <div class="ho-panel-header"><h2>Account Settings</h2></div>
+        <div class="ho-settings-grid">
+          
+          <div class="ho-setting-card">
+            <div class="ho-setting-icon">🔐</div>
+            <div class="ho-setting-text">
+              <strong>Security & 2FA</strong>
+              <span>Password, Biometrics</span>
+            </div>
+          </div>
+          
+          <div class="ho-setting-card">
+            <div class="ho-setting-icon">⌚</div>
+            <div class="ho-setting-text">
+              <strong>Connected Devices</strong>
+              <span>Apple Health, Fitbit</span>
+            </div>
+          </div>
+          
+          <div class="ho-setting-card">
+            <div class="ho-setting-icon">🔔</div>
+            <div class="ho-setting-text">
+              <strong>Notifications</strong>
+              <span>Med reminders, alerts</span>
+            </div>
+          </div>
+          
+          <div class="ho-setting-card">
+            <div class="ho-setting-icon">📥</div>
+            <div class="ho-setting-text">
+              <strong>Data Export</strong>
+              <span>Download full timeline</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ==========================================
+     EDIT PROFILE & FAMILY MODAL 
+     (Clean, Solid White Interface)
+=========================================== -->
+<div class="ho-modal-overlay" id="hoEditProfileModal">
+  <div class="ho-modal-box">
+    
+    <div class="ho-modal-head">
+      <h3>Edit Profile & Family Network</h3>
+      <button class="ho-modal-close" onclick="closeEditModal()">×</button>
+    </div>
+    
+    <div class="ho-modal-body">
+      <!-- Form submission hijacked by JS for smooth Toast feedback -->
+      <form id="hoProfileForm" action="/profile" method="POST">
+        
+        <!-- Section 1: Personal Details -->
+        <div class="ho-form-section">
+          <h4 class="ho-section-title">👤 Basic Information</h4>
+          <div class="ho-form-grid">
+            <div class="ho-form-group" style="grid-column: span 2;">
+              <label>Full Legal Name</label>
+              <input type="text" name="fullName" class="ho-input" value="<%= locals.userName || 'Atharv Manoj Deshmukh' %>" required>
+            </div>
+            
+            <div class="ho-form-group">
+              <label>Phone Number</label>
+              <input type="tel" name="phone" class="ho-input" placeholder="+91 ">
+            </div>
+            
+            <div class="ho-form-group">
+              <label>Email Address</label>
+              <input type="email" name="email" class="ho-input" value="<%= locals.userEmail || 'atharv@healthorbit.com' %>">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Medical Profile -->
+        <div class="ho-form-section">
+          <h4 class="ho-section-title">🏥 Medical Profile</h4>
+          <div class="ho-form-grid">
+            <div class="ho-form-group">
+              <label>Age</label>
+              <input type="number" name="age" class="ho-input" value="21" required>
+            </div>
+            
+            <div class="ho-form-group">
+              <label>Blood Group</label>
+              <select name="bloodGroup" class="ho-input">
+                <option value="O+">O+ (Positive)</option>
+                <option value="O-">O- (Negative)</option>
+                <option value="A+">A+ (Positive)</option>
+                <option value="B+">B+ (Positive)</option>
+                <option value="AB+">AB+ (Positive)</option>
+              </select>
+            </div>
+
+            <div class="ho-form-group">
+              <label>Height (cm)</label>
+              <input type="number" name="height" class="ho-input" placeholder="e.g. 175">
+            </div>
+
+            <div class="ho-form-group">
+              <label>Weight (kg)</label>
+              <input type="number" name="weight" class="ho-input" placeholder="e.g. 70">
+            </div>
+
+            <div class="ho-form-group" style="grid-column: span 2;">
+              <label>Known Allergies (Comma separated)</label>
+              <input type="text" name="allergies" class="ho-input" placeholder="e.g. Penicillin, Peanuts...">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Family Network & HoF -->
+        <div class="ho-form-section" style="margin-bottom: 0;">
+          <h4 class="ho-section-title">👨‍👩‍👧‍👦 Family Connections</h4>
+          
+          <!-- Head of Family Designation -->
+          <div class="ho-form-group" style="margin-bottom: 1.5rem;">
+            <label style="color: var(--ho-coral-accent);">Head of the Family (HoF)</label>
+            <select name="headOfFamily" class="ho-input">
+              <option value="self">Self (<%= locals.userName || 'Atharv Deshmukh' %>)</option>
+              <option value="father">Father (Manoj Deshmukh)</option>
+              <option value="mother">Mother</option>
+            </select>
+            <span style="font-size: 0.75rem; color: var(--ho-text-muted); margin-top: 0.4rem; line-height: 1.4;">
+              The Head of the Family has overarching management rights to view synced reports and emergency data for linked accounts.
+            </span>
+          </div>
+
+          <!-- Add New Member Box -->
+          <div class="ho-add-member-box">
+            <h5 style="font-size: 0.95rem; color: var(--ho-teal-900); margin-bottom: 0.8rem;">+ Add New Family Member</h5>
+            <div class="ho-form-grid">
+              <div class="ho-form-group">
+                <label>Member Name</label>
+                <input type="text" class="ho-input" placeholder="e.g. Rahul">
+              </div>
+              <div class="ho-form-group">
+                <label>Relation</label>
+                <select class="ho-input">
+                  <option>Spouse</option>
+                  <option>Child</option>
+                  <option>Parent</option>
+                  <option>Sibling</option>
+                </select>
+              </div>
+            </div>
+            <button type="button" class="ho-ghost-btn" style="width: 100%; margin-top: 1rem; padding: 0.75rem; border-style: dashed;">
+              Generate & Send Invite Link
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+    
+    <div class="ho-modal-footer">
+      <button class="ho-ghost-btn" onclick="closeEditModal()">Cancel</button>
+      <button type="submit" form="hoProfileForm" id="saveProfileBtn" class="ho-liquid-btn">
+        <span>Save Profile</span>
+        <div class="ho-btn-sheen"></div>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- BEAUTIFUL TOAST NOTIFICATION -->
+<div id="hoToast" class="ho-toast">
+  <span style="font-size: 1.2rem;">✅</span> Profile updated successfully.
+</div>
+
+<script>
+  // Modal Logic
+  function openEditModal() {
+    document.getElementById('hoEditProfileModal').style.display = 'flex';
+  }
+
+  function closeEditModal() {
+    document.getElementById('hoEditProfileModal').style.display = 'none';
+  }
+
+  // Smooth form submission with Toast Feedback
+  document.getElementById('hoProfileForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent instant reload
+    
+    const btn = document.getElementById('saveProfileBtn');
+    const span = btn.querySelector('span');
+    span.innerText = 'Saving...';
+    btn.style.opacity = '0.8';
+    
+    // Show Toast
+    const toast = document.getElementById('hoToast');
+    toast.classList.add('show');
+    
+    // Close modal and actually submit the form after a slight delay for UX
+    setTimeout(() => {
+      closeEditModal();
+      this.submit(); // Actually send POST to backend
+    }, 1200);
+  });
+</script>
+
+</body>
+</html>
