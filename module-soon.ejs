@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <link rel="icon" href="/images/Logo.png">
+  <title>HealthOrbit — Next Generation Module</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/css/sidebar.css">
+
+  <style>
+    /* ==================================================================
+       HEALTHORBIT "PLANETARY ORBIT" — FIXED 3D MECHANICS
+    ================================================================== */
+    :root {
+      --ho-bg-airy: #edf6f4;
+      --ho-teal-900: #0b5e55;
+      --ho-teal-800: #0c6b61;
+      --ho-teal-700: #0d7a6e;
+      --ho-teal-600: #109485;
+      --ho-mint-400: #42b89d;
+      --ho-coral: #e07a68;
+      --ho-text-main: #0f1c1a;
+      --ho-text-muted: #4e6b63;
+
+      --ho-glass-clear: rgba(255, 255, 255, 0.55);
+      --ho-glass-border: rgba(255, 255, 255, 0.9);
+      --ho-glass-border-subtle: rgba(13, 122, 110, 0.15);
+
+      --ho-radius-lg: 24px;
+      --ho-shadow-card: 0 10px 40px rgba(13, 122, 110, 0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh; min-height: 100dvh;
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      background-color: var(--ho-bg-airy);
+      color: var(--ho-text-main);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ---------- AMBIENT CANVAS ---------- */
+    .ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .ho-tech-grid {
+      position: absolute; inset: 0; opacity: 0.4;
+      background-image: radial-gradient(var(--ho-teal-600) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(circle at center, black 10%, transparent 80%);
+      -webkit-mask-image: radial-gradient(circle at center, black 10%, transparent 80%);
+    }
+    .ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.5; animation: hoDrift 20s ease-in-out infinite alternate; }
+    .ho-orb-1 { width: 700px; height: 700px; background: #76d7c4; top: -10%; left: -10%; }
+    .ho-orb-2 { width: 600px; height: 600px; background: #fbe4de; bottom: -10%; right: -10%; animation-delay: -5s; }
+    @keyframes hoDrift { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(40px, 60px) scale(1.1); } }
+
+    /* ---------- BASE LAYOUT ---------- */
+    .ho-app-layout { display: flex; width: 100vw; min-height: 100vh; position: relative; z-index: 10; }
+    .ho-main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: none; }
+    .ho-main-content::-webkit-scrollbar { display: none; }
+
+    .ho-topbar { display: flex; justify-content: space-between; align-items: center; padding: 2.2rem 3rem 1.2rem; flex-shrink: 0; z-index: 20; }
+    .ho-topbar h1 { font-family: 'Fraunces', serif; font-weight: 800; font-size: 1.8rem; color: var(--ho-teal-900); letter-spacing: -0.5px; display: flex; align-items: center; gap: 0.6rem; }
+    .ho-topbar h1 span { color: var(--ho-coral); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; }
+
+    .ho-workspace { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 3rem 4rem; flex: 1 0 auto; text-align: center; }
+
+    .ho-eyebrow {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; font-weight: 800;
+      color: var(--ho-teal-700); letter-spacing: 0.1em; text-transform: uppercase;
+      display: flex; align-items: center; gap: 0.6rem; margin-bottom: 2.5rem;
+      background: rgba(255,255,255,0.7); padding: 0.4rem 1.2rem; border-radius: 999px;
+      border: 1px solid var(--ho-glass-border); box-shadow: 0 4px 15px rgba(13,122,110,0.05);
+      opacity: 0; animation: hoFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .ho-eyebrow .dot { width: 8px; height: 8px; background: var(--ho-coral); border-radius: 50%; box-shadow: 0 0 8px var(--ho-coral); }
+
+    /* ==================================================================
+       3D PLANETARY SYSTEM
+       Mechanics: the whole system is tilted once (rotateX/rotateY).
+       Each planet lives on its own PIVOT that spins around Z (this is
+       what actually moves it along the tilted ring, because the pivot
+       inherits the parent's tilt in 3D space). The planet itself then
+       gets translated out to the ring radius and counter-rotated on Z
+       (and re-applies the tilt) so it stays a solid little sphere
+       facing the camera instead of smearing into a flat dot.
+    ================================================================== */
+    .ho-solar-system-wrapper {
+      position: relative; width: 340px; height: 340px; margin-bottom: 2.5rem;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; animation: hoFadeUp 0.8s forwards 0.2s;
+    }
+
+    .ho-solar-system {
+      position: absolute; width: 100%; height: 100%;
+      transform: rotateX(65deg) rotateY(-15deg);
+      transform-style: preserve-3d;
+    }
+
+    /* Core / Sun */
+    .ho-core-star {
+      position: absolute; top: 50%; left: 50%; width: 50px; height: 50px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%, #ffffff 0%, #bdeadf 35%, var(--ho-teal-600) 75%, var(--ho-teal-900) 100%);
+      box-shadow: 0 0 35px 12px rgba(16, 148, 133, 0.4), inset -6px -6px 14px rgba(0,0,0,0.15), inset 4px 4px 10px rgba(255,255,255,0.6);
+      transform: translate(-50%, -50%) rotateY(15deg) rotateX(-65deg);
+      z-index: 10;
+    }
+
+    /* Orbit rings (purely visual, static) */
+    .ho-orbit-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%; }
+    .ho-ring-1 { width: 340px; height: 340px; border: 2px dashed rgba(13, 122, 110, 0.25); }
+    .ho-ring-2 { width: 240px; height: 240px; border: 1.5px solid rgba(224, 122, 104, 0.3); }
+    .ho-ring-3 { width: 140px; height: 140px; border: 1.5px dashed rgba(66, 184, 157, 0.5); }
+
+    /* Pivots — spin around Z, sitting exactly on the tilted plane */
+    .ho-pivot { position: absolute; top: 50%; left: 50%; transform-style: preserve-3d; }
+    .ho-pivot-1 { animation: spinZ 20s linear infinite; }
+    .ho-pivot-2 { animation: spinZ-reverse 14s linear infinite; }
+    .ho-pivot-3 { animation: spinZ 8s linear infinite; }
+    @keyframes spinZ { to { transform: rotateZ(360deg); } }
+    @keyframes spinZ-reverse { to { transform: rotateZ(-360deg); } }
+
+    /* Planets — pushed to ring radius, counter-rotated to always read as a
+       round, lit sphere rather than a flat smeared dot. Each planet uses
+       shades of ITS OWN ring color (teal / coral / mint) for the sphere
+       shading, per your note — same hue family, just light-to-dark. */
+    .ho-planet { position: absolute; top: -50%; left: -50%; border-radius: 50%; }
+
+    .ho-planet-1 {
+      width: 26px; height: 26px; margin-top: -13px; margin-left: -13px;
+      background: radial-gradient(circle at 30% 28%, #d6f3ec 0%, #42b89d 30%, var(--ho-teal-700) 65%, #063a34 100%);
+      box-shadow: 0 0 16px rgba(13,122,110,0.55), inset -5px -5px 9px rgba(0,0,0,0.35), inset 3px 3px 6px rgba(255,255,255,0.35);
+      animation: counterSpin1 20s linear infinite;
+    }
+    .ho-planet-2 {
+      width: 19px; height: 19px; margin-top: -9.5px; margin-left: -9.5px;
+      background: radial-gradient(circle at 30% 28%, #fdeee9 0%, #f0a795 30%, var(--ho-coral) 65%, #7a3626 100%);
+      box-shadow: 0 0 14px rgba(224,122,104,0.55), inset -4px -4px 8px rgba(0,0,0,0.35), inset 3px 3px 5px rgba(255,255,255,0.35);
+      animation: counterSpin2 14s linear infinite;
+    }
+    .ho-planet-3 {
+      width: 15px; height: 15px; margin-top: -7.5px; margin-left: -7.5px;
+      background: radial-gradient(circle at 30% 28%, #ffffff 0%, #8fdcc6 30%, var(--ho-mint-400) 65%, var(--ho-teal-800) 100%);
+      box-shadow: 0 0 12px rgba(66,184,157,0.6), inset -3px -3px 7px rgba(0,0,0,0.3), inset 2px 2px 5px rgba(255,255,255,0.45);
+      animation: counterSpin3 8s linear infinite;
+    }
+
+    /* Radii match ring sizes (170 / 120 / 70 = half of ring diameters) */
+    @keyframes counterSpin1 {
+      from { transform: translateX(170px) rotateZ(0deg) rotateY(15deg) rotateX(-65deg); }
+      to   { transform: translateX(170px) rotateZ(-360deg) rotateY(15deg) rotateX(-65deg); }
+    }
+    @keyframes counterSpin2 {
+      from { transform: translateX(120px) rotateZ(0deg) rotateY(15deg) rotateX(-65deg); }
+      to   { transform: translateX(120px) rotateZ(360deg) rotateY(15deg) rotateX(-65deg); }
+    }
+    @keyframes counterSpin3 {
+      from { transform: translateX(70px) rotateZ(0deg) rotateY(15deg) rotateX(-65deg); }
+      to   { transform: translateX(70px) rotateZ(-360deg) rotateY(15deg) rotateX(-65deg); }
+    }
+
+    /* ---------- TYPOGRAPHY ---------- */
+    .ho-cs-title {
+      font-family: 'Fraunces', serif; font-size: 3.2rem; font-weight: 800; color: var(--ho-teal-900);
+      margin-bottom: 1rem; line-height: 1.1; letter-spacing: -1px;
+      opacity: 0; animation: hoFadeUp 0.8s forwards 0.4s;
+    }
+    .ho-cs-title span { color: var(--ho-coral); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; }
+
+    .ho-cs-desc {
+      font-size: 1.1rem; color: var(--ho-text-muted); font-weight: 500; line-height: 1.6;
+      max-width: 560px; margin: 0 auto 2.5rem;
+      opacity: 0; animation: hoFadeUp 0.8s forwards 0.6s;
+    }
+
+    /* ---------- SIMPLE PILL NOTIFY FORM (label removed) ---------- */
+    .ho-notify-container { width: 100%; max-width: 480px; margin: 0 auto 2rem; position: relative; z-index: 10; opacity: 0; animation: hoFadeUp 0.8s forwards 0.8s; }
+
+    .ho-pill-form {
+      display: flex; align-items: center; gap: 0.4rem;
+      background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--ho-glass-border); padding: 0.4rem; border-radius: 999px;
+      box-shadow: 0 10px 30px rgba(13, 122, 110, 0.08); transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .ho-pill-form:focus-within { background: #fff; box-shadow: 0 15px 40px rgba(13, 122, 110, 0.15); transform: translateY(-2px); border-color: var(--ho-teal-600); }
+
+    .ho-notify-input {
+      flex: 1; background: transparent; border: none; padding: 0 1.5rem; height: 52px;
+      font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 500; color: var(--ho-text-main); outline: none;
+    }
+    .ho-notify-input::placeholder { color: #8ba8a4; }
+
+    .ho-btn-submit {
+      background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); color: #fff;
+      border: none; border-radius: 999px; height: 52px; padding: 0 2rem;
+      font-weight: 800; font-size: 0.95rem; cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); white-space: nowrap; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-shrink: 0;
+    }
+    .ho-btn-submit:hover { transform: scale(1.02); box-shadow: 0 8px 20px rgba(13, 122, 110, 0.25); }
+    .ho-btn-submit:active { transform: scale(0.96); }
+
+    .ho-notify-success {
+      display: none; align-items: center; justify-content: center; gap: 0.8rem;
+      background: #fff; border: 1px solid rgba(46, 204, 113, 0.3);
+      color: #27ae60; padding: 1.2rem 2rem; border-radius: 999px; font-weight: 700; font-size: 1rem;
+      animation: hoPopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      box-shadow: 0 10px 30px rgba(46, 204, 113, 0.1);
+    }
+
+    .ho-bottom-actions { opacity: 0; animation: hoFadeUp 0.8s forwards 1s; }
+    .ho-back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--ho-teal-700); font-weight: 700; font-size: 0.95rem; text-decoration: none; transition: 0.2s; }
+    .ho-back-link:hover { color: var(--ho-coral); transform: translateX(-4px); }
+
+    @keyframes hoFadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes hoPopIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+    /* ==================================================================
+       MOBILE (<= 768px)
+    ================================================================== */
+    @media screen and (max-width: 768px) {
+      body, html { height: auto !important; min-height: 100vh !important; overflow-x: hidden !important; }
+      .ho-main-content { padding-top: 5rem !important; }
+      .ho-topbar { padding: 1rem 1.25rem 0.5rem !important; }
+      .ho-topbar h1 { font-size: 1.6rem; }
+      .ho-workspace { padding: 1rem 1.25rem 4rem !important; }
+
+      .ho-solar-system-wrapper { width: 240px; height: 240px; margin-bottom: 2rem; }
+      .ho-ring-1 { width: 240px; height: 240px; }
+      .ho-ring-2 { width: 170px; height: 170px; }
+      .ho-ring-3 { width: 100px; height: 100px; }
+
+      .ho-planet-1 { animation: counterSpin1Mob 20s linear infinite; }
+      .ho-planet-2 { animation: counterSpin2Mob 14s linear infinite; }
+      .ho-planet-3 { animation: counterSpin3Mob 8s linear infinite; }
+
+      .ho-cs-title { font-size: 2.2rem; letter-spacing: -1px; }
+      .ho-cs-desc { font-size: 0.95rem; margin-bottom: 2.5rem; }
+
+      .ho-notify-container { width: 100%; padding: 0; }
+      .ho-pill-form { flex-direction: column; padding: 0.4rem; border-radius: 20px; background: rgba(255,255,255,0.9); }
+      .ho-notify-input { width: 100%; text-align: center; padding: 0 1rem; }
+      .ho-btn-submit { width: 100%; border-radius: 16px; }
+      .ho-notify-success { border-radius: 20px; padding: 1rem; font-size: 0.9rem; text-align: center; }
+    }
+
+    /* Mobile radii match smaller mobile rings (120 / 85 / 50) */
+    @keyframes counterSpin1Mob {
+      from { transform: translateX(120px) rotateZ(0deg) rotateY(15deg) rotateX(-65deg); }
+      to   { transform: translateX(120px) rotateZ(-360deg) rotateY(15deg) rotateX(-65deg); }
+    }
+    @keyframes counterSpin2Mob {
+      from { transform: translateX(85px) rotateZ(0deg) rotateY(15deg) rotateX(-65deg); }
+      to   { transform: translateX(85px) rotateZ(360deg) rotateY(15deg) rotateX(-65deg); }
+    }
+    @keyframes counterSpin3Mob {
+      from { transform: translateX(50px) rotateZ(0deg) rotateY(15deg) rotateX(-65deg); }
+      to   { transform: translateX(50px) rotateZ(-360deg) rotateY(15deg) rotateX(-65deg); }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="ho-ambient-canvas">
+  <div class="ho-tech-grid"></div>
+  <div class="ho-glow-orb ho-orb-1"></div>
+  <div class="ho-glow-orb ho-orb-2"></div>
+</div>
+
+<div class="ho-app-layout">
+
+  <%- include('../partials/sidebar') %>
+
+  <main class="ho-main-content">
+
+    <header class="ho-topbar">
+      <div><h1>Health<span>Orbit</span></h1></div>
+    </header>
+
+    <div class="ho-workspace">
+
+      <div class="ho-eyebrow"><span class="dot"></span> Telemetry Offline</div>
+
+      <div class="ho-solar-system-wrapper">
+        <div class="ho-solar-system" role="img" aria-label="3D Planetary Animation">
+          <div class="ho-core-star"></div>
+
+          <div class="ho-orbit-ring ho-ring-1"></div>
+          <div class="ho-pivot ho-pivot-1"><div class="ho-planet ho-planet-1"></div></div>
+
+          <div class="ho-orbit-ring ho-ring-2"></div>
+          <div class="ho-pivot ho-pivot-2"><div class="ho-planet ho-planet-2"></div></div>
+
+          <div class="ho-orbit-ring ho-ring-3"></div>
+          <div class="ho-pivot ho-pivot-3"><div class="ho-planet ho-planet-3"></div></div>
+        </div>
+      </div>
+
+      <h2 class="ho-cs-title">Module <span>Orbiting</span> Soon</h2>
+      <p class="ho-cs-desc">
+        The clinical interface you're looking for is currently being mapped by our engineering team. We are calibrating new tools to give you unparalleled clarity over your health data.
+      </p>
+
+      <div class="ho-notify-container" id="notifyContainer">
+        <form id="notifyForm" class="ho-pill-form">
+          <input type="email" id="userEmail" class="ho-notify-input" placeholder="Enter your email address..." required aria-label="Email Address">
+          <button type="submit" class="ho-btn-submit">
+            Notify Me
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+        </form>
+      </div>
+
+      <div class="ho-notify-success" id="notifySuccess">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        Coordinates locked. We'll alert you when it's live.
+      </div>
+
+      <div class="ho-bottom-actions">
+        <a href="/dashboard" class="ho-back-link">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          Return to Base
+        </a>
+      </div>
+
+    </div>
+
+    <%- include('../partials/footer') %>
+
+  </main>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const notifyForm = document.getElementById('notifyForm');
+    const notifyContainer = document.getElementById('notifyContainer');
+    const notifySuccess = document.getElementById('notifySuccess');
+
+    if (notifyForm) {
+      notifyForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        notifyContainer.style.display = 'none';
+        notifySuccess.style.display = 'flex';
+      });
+    }
+  });
+</script>
+
+</body>
+</html>

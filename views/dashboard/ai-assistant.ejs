@@ -2,245 +2,752 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HealthOrbit — AI Assistant</title>
+<!-- CRITICAL FOR MOBILE: Prevents unwanted zooming and handles safe areas -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<link rel="icon" href="/images/Logo.png">
+<title>HealthOrbit — AI Health Assistant</title> 
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/sidebar.css">
+
 <style>
+/* ==================================================================
+   HEALTHORBIT AI ASSISTANT — PREMIUM DESKTOP & NATIVE MOBILE UI
+================================================================== */
 :root {
-  --void: #084039; --void-soft: #0d7a6e;
-  --paper: #f2f8f6; --card: #ffffff;
-  --ink: #0f1c1a; --ink-soft: #5e736f;
-  --coral: #ef6f5b; --coral-soft: #fbe4de;
-  --sage: #109485; --sage-soft: #dff1ec;
-  --mist: #42b89d; --line: rgba(13, 122, 110, 0.15);
-  --radius: 24px;
-  --glass-bg: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.95);
-  --shadow-glass: 0 10px 30px rgba(8, 64, 57, 0.05);
+  --ho-bg-airy: #edf6f4;
+  --ho-teal-900: #0b5e55;
+  --ho-teal-800: #0c6b61;
+  --ho-teal-700: #0d7a6e;
+  --ho-teal-600: #109485;
+  --ho-mint-400: #42b89d;
+  --ho-coral: #e07a68;
+  --ho-coral-soft: #fbe4de;
+  --ho-text-main: #0f1c1a;
+  --ho-text-muted: #4e6b63;
+  --ho-danger: #d94b4b;
+
+  --ho-glass-clear: rgba(255, 255, 255, 0.55);
+  --ho-glass-solid: rgba(255, 255, 255, 0.95);
+  --ho-glass-border: rgba(255, 255, 255, 0.95);
+  --ho-glass-border-subtle: rgba(13, 122, 110, 0.15);
+
+  --ho-radius-xl: 32px;
+  --ho-radius-lg: 20px;
+  --ho-radius-md: 12px;
+
+  --ho-shadow-glass: 0 30px 60px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
+  --ho-shadow-card: 0 8px 24px rgba(13, 122, 110, 0.05);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background: var(--paper); color: var(--ink); overflow-x: hidden; height: 100vh;}
-.mono { font-family: 'JetBrains Mono', monospace; }
 
-/* Ambient Orbs */
-.ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.35; animation: float 22s infinite alternate; }
-.orb1 { width: 420px; height: 420px; background: #a3e4d7; top: -120px; left: -100px; }
-.orb2 { width: 460px; height: 460px; background: #fcefc9; bottom: -140px; right: -100px; animation-delay: -6s; }
-@keyframes float { 100% { transform: translate(40px, 40px) scale(1.1); } }
-
-/* App Layout */
-.shell { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 1; }
-.main { flex: 1; min-width: 0; display: flex; flex-direction: column; transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); height: 100vh;}
-
-/* Topbar */
-.topbar { display: flex; justify-content: space-between; align-items: center; padding: 2.5rem 3.5rem 1rem; background: transparent; z-index: 10; flex-shrink: 0;}
-.topbar h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.8rem; color: var(--void); display: flex; align-items: center; gap: 0.8rem;}
-.topbar .sub { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.4rem; font-weight: 500; }
-.actions { display: flex; gap: 0.8rem; align-items: center; }
-
-/* AI Pulse Core */
-.ai-core-mini { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--mist), var(--void-soft)); position: relative; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(197, 113, 23, 0.4);}
-.ai-core-mini::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 1px dashed var(--void-soft); animation: spin 4s linear infinite; }
-@keyframes spin { 100% { transform: rotate(360deg); } }
-
-/* Bento Grid */
-.bento-wrapper { padding: 1rem 3.5rem 2.5rem; flex: 1; display: flex; min-height: 0;}
-.bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; flex: 1; min-height: 0;}
-
-.card {
-  background: var(--glass-bg); backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
-  border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 1.5rem;
-  overflow: hidden; position: relative; box-shadow: var(--shadow-glass); display: flex; flex-direction: column;
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  background-color: var(--ho-bg-airy);
+  color: var(--ho-text-main);
+  overflow: hidden; 
+  -webkit-font-smoothing: antialiased;
 }
 
-/* 1. CHAT INTERFACE (Spans 8 Cols) */
-.c-chat { grid-column: span 8; padding: 0; background: rgba(255,255,255,0.6);}
-.chat-window { flex: 1; overflow-y: auto; padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; scrollbar-width: thin;}
-.chat-window::-webkit-scrollbar { width: 6px; }
-.chat-window::-webkit-scrollbar-thumb { background: var(--line); border-radius: 10px; }
+/* ---------- AMBIENT BACKGROUND ---------- */
+.ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
+.ho-orb-1 { width: 550px; height: 550px; background: #76d7c4; top: -100px; left: -100px; }
+.ho-orb-2 { width: 600px; height: 600px; background: #fadbd8; bottom: -150px; right: -100px; animation-delay: -5s; }
+@keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 60px) scale(1.15); } }
 
-.msg-wrapper { display: flex; max-width: 80%; }
-.msg-wrapper.ai { align-self: flex-start; }
-.msg-wrapper.user { align-self: flex-end; flex-direction: row-reverse; }
+/* ---------- BASE LAYOUT ---------- */
+.ho-app-layout { display: flex; width: 100vw; height: 100vh; height: 100dvh; position: relative; z-index: 10; }
+.ho-main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 
-.msg-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; margin: 0 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
-.ai .msg-avatar { background: var(--void); color: #fff; }
-.user .msg-avatar { background: var(--coral-soft); color: var(--coral); font-weight: 800; }
+/* ---------- DESKTOP TOPBAR ---------- */
+.ho-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 2.2rem 3rem 1.2rem; flex-shrink: 0; background: transparent; z-index: 20;
+}
+.ho-topbar-left { display: flex; align-items: center; gap: 1rem; }
+.ho-topbar-text h1 { font-family: 'Fraunces', serif; font-weight: 800; font-size: 1.8rem; color: var(--ho-teal-900); margin-bottom: 0.2rem; letter-spacing: -0.5px; display: flex; align-items: center; gap: 0.8rem;}
+.ho-topbar-text p { font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 500; display: flex; align-items: center; gap: 0.5rem; margin: 0;}
 
-.msg-bubble { padding: 1.2rem 1.5rem; border-radius: 16px; font-size: 0.95rem; line-height: 1.6; }
-.ai .msg-bubble { background: #fff; color: var(--void); border: 1px solid var(--line); border-top-left-radius: 4px; box-shadow: 0 4px 15px rgba(8, 64, 57, 0.03);}
-.user .msg-bubble { background: linear-gradient(135deg, var(--void), var(--void-soft)); color: #fff; border-top-right-radius: 4px; box-shadow: 0 4px 15px rgba(8, 64, 57, 0.15);}
+.ho-ai-core-mini {
+  width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--ho-coral), #d94b4b);
+  position: relative; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(224, 122, 104, 0.4); flex-shrink: 0;
+}
+.ho-ai-core-mini::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 1.5px dashed var(--ho-coral); animation: hoSpin 4s linear infinite; }
+@keyframes hoSpin { 100% { transform: rotate(360deg); } }
 
-/* Chat Input Area */
-.chat-input-container { padding: 1.5rem 2rem; background: #fff; border-top: 1px solid var(--line); border-bottom-left-radius: var(--radius); border-bottom-right-radius: var(--radius);}
-.suggested-prompts { display: flex; gap: 0.6rem; margin-bottom: 1rem; overflow-x: auto; scrollbar-width: none; white-space: nowrap;}
-.suggested-prompts::-webkit-scrollbar { display: none; }
-.prompt-chip { background: var(--sage-soft); border: 1px solid rgba(13, 122, 110, 0.2); color: var(--void); padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
-.prompt-chip:hover { background: var(--void-soft); color: #fff;}
+.ho-pulse-dot { width: 8px; height: 8px; background: var(--ho-coral); border-radius: 50%; box-shadow: 0 0 10px var(--ho-coral); animation: hoPulse 2s infinite; }
+@keyframes hoPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.5); } }
 
-.input-bar { display: flex; gap: 1rem; align-items: flex-end; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 0.5rem; transition: 0.2s;}
-.input-bar:focus-within { border-color: var(--void-soft); background: #fff; box-shadow: 0 0 0 4px rgba(13, 122, 110, 0.1);}
-.chat-input { flex: 1; border: none; background: transparent; padding: 0.8rem; font-family: inherit; font-size: 0.95rem; color: var(--ink); resize: none; max-height: 120px; outline: none;}
-.send-btn { width: 44px; height: 44px; border-radius: 12px; background: var(--coral); color: white; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; margin-bottom: 4px; margin-right: 4px;}
-.send-btn:hover { background: #d95a46; transform: scale(1.05);}
+/* ---------- MAIN WORKSPACE GRID ---------- */
+.ho-workspace-grid {
+  display: grid; grid-template-columns: 1fr 360px; gap: 1.5rem;
+  padding: 0 3rem 2rem; flex: 1; min-height: 0;
+}
 
-/* 2. CONTEXT HUD (Spans 4 Cols) */
-.c-context { grid-column: span 4; background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(223, 241, 236, 0.6));}
-.context-header { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--mist); letter-spacing: 0.05em; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;}
+.ho-panel {
+  background: var(--ho-glass-clear);
+  backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
+  display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass);
+  overflow: hidden; opacity: 0; animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes hoSlideUp { from { opacity: 0; transform: translateY(35px); } to { opacity: 1; transform: translateY(0); } }
 
-.context-group { margin-bottom: 1.5rem; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.02);}
-.context-group h4 { font-size: 0.85rem; color: var(--void); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;}
-.context-group h4 span { font-size: 1.1rem; }
+/* ==========================================================
+   1. CHAT INTERFACE (LEFT PANEL)
+========================================================== */
+.ho-chat-panel { background: rgba(255,255,255,0.75); }
 
-.c-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px dashed var(--line); font-size: 0.85rem;}
-.c-item:last-child { border-bottom: none; padding-bottom: 0; }
-.c-label { color: var(--ink-soft); font-weight: 600;}
-.c-val { color: var(--void); font-family: 'JetBrains Mono', monospace; font-weight: 700;}
+/* The Mobile Trigger Pill (Hidden on Desktop) */
+.ho-mobile-context-trigger { display: none; }
 
-/* File Context */
-.file-context { display: flex; align-items: center; gap: 0.8rem; background: var(--paper); padding: 0.8rem; border-radius: 10px; border: 1px solid var(--line);}
-.file-icon { font-size: 1.5rem; }
-.file-info strong { display: block; font-size: 0.85rem; color: var(--void); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;}
-.file-info span { font-size: 0.7rem; color: var(--ink-soft); }
+.ho-chat-window {
+  flex: 1; overflow-y: auto; padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; scroll-behavior: smooth;
+}
+.ho-chat-window::-webkit-scrollbar { width: 6px; }
+.ho-chat-window::-webkit-scrollbar-thumb { background: rgba(13, 122, 110, 0.2); border-radius: 10px; }
+
+/* Chat Messages & Animations */
+.ho-msg-row { display: flex; max-width: 85%; align-items: flex-end; opacity: 0; animation: hoPopIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes hoPopIn { from { opacity: 0; transform: translateY(15px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.ho-msg-row.ai { align-self: flex-start; }
+.ho-msg-row.user { align-self: flex-end; flex-direction: row-reverse; }
+
+.ho-msg-av {
+  width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; font-weight: 800; flex-shrink: 0; margin: 0 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+.ai .ho-msg-av { background: linear-gradient(135deg, var(--ho-teal-600), var(--ho-teal-900)); color: #fff; }
+.ai .ho-msg-av svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+.user .ho-msg-av { background: var(--ho-coral); color: #fff; font-family: 'Fraunces', serif; }
+
+.ho-msg-body { display: flex; flex-direction: column; gap: 6px; max-width: 100%; min-width: 0; }
+.ho-msg-bubble { padding: 1.1rem 1.4rem; font-size: 0.95rem; line-height: 1.6; font-weight: 500; word-wrap: break-word; }
+.ai .ho-msg-bubble { background: #fff; color: var(--ho-text-main); border: 1px solid var(--ho-glass-border-subtle); border-radius: 4px 20px 20px 20px; box-shadow: var(--ho-shadow-card); }
+.user .ho-msg-bubble { background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); color: #fff; border-radius: 20px 4px 20px 20px; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.15); }
+.ai .ho-msg-bubble.error-msg { background: rgba(217, 75, 75, 0.05); border-color: rgba(217, 75, 75, 0.2); color: var(--ho-danger); }
+
+/* Formatted Text */
+.ho-msg-bubble p { margin-bottom: 0.7rem; }
+.ho-msg-bubble p:last-child { margin-bottom: 0; }
+.ho-msg-bubble strong { font-weight: 700; color: inherit; }
+.ai .ho-msg-bubble strong { color: var(--ho-teal-900); }
+.ho-msg-bubble ul { margin-left: 1.5rem; margin-bottom: 0.7rem; }
+
+/* AI Action Buttons (Fixed exact sizing) */
+.ho-msg-actions { display: flex; gap: 8px; margin-left: 4px; opacity: 0; transition: opacity 0.2s; align-items: center;}
+.ho-msg-row:hover .ho-msg-actions { opacity: 1; }
+.ho-action-btn { 
+  background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 8px; 
+  color: var(--ho-text-muted); padding: 6px 10px; font-size: 0.75rem; font-weight: 600; 
+  cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; 
+  box-shadow: 0 2px 6px rgba(0,0,0,0.02); font-family: inherit;
+}
+.ho-action-btn:hover { color: var(--ho-teal-900); border-color: var(--ho-teal-600); box-shadow: 0 4px 10px rgba(13,122,110,0.08);}
+.ho-action-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+
+/* Typing Dots */
+.ho-typing-bubble { display: flex; align-items: center; gap: 6px; padding: 0.5rem 0;}
+.ho-typing-bubble span { width: 8px; height: 8px; background: var(--ho-teal-600); border-radius: 50%; animation: hoBlinkDots 1.4s infinite ease-in-out both; }
+.ho-typing-bubble span:nth-child(1) { animation-delay: -0.32s; }
+.ho-typing-bubble span:nth-child(2) { animation-delay: -0.16s; }
+@keyframes hoBlinkDots { 0%, 80%, 100% { transform: scale(0.5); opacity: 0.3; } 40% { transform: scale(1); opacity: 1; } }
+
+/* Chat Input Dock */
+.ho-chat-bottom-dock { 
+  padding: 1.5rem 2.5rem 2rem; background: linear-gradient(to top, rgba(255,255,255,0.95) 60%, transparent); 
+  border-bottom-left-radius: var(--ho-radius-xl); border-bottom-right-radius: var(--ho-radius-xl); flex-shrink: 0; 
+}
+.ho-suggestions { display: flex; gap: 0.8rem; margin-bottom: 1.2rem; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+.ho-suggestions::-webkit-scrollbar { display: none; }
+.ho-suggest-chip { 
+  background: var(--ho-bg-airy); border: 1px solid rgba(13, 122, 110, 0.15); color: var(--ho-teal-900); 
+  padding: 0.6rem 1.2rem; border-radius: 999px; font-size: 0.82rem; font-weight: 700; 
+  cursor: pointer; transition: 0.2s; white-space: nowrap; font-family: inherit;
+}
+.ho-suggest-chip:hover { background: #fff; border-color: var(--ho-teal-600); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(13, 122, 110, 0.08); }
+
+.ho-input-wrapper { 
+  display: flex; gap: 1rem; align-items: flex-end; background: #fff; 
+  border: 1px solid var(--ho-glass-border-subtle); border-radius: 24px; padding: 0.6rem 0.6rem 0.6rem 1.5rem; 
+  box-shadow: 0 10px 30px rgba(13, 122, 110, 0.08); transition: 0.2s; 
+}
+.ho-input-wrapper:focus-within { border-color: var(--ho-teal-600); box-shadow: 0 10px 35px rgba(13, 122, 110, 0.15); transform: translateY(-1px);}
+.ho-chat-textarea { 
+  flex: 1; border: none; background: transparent; padding: 0.6rem 0; font-family: inherit; 
+  font-size: 0.95rem; font-weight: 500; color: var(--ho-text-main); resize: none; 
+  max-height: 120px; outline: none; line-height: 1.5; margin:0;
+}
+.ho-chat-textarea::placeholder { color: #a4c9c3; font-weight: 600; }
+
+.ho-send-btn { 
+  width: 44px; height: 44px; border-radius: 50%; background: var(--ho-bg-airy); color: var(--ho-teal-900); 
+  border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; 
+}
+.ho-send-btn:not(:disabled) { background: linear-gradient(135deg, var(--ho-coral), var(--ho-danger)); color: white; box-shadow: 0 4px 15px rgba(224, 122, 104, 0.3); }
+.ho-send-btn:not(:disabled):hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(224, 122, 104, 0.4); }
+.ho-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ho-send-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;}
+
+/* ==========================================================
+   2. CONTEXT / HISTORY PANEL (RIGHT)
+========================================================== */
+.ho-side-panel { display: flex; flex-direction: column; padding: 0; }
+
+/* Top Segmented Control */
+.ho-panel-head { padding: 1.5rem 1.5rem 0.5rem; background: transparent; z-index: 5; border-bottom: 1px solid var(--ho-glass-border-subtle);}
+.ho-segmented-control { display: flex; background: rgba(13, 122, 110, 0.08); border-radius: 14px; padding: 5px; position: relative; width: 100%;}
+.ho-seg-btn { flex: 1; border: none; background: transparent; padding: 0.6rem 0; font-size: 0.85rem; font-weight: 800; color: var(--ho-text-muted); cursor: pointer; border-radius: 10px; transition: 0.3s; z-index: 2; position: relative; font-family: inherit; }
+.ho-seg-btn.active { color: var(--ho-teal-900); }
+.ho-seg-slider { position: absolute; top: 5px; bottom: 5px; left: 5px; width: calc(50% - 5px); background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 1; }
+.ho-segmented-control[data-active="history"] .ho-seg-slider { transform: translateX(100%); }
+
+/* Tab Views */
+.ho-panel-body { flex: 1; position: relative; overflow: hidden; }
+.ho-view-section { position: absolute; inset: 0; padding: 1.5rem; opacity: 0; pointer-events: none; transition: 0.3s ease; overflow-y: auto; scrollbar-width: none; }
+.ho-view-section::-webkit-scrollbar { display: none; }
+.ho-view-section.active { opacity: 1; pointer-events: auto; }
+
+/* Context Cards */
+.ho-ctx-group { margin-bottom: 1.5rem; }
+.ho-ctx-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--ho-teal-700); margin-bottom: 0.8rem; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem;}
+.ho-ctx-card { background: rgba(255,255,255,0.85); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; padding: 1.2rem; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);}
+
+.ho-ctx-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px dashed var(--ho-glass-border-subtle);}
+.ho-ctx-item:last-child { border-bottom: none; padding-bottom: 0; }
+.ho-ctx-item span:first-child { color: var(--ho-text-muted); font-weight: 600; font-size: 0.85rem;}
+.ho-ctx-item strong { color: var(--ho-teal-900); font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 0.88rem; text-align: right;}
+
+.ho-empty-state { font-size: 0.85rem; color: var(--ho-text-muted); font-style: italic; text-align: center; }
+
+/* History Content */
+.ho-new-chat-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: var(--ho-bg-airy); border: 1.5px dashed var(--ho-teal-600); color: var(--ho-teal-900); padding: 0.9rem; border-radius: 14px; font-weight: 800; font-size: 0.9rem; cursor: pointer; margin-bottom: 1.5rem; transition: 0.2s; font-family: inherit; }
+.ho-new-chat-btn:hover { background: var(--ho-teal-900); color: #fff; border-style: solid; }
+
+.ho-history-group { font-size: 0.75rem; font-weight: 800; color: var(--ho-text-muted); text-transform: uppercase; margin: 1rem 0 0.5rem 0.5rem; letter-spacing: 0.05em;}
+.ho-history-item { padding: 1rem; border-radius: 12px; cursor: pointer; transition: 0.2s; margin-bottom: 0.5rem; display: flex; flex-direction: column; gap: 4px; text-align: left; background: transparent; border: 1px solid transparent; width: 100%;}
+.ho-history-item:hover { background: #fff; border-color: var(--ho-glass-border-subtle); box-shadow: 0 4px 15px rgba(0,0,0,0.02); transform: translateX(3px);}
+.ho-history-item h4 { font-size: 0.9rem; color: var(--ho-teal-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; margin: 0;}
+.ho-history-item p { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--ho-text-muted); margin: 0; font-weight: 600;}
+
+
+/* ==================================================================
+   3. PERFECT NATIVE-APP MOBILE OPTIMIZATION (< 768px)
+================================================================== */
+.ho-mobile-backdrop { display: none; }
 
 @media (max-width: 1024px) {
-  .bento { grid-template-columns: 1fr; }
-  .c-chat { grid-row: 2; height: 600px; }
-  .c-context { grid-row: 1; }
-  .main { height: auto; }
-  .shell { height: auto; }
+  .ho-workspace-grid { grid-template-columns: 1fr 300px; padding: 0 1.5rem 1.5rem; gap: 1rem; }
 }
+
 @media (max-width: 768px) {
-  .shell { flex-direction: column; }
-  .topbar { padding: 1.2rem 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
-  .bento-wrapper { padding: 1.5rem; }
-  .msg-wrapper { max-width: 95%; }
-  .msg-avatar { display: none; }
+  /* Lock viewport so content never jumps */
+  body, html { height: 100dvh !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important; }
+  .ho-app-layout { flex-direction: column !important; height: 100dvh !important; }
+  
+  /* Clears the standard sidebar's floating island */
+  .ho-main-content { padding-top: 4.8rem !important; height: 100dvh !important; display: flex; flex-direction: column;}
+  .ho-topbar { display: none; }
+
+  /* Mobile Grid Override: Just the chat panel takes full space */
+  .ho-workspace-grid { 
+    display: flex; flex-direction: column; padding: 0 !important; gap: 0 !important; 
+    flex: 1; height: calc(100dvh - 4.8rem); 
+  }
+  
+  .ho-panel { border-radius: 0; border: none; box-shadow: none; margin: 0; }
+  
+  /* Chat Area is the primary view */
+  .ho-chat-panel { flex: 1; border-top: 1px solid var(--ho-glass-border-subtle); display: flex; flex-direction: column; background: #fff;}
+  
+  /* Mobile Context Trigger Pill */
+  .ho-mobile-context-trigger {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    background: var(--ho-bg-airy); padding: 0.8rem; font-size: 0.85rem; font-weight: 800; color: var(--ho-teal-900);
+    border-bottom: 1px solid var(--ho-glass-border-subtle); cursor: pointer; flex-shrink: 0; z-index: 5;
+  }
+  .ho-mobile-context-trigger svg { transition: 0.3s; width: 16px; height: 16px; }
+  .ho-mobile-context-trigger.open svg { transform: rotate(180deg); }
+
+  /* Chat Feed & Bubbles */
+  .ho-chat-window { padding: 1.2rem 1rem 120px 1rem; gap: 1.2rem; }
+  .ho-msg-row { max-width: 95%; gap: 8px;}
+  .ho-msg-av { display: none; } /* Hide avatars to maximize text space on phones */
+  .ho-msg-bubble { padding: 0.9rem 1.2rem; font-size: 0.95rem; border-radius: 16px; }
+  .ai .ho-msg-bubble { border-radius: 4px 16px 16px 16px; }
+  .user .ho-msg-bubble { border-radius: 16px 4px 16px 16px; }
+  
+  /* Sticky Keyboard-Safe Input Area */
+  .ho-chat-bottom-dock { 
+    position: absolute; bottom: 0; left: 0; right: 0; 
+    padding: 0.8rem 1rem calc(0.8rem + env(safe-area-inset-bottom, 0px)); 
+    background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--ho-glass-border-subtle); z-index: 50;
+  }
+  .ho-suggestions { margin-bottom: 0.8rem; }
+  .ho-suggest-chip { font-size: 0.8rem; padding: 0.5rem 0.8rem; }
+  .ho-input-wrapper { border-radius: 20px; padding: 0.4rem 0.4rem 0.4rem 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05);}
+  .ho-chat-textarea { font-size: 16px; padding: 0.4rem 0;} /* 16px prevents iOS Auto-Zoom */
+  .ho-send-btn { width: 38px; height: 38px; border-radius: 12px; }
+  .ho-send-btn svg { width: 16px !important; height: 16px !important; }
+
+  /* Transform Side Panel into a Native-style Bottom Sheet */
+  .ho-side-panel {
+    position: absolute; top: 100%; left: 0; right: 0; width: 100%; height: 85dvh;
+    border-radius: 24px 24px 0 0; border: none; box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
+    background: #fff; z-index: 100; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .ho-side-panel.open { transform: translateY(-100%); }
+  
+  .ho-mobile-backdrop { position: absolute; inset: 0; background: rgba(15, 28, 26, 0.4); backdrop-filter: blur(4px); z-index: 90; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: block;}
+  .ho-mobile-backdrop.show { opacity: 1; pointer-events: auto; }
 }
 </style>
 </head>
 <body>
 
-<div class="ambient"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+<!-- Ambient Background -->
+<%- include('../partials/ambient') %>
 
-<div class="shell">
-  <!-- UNIVERSAL SIDEBAR IMPORT -->
+<div class="ho-app-layout">
+  
+  <!-- EXISTING SIDEBAR PARTIAL (Untouched) -->
   <%- include('../partials/sidebar') %>
 
-  <main class="main">
-    <header class="topbar">
-      <div>
-        <h1><div class="ai-core-mini"></div> HealthOrbit Medical Analyst</h1>
-        <div class="sub">Your conversational interface to all normalized health data.</div>
+  <main class="ho-main-content">
+    
+    <!-- DESKTOP HEADER -->
+    <header class="ho-topbar">
+      <div class="ho-topbar-left">
+        <div class="ho-ai-core-mini"></div>
+        <div class="ho-topbar-text">
+          <h1>Health<span style="color:var(--ho-coral);">Orbit</span> AI Assistant</h1>
+          <p><span class="ho-pulse-dot"></span> Conversational interface connected to your authorized records.</p>
+        </div>
       </div>
     </header>
 
-    <div class="bento-wrapper">
-      <div class="bento">
+    <div class="ho-workspace-grid">
+      
+      <!-- ==========================================
+           1. MAIN CHAT PANEL
+      =========================================== -->
+      <section class="ho-panel ho-chat-panel">
+        
+        <!-- Mobile Trigger for Context/History Bottom Sheet -->
+        <div class="ho-mobile-context-trigger" id="mobileSheetTrigger" role="button" tabindex="0">
+          Health Context & History
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
 
-        <!-- 1. CHAT INTERFACE (Spans 8) -->
-        <div class="card c-chat">
-          <div class="chat-window">
+        <div class="ho-chat-window" id="chatWindow" role="log" aria-live="polite">
+          
+          <!-- Default AI Welcome Message -->
+          <div class="ho-msg-row ai ho-welcome-msg">
+            <div class="ho-msg-av" aria-hidden="true">
+              <!-- Clean Sparkle SVG for AI -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
+            <div class="ho-msg-body">
+              <div class="ho-msg-bubble">
+                <p>Hello <strong><%= locals.userName ? locals.userName.split(' ')[0] : 'there' %></strong> 👋</p>
+                <p>I am your HealthOrbit AI Assistant. I can help you understand your authorized medical reports, vitals, and health trends.</p>
+                <p>What would you like to know today?</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Chat Input Zone -->
+        <div class="ho-chat-bottom-dock">
+          <div class="ho-suggestions" aria-label="Suggested prompts">
+            <button class="ho-suggest-chip">Explain my latest medical report</button>
+            <button class="ho-suggest-chip">Summarize my recent sleep</button>
+            <button class="ho-suggest-chip">What medicines are recorded?</button>
+            <button class="ho-suggest-chip">Show my health trends</button>
+          </div>
+          
+          <div class="ho-input-wrapper">
+            <textarea class="ho-chat-textarea" id="chatInput" rows="1" placeholder="Ask HealthOrbit AI..." aria-label="Message input"></textarea>
+            <button class="ho-send-btn" id="sendBtn" aria-label="Send message" disabled>
+              <!-- Clean Send SVG -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           2. CONTEXT / HISTORY PANEL
+      =========================================== -->
+      <aside class="ho-panel ho-side-panel" id="contextSheet">
+        
+        <!-- TOP SEGMENTED TOGGLE -->
+        <div class="ho-panel-head">
+          <div class="ho-segmented-control" id="segmentedControl" data-active="context" role="tablist">
+            <div class="ho-seg-slider"></div>
+            <button class="ho-seg-btn active" role="tab" aria-selected="true" data-target="contextView">Health Context</button>
+            <button class="ho-seg-btn" role="tab" aria-selected="false" data-target="historyView">History</button>
+          </div>
+        </div>
+
+        <div class="ho-panel-body">
+          
+          <!-- VIEW 1: HEALTH CONTEXT -->
+          <div class="ho-view-section active" id="contextView" role="tabpanel">
             
-            <!-- AI Welcome Message -->
-            <div class="msg-wrapper ai">
-              <div class="msg-avatar">✨</div>
-              <div class="msg-bubble">
-                Hello <strong><%= locals.userName ? userName.split(' ')[0] : 'there' %></strong>. I've synced your latest medical reports and Apple HealthKit telemetry. Your resting BPM is slightly elevated today, but your latest CBC parameters look stable. <br><br>How can I assist you with your health data today?
+            <div class="ho-ctx-group">
+              <div class="ho-ctx-title">🔒 AI Data Access</div>
+              <div class="ho-ctx-card" style="background: rgba(13, 122, 110, 0.04); border-color: rgba(13, 122, 110, 0.15);">
+                <p style="font-size: 0.75rem; color: var(--ho-teal-900); margin-bottom: 0.8rem; line-height: 1.4; font-weight: 600;">HealthOrbit AI only uses information explicitly authorized in your account.</p>
+                <ul style="list-style: none; font-size: 0.75rem; color: var(--ho-teal-700); font-weight: 700;">
+                  <li>✓ Medical Reports</li>
+                  <li>✓ Health Measurements</li>
+                  <li>✓ Medicines</li>
+                </ul>
               </div>
             </div>
 
-            <!-- User Message -->
-            <div class="msg-wrapper user">
-              <div class="msg-bubble">
-                Can you explain why my Vitamin D was marked as "Deficient" in the CBC report I uploaded yesterday? What should I do?
-              </div>
-              <div class="msg-avatar">U</div>
-            </div>
-
-            <!-- AI Response -->
-            <div class="msg-wrapper ai">
-              <div class="msg-avatar">✨</div>
-              <div class="msg-bubble">
-                Certainly. Based on the <strong>Complete_Blood_Count.pdf</strong> you uploaded, your Vitamin D (25-OH) level is <strong>18 ng/mL</strong>. <br><br>
-                The standard reference range for optimal health is typically between <strong>20 - 50 ng/mL</strong>, which is why the system flagged it as deficient.<br><br>
-                I also see from your Timeline that you started taking <strong>Vitamin D3 (Cholecalciferol) 60,000 IU</strong> once a week. Continuing this protocol as prescribed by your doctor is the standard approach to elevating these levels.
+            <div class="ho-ctx-group">
+              <div class="ho-ctx-title">📄 Medical Reports</div>
+              <div class="ho-ctx-card">
+                <% if (locals.reports && locals.reports.length > 0) { %>
+                  <div class="ho-ctx-item"><span>Latest</span> <strong><%= locals.reports[0].originalFileName || locals.reports[0].name %></strong></div>
+                  <div class="ho-ctx-item"><span>Processed</span> <strong><small><%= new Date(locals.reports[0].createdAt || locals.reports[0].date).toLocaleDateString() %></small></strong></div>
+                <% } else { %>
+                  <div class="ho-empty-state">No medical reports uploaded yet.</div>
+                <% } %>
               </div>
             </div>
 
-          </div>
-
-          <!-- Input Area -->
-          <div class="chat-input-container">
-            <div class="suggested-prompts">
-              <span class="prompt-chip">Summarize my last 30 days of sleep</span>
-              <span class="prompt-chip">Are my current meds causing fatigue?</span>
-              <span class="prompt-chip">Explain my Hemoglobin trend</span>
-            </div>
-            <div class="input-bar">
-              <textarea class="chat-input" rows="1" placeholder="Ask Gemini about your health data..."></textarea>
-              <button class="send-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2. CONTEXT HUD (Spans 4) -->
-        <div class="card c-context">
-          <div class="context-header">
-            <span class="pulse-dot" style="width:6px; height:6px;"></span> Active Context Window
-          </div>
-
-          <div class="context-group">
-            <h4><span>📄</span> Document Memory</h4>
-            <div class="file-context">
-              <div class="file-icon">📑</div>
-              <div class="file-info">
-                <strong>Complete_Blood_Count.pdf</strong>
-                <span>Processed: Aug 18, 2026</span>
+            <div class="ho-ctx-group">
+              <div class="ho-ctx-title">⌚ Health Data</div>
+              <div class="ho-ctx-card">
+                <% if (locals.vitals && Object.keys(locals.vitals).length > 0) { %>
+                  <div class="ho-ctx-item"><span>Heart Rate</span> <strong><%= locals.vitals.heartRate || '--' %> <small>bpm</small></strong></div>
+                  <div class="ho-ctx-item"><span>SpO₂</span> <strong><%= locals.vitals.spo2 || '--' %> <small>%</small></strong></div>
+                  <div class="ho-ctx-item"><span>Sleep</span> <strong><%= locals.vitals.sleepHours || '--' %> <small>h</small></strong></div>
+                <% } else { %>
+                  <div class="ho-empty-state">No wearable data connected.</div>
+                <% } %>
               </div>
             </div>
+
+            <div class="ho-ctx-group">
+              <div class="ho-ctx-title">💊 Medicines</div>
+              <div class="ho-ctx-card">
+                <% if (locals.medicines && locals.medicines.length > 0) { %>
+                  <% locals.medicines.forEach(function(med) { %>
+                    <div class="ho-ctx-item"><span><%= med.name %></span> <strong><small><%= med.dosage || med.dose %></small></strong></div>
+                  <% }); %>
+                <% } else { %>
+                  <div class="ho-empty-state">No active medicines recorded.</div>
+                <% } %>
+              </div>
+            </div>
+
           </div>
 
-          <div class="context-group">
-            <h4><span>⌚</span> Live Telemetry (Apple HealthKit)</h4>
-            <div class="c-item">
-              <span class="c-label">Resting BPM</span>
-              <span class="c-val" style="color: var(--coral);">82 <small style="font-size:0.6rem;">bpm</small></span>
-            </div>
-            <div class="c-item">
-              <span class="c-label">Blood Oxygen</span>
-              <span class="c-val">98 <small style="font-size:0.6rem;">%</small></span>
-            </div>
-            <div class="c-item">
-              <span class="c-label">Sleep (Last Night)</span>
-              <span class="c-val">6h 15m</span>
-            </div>
-          </div>
-
-          <div class="context-group">
-            <h4><span>💊</span> Active Protocols</h4>
-            <div class="c-item">
-              <span class="c-label">Levothyroxine</span>
-              <span class="c-val">50mcg</span>
-            </div>
-            <div class="c-item">
-              <span class="c-label">Vitamin D3</span>
-              <span class="c-val">60k IU</span>
-            </div>
+          <!-- VIEW 2: HISTORY -->
+          <div class="ho-view-section" id="historyView" role="tabpanel">
+            <button class="ho-new-chat-btn" id="newChatBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Start New Chat
+            </button>
+            
+            <% if (locals.chatHistory && locals.chatHistory.length > 0) { %>
+              <div class="ho-history-group">Recent</div>
+              <% locals.chatHistory.forEach(function(chat) { %>
+                <button class="ho-history-item">
+                  <h4><%= chat.title %></h4>
+                  <p><%= new Date(chat.updatedAt || chat.date).toLocaleDateString() %></p>
+                </button>
+              <% }); %>
+            <% } else { %>
+              <div class="ho-empty-state" style="margin-top: 1rem;">
+                No previous conversations yet.
+              </div>
+            <% } %>
           </div>
 
         </div>
+      </aside>
 
-      </div>
     </div>
   </main>
 </div>
+
+<!-- Mobile Backdrop -->
+<div class="ho-mobile-backdrop" id="mobileBackdrop"></div>
+
+<!-- ==========================================
+     FRONTEND CHAT & UI LOGIC
+=========================================== -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  
+  const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const chatWindow = document.getElementById('chatWindow');
+  const suggestChips = document.querySelectorAll('.ho-suggest-chip');
+  const newChatBtn = document.getElementById('newChatBtn');
+  
+  // Segment Elements
+  const segControl = document.getElementById('segmentedControl');
+  const segBtns = document.querySelectorAll('.ho-seg-btn');
+  const viewSections = document.querySelectorAll('.ho-view-section');
+  
+  // Mobile Sheet Elements
+  const mobileSheetTrigger = document.getElementById('mobileSheetTrigger');
+  const contextSheet = document.getElementById('contextSheet');
+  const mobileBackdrop = document.getElementById('mobileBackdrop');
+
+  let isWaitingForResponse = false;
+
+  // --- 1. Segmented Control Logic ---
+  if (segBtns && segControl) {
+    segBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        segBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        
+        const targetId = btn.getAttribute('data-target');
+        const isHistory = targetId === 'historyView';
+        
+        segControl.setAttribute('data-active', isHistory ? 'history' : 'context');
+        
+        viewSections.forEach(sec => sec.classList.remove('active'));
+        const targetView = document.getElementById(targetId);
+        if (targetView) targetView.classList.add('active');
+      });
+    });
+  }
+
+  // --- 2. Mobile Bottom Sheet Logic ---
+  function toggleMobileSheet() {
+    if (!contextSheet) return;
+    const isOpen = contextSheet.classList.toggle('open');
+    if (mobileSheetTrigger) {
+      mobileSheetTrigger.classList.toggle('open', isOpen);
+      mobileSheetTrigger.setAttribute('aria-expanded', isOpen);
+    }
+    if (mobileBackdrop) {
+      isOpen ? mobileBackdrop.classList.add('show') : mobileBackdrop.classList.remove('show');
+    }
+  }
+
+  if (mobileSheetTrigger) mobileSheetTrigger.addEventListener('click', toggleMobileSheet);
+  if (mobileBackdrop) mobileBackdrop.addEventListener('click', toggleMobileSheet);
+
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768 && contextSheet && contextSheet.classList.contains('open')) {
+      if (!contextSheet.contains(e.target) && mobileSheetTrigger && !mobileSheetTrigger.contains(e.target)) {
+        toggleMobileSheet();
+      }
+    }
+  });
+
+  // --- 3. Input Auto-resize ---
+  if (chatInput) {
+    chatInput.addEventListener('input', () => {
+      chatInput.style.height = 'auto';
+      chatInput.style.height = Math.min(chatInput.scrollHeight, 150) + 'px';
+      if (sendBtn) sendBtn.disabled = chatInput.value.trim().length === 0;
+    });
+
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (sendBtn && !sendBtn.disabled && !isWaitingForResponse) handleSend();
+      }
+    });
+  }
+
+  if (sendBtn) sendBtn.addEventListener('click', handleSend);
+
+  if (suggestChips) {
+    suggestChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        if (chatInput) chatInput.value = chip.textContent;
+        if (sendBtn) sendBtn.disabled = false;
+        handleSend();
+        if (contextSheet && contextSheet.classList.contains('open')) toggleMobileSheet();
+      });
+    });
+  }
+
+  // --- 4. SECURE Markdown Parsing (XSS Protection) ---
+  function escapeHTML(str) {
+    if (!str) return '';
+    return str.replace(/[&<>'"]/g, tag => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag] || tag));
+  }
+
+  function formatSafeMarkdown(text) {
+    let safeText = escapeHTML(text);
+    safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
+    safeText = safeText.replace(/\n/g, '<br>'); 
+    return `<p>${safeText}</p>`;
+  }
+
+  // --- 5. Chat Rendering Logic ---
+  function addMessage(text, sender, isHTML = false) {
+    if (!chatWindow) return null;
+
+    const welcomeState = document.getElementById('welcomeState');
+    if (welcomeState && welcomeState.style.display !== 'none') {
+        welcomeState.style.display = 'none';
+    }
+
+    const row = document.createElement('div');
+    row.className = `ho-msg-row ${sender}`;
+
+    const av = document.createElement('div');
+    av.className = 'ho-msg-av';
+    av.setAttribute('aria-hidden', 'true');
+    // Using EJS securely. If it fails, default to 'U'
+    if (sender === 'user') {
+      av.textContent = '<%= locals.userName ? locals.userName.substring(0, 1).toUpperCase() : "U" %>';
+    } else {
+      av.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>'; 
+    }
+
+    const bodyContainer = document.createElement('div');
+    bodyContainer.className = 'ho-msg-content';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'ho-msg-bubble';
+    
+    if (sender === 'ai' && !isHTML) {
+        bubble.innerHTML = formatSafeMarkdown(text);
+    } else if (isHTML) {
+        bubble.innerHTML = text; // Used strictly for internal UI loading states
+    } else {
+        bubble.textContent = text;
+    }
+
+    bodyContainer.appendChild(bubble);
+
+    // AI Message Action Buttons
+    if (sender === 'ai' && !isHTML) {
+        const actions = document.createElement('div');
+        actions.className = 'ho-msg-actions';
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'ho-action-btn';
+        copyBtn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy';
+        copyBtn.onclick = () => {
+            navigator.clipboard.writeText(text);
+            copyBtn.innerHTML = '✓ Copied';
+            setTimeout(() => copyBtn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy', 2000);
+        };
+
+        const regenBtn = document.createElement('button');
+        regenBtn.className = 'ho-action-btn';
+        regenBtn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg> Regenerate';
+        regenBtn.onclick = () => alert("Backend history support required to regenerate prompt.");
+
+        actions.appendChild(copyBtn);
+        actions.appendChild(regenBtn);
+        bodyContainer.appendChild(actions);
+    }
+
+    row.appendChild(av);
+    row.appendChild(bodyContainer);
+    chatWindow.appendChild(row);
+    
+    requestAnimationFrame(() => {
+        chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
+    });
+    
+    return row;
+  }
+
+  function showTypingIndicator() {
+    const html = `
+      <div class="ho-typing-bubble">
+        <span class="ho-dot"></span><span class="ho-dot"></span><span class="ho-dot"></span>
+      </div>
+    `;
+    return addMessage(html, 'ai', true);
+  }
+
+  // --- 6. API Call & Handling ---
+  async function handleSend() {
+    if (!chatInput) return;
+    const message = chatInput.value.trim();
+    if (!message || isWaitingForResponse) return;
+
+    isWaitingForResponse = true;
+
+    // UI Cleanup
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+    if(sendBtn) sendBtn.disabled = true;
+
+    // Add User Message
+    addMessage(message, 'user');
+
+    // Add Loading Indicator
+    const loadingRow = showTypingIndicator();
+
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: message })
+        });
+
+        if (loadingRow) loadingRow.remove();
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.reply) {
+              addMessage(data.reply, 'ai');
+            } else {
+              addMessage("I received an empty response from the server.", 'ai');
+            }
+        } else {
+            addMessage("Sorry, I couldn't connect to HealthOrbit AI right now. Please try again.", 'ai');
+        }
+    } catch (error) {
+        console.error("Chat Error:", error);
+        if (loadingRow) loadingRow.remove();
+        addMessage("Network error. Please check your connection and try again.", 'ai');
+    } finally {
+        isWaitingForResponse = false;
+        if (window.innerWidth > 768) chatInput.focus();
+    }
+  }
+
+  // --- 7. Global New Chat Function ---
+  if (newChatBtn) {
+    newChatBtn.addEventListener('click', () => {
+      if (!chatWindow) return;
+      const messages = chatWindow.querySelectorAll('.ho-msg-row:not(.ho-welcome-msg)');
+      messages.forEach(msg => msg.remove());
+      
+      const welcomeState = document.getElementById('welcomeState');
+      if (welcomeState) {
+          welcomeState.style.display = 'block';
+      }
+
+      if (contextSheet && contextSheet.classList.contains('open')) {
+          toggleMobileSheet();
+      }
+    });
+  }
+  
+});
+</script>
 
 </body>
 </html>

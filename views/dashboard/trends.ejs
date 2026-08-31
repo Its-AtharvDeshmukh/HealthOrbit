@@ -3,353 +3,620 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HealthOrbit — Trends & Alerts</title>
+<title>HealthOrbit — Trends & Anomaly Detection</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<!-- Universal Sidebar CSS -->
 <link rel="stylesheet" href="/css/sidebar.css">
+<link rel="icon" href="/images/Logo.png">
 <style>
+/* 
+==================================================================
+  STRICTLY SCOPED CSS (PREFIXED WITH 'ho-') FOR TRENDS & ANOMALIES
+================================================================== 
+*/
 :root {
-  --void: #084039;
-  --void-soft: #0d7a6e;
-  --paper: #f2f8f6;
-  --card: #ffffff;
-  --ink: #0f1c1a;
-  --ink-soft: #5e736f;
-  --coral: #ef6f5b;
-  --coral-soft: #fbe4de;
-  --sage: #109485;
-  --sage-soft: #dff1ec;
-  --mist: #42b89d;
-  --line: rgba(13, 122, 110, 0.15);
-  --radius: 24px;
-  --glass-bg: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.95);
-  --shadow-glass: 0 10px 30px rgba(8, 64, 57, 0.05);
+  --ho-bg-airy: #edf6f4;
+  --ho-teal-900: #0b5e55;
+  --ho-teal-700: #0d7a6e;
+  --ho-teal-600: #109485;
+  --ho-mint-400: #42b89d;
+  --ho-coral: #e07a68;
+  --ho-coral-soft: #fbe4de;
+  --ho-text-main: #0f1c1a;
+  --ho-text-muted: #4e6b63;
+  --ho-danger: #d94b4b;
+  --ho-warning: #f39c12;
+  --ho-blue: #3498db;
+  --ho-purple: #9b59b6;
+  
+  --ho-glass-clear: rgba(255, 255, 255, 0.45);
+  --ho-glass-solid: rgba(255, 255, 255, 0.85);
+  --ho-glass-border: rgba(255, 255, 255, 0.95);
+  --ho-glass-border-subtle: rgba(255, 255, 255, 0.5);
+  
+  --ho-radius-xl: 32px;
+  --ho-radius-lg: 20px;
+  --ho-radius-md: 12px;
+  
+  --ho-shadow-glass: 0 30px 60px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background: var(--paper); color: var(--ink); overflow-x: hidden; }
-.mono { font-family: 'JetBrains Mono', monospace; }
 
-/* Ambient Orbs */
-.ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.35; animation: float 22s infinite alternate; }
-.orb1 { width: 420px; height: 420px; background: #a3e4d7; top: -120px; left: -100px; }
-.orb2 { width: 460px; height: 460px; background: #fcefc9; bottom: -140px; right: -100px; animation-delay: -6s; }
-@keyframes float { 100% { transform: translate(40px, 40px) scale(1.1); } }
-
-/* App Layout */
-.shell { display: flex; width: 100vw; min-height: 100vh; position: relative; z-index: 1; }
-.main { flex: 1; min-width: 0; display: flex; flex-direction: column; transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
-
-/* Topbar */
-.topbar { display: flex; justify-content: space-between; align-items: center; padding: 2.5rem 3.5rem 1rem; background: transparent; z-index: 10; }
-.topbar h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.8rem; color: var(--void); }
-.topbar .sub { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.4rem; font-weight: 500; }
-.actions { display: flex; gap: 0.8rem; align-items: center; }
-
-.btn { border: none; border-radius: 999px; padding: 0.75rem 1.4rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.2s; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; }
-.btn.primary { background: var(--coral); color: #fff; box-shadow: 0 4px 15px rgba(239, 111, 91, 0.2); }
-.btn.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239, 111, 91, 0.35); background: #d95a46; }
-.btn.ghost { background: rgba(255, 255, 255, 0.7); color: var(--void); border: 1px solid var(--line); }
-.btn.ghost:hover { background: #fff; border-color: var(--void-soft); }
-
-/* Bento Grid */
-.bento-wrapper { padding: 1rem 3.5rem 4rem; flex: 1; }
-.bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; }
-
-.card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(25px) saturate(180%);
-  -webkit-backdrop-filter: blur(25px) saturate(180%);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
-  padding: 2rem;
-  overflow: hidden;
-  position: relative;
-  box-shadow: var(--shadow-glass);
-  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s;
-  display: flex;
-  flex-direction: column;
+body {
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  background-color: var(--ho-bg-airy);
+  color: var(--ho-text-main);
+  overflow-x: hidden; 
+  -webkit-font-smoothing: antialiased;
 }
-.card::before {
-  content: "";
-  position: absolute;
-  top: 0; left: -150%; width: 60%; height: 100%;
-  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.7) 45%, transparent 90%);
-  transform: skewX(-18deg);
-  transition: left 0.7s ease;
-  pointer-events: none;
+
+/* ---------- AMBIENT ORBS ---------- */
+.ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
+.ho-orb-1 { width: 550px; height: 550px; background: #76d7c4; top: -100px; left: -100px; }
+.ho-orb-2 { width: 600px; height: 600px; background: #fadbd8; bottom: -150px; right: -100px; animation-delay: -5s; }
+.ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 35%; left: 35%; opacity: 0.3; animation-delay: -10s; }
+@keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 60px) scale(1.15); } }
+
+.ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
+
+/* ---------- MAIN WORKSPACE ---------- */
+.ho-main-content { 
+  flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; 
+  overflow-y: auto; scrollbar-width: none;
+}
+.ho-main-content::-webkit-scrollbar { display: none; }
+
+/* TOP NAVBAR */
+.ho-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 2.2rem 3rem 1.2rem; flex-shrink: 0;
+  background: transparent;
   z-index: 20;
 }
-.card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(8, 64, 57, 0.1); border-color: var(--sage-soft); }
-.card:hover::before { left: 150%; }
-
-.card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-.card h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.3rem; color: var(--void); }
-
-/* 1. Main Trend Chart (Spans 8 Cols) */
-.c-chart { grid-column: span 8; }
-.chart-filter-bar { display: flex; gap: 0.5rem; background: rgba(13, 122, 110, 0.06); padding: 4px; border-radius: 999px; }
-.chart-tab { background: transparent; border: none; padding: 0.45rem 1rem; border-radius: 999px; font-weight: 700; font-size: 0.8rem; color: var(--ink-soft); cursor: pointer; transition: 0.2s; font-family: inherit; }
-.chart-tab.active { background: #fff; color: var(--void); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-
-.chart-visual-box {
-  width: 100%;
-  min-height: 270px;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  position: relative;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+.ho-topbar h1 { 
+  font-weight: 800; font-size: 1.8rem; color: var(--ho-teal-900); 
+  margin-bottom: 0.3rem; letter-spacing: -0.5px; 
+  display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
 }
-.chart-svg-main { position: absolute; inset: 0; width: 100%; height: 100%; padding: 1.5rem 1.5rem 2rem 3.5rem; overflow: visible; }
-.baseline-band { fill: rgba(66, 184, 157, 0.08); stroke: rgba(66, 184, 157, 0.3); stroke-dasharray: 4 4; }
-.trend-path { fill: none; stroke: var(--coral); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 6px 12px rgba(239, 111, 91, 0.35)); }
+.ho-brand-text { display: inline-flex; align-items: center; white-space: nowrap; }
+.ho-topbar p { font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 500; display: flex; align-items: center; gap: 0.5rem; max-width: 700px; line-height: 1.5;}
 
-.chart-axis-y { position: absolute; left: 1rem; top: 1.5rem; bottom: 2rem; display: flex; flex-direction: column; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--ink-soft); font-weight: 600; }
-.chart-axis-x { position: absolute; left: 3.5rem; right: 1.5rem; bottom: 0.6rem; display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--ink-soft); font-weight: 600; }
-.chart-legend { display: flex; gap: 1.2rem; align-items: center; margin-top: 1rem; font-size: 0.78rem; font-weight: 600; color: var(--ink-soft); }
-.legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 0.3rem; }
+.ho-topbar-actions { display: flex; gap: 1rem; align-items: center; }
 
-/* 2. Anomaly Alerts Center (Spans 4 Cols) */
-.c-alerts { grid-column: span 4; }
-.alert-feed { display: flex; flex-direction: column; gap: 0.9rem; flex: 1; overflow-y: auto; }
-.alert-card {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 1.1rem 1.2rem;
-  display: flex;
-  gap: 0.9rem;
-  align-items: flex-start;
-  transition: 0.2s;
+/* Buttons */
+.ho-btn-primary {
+  background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); color: #fff;
+  border: none; border-radius: 999px; padding: 0.85rem 1.8rem; font-weight: 700; font-size: 0.95rem;
+  cursor: pointer; box-shadow: 0 10px 25px rgba(13, 122, 110, 0.25); transition: 0.25s; text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
 }
-.alert-card:hover { transform: translateY(-2px); border-color: var(--coral); background: #fff; box-shadow: 0 8px 20px rgba(239, 111, 91, 0.1); }
-.alert-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
-.alert-icon.warn { background: var(--coral-soft); color: var(--coral); }
-.alert-icon.info { background: var(--sage-soft); color: var(--sage); }
+.ho-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(13, 122, 110, 0.35); }
+.ho-btn-primary:active { transform: scale(0.96); }
 
-.alert-body strong { display: block; font-size: 0.92rem; color: var(--void); margin-bottom: 0.2rem; font-weight: 700; }
-.alert-body p { font-size: 0.8rem; color: var(--ink-soft); line-height: 1.45; }
-.alert-time { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--ink-soft); margin-top: 0.4rem; display: block; }
-
-/* 3. Multi-Metric Correlation Matrix (Spans 6 Cols) */
-.c-matrix { grid-column: span 6; }
-.matrix-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.matrix-card {
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 1.2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+.ho-btn-ghost {
+  padding: 0.85rem 1.8rem; background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border);
+  border-radius: 999px; color: var(--ho-teal-900); font-weight: 700; font-size: 0.95rem;
+  cursor: pointer; text-decoration: none; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
 }
-.matrix-header { display: flex; justify-content: space-between; align-items: center; }
-.matrix-header strong { font-size: 0.9rem; color: var(--void); }
-.matrix-score { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
-.matrix-score.neg { background: var(--coral-soft); color: #c0392b; }
-.matrix-score.pos { background: var(--sage-soft); color: var(--sage); }
-.matrix-desc { font-size: 0.8rem; color: var(--ink-soft); line-height: 1.45; }
+.ho-btn-ghost:hover { background: #fff; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.1); }
+.ho-btn-ghost:active { transform: scale(0.96); }
 
-/* 4. AI Trend Synthesis (Spans 6 Cols) */
-.c-synthesis { grid-column: span 6; background: linear-gradient(135deg, var(--void), var(--void-soft)); color: #fff; border: none; }
-.c-synthesis::before { background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.12) 45%, transparent 90%); }
-.c-synthesis h3 { color: #fff; }
-.synthesis-box { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 1rem; }
-.synthesis-text { font-size: 0.95rem; color: #dcebe8; line-height: 1.65; }
-.synthesis-tags { display: flex; gap: 0.6rem; flex-wrap: wrap; }
-.synth-pill { font-size: 0.75rem; font-weight: 700; background: rgba(255, 255, 255, 0.12); padding: 0.35rem 0.85rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.2); }
+/* ---------- MOSAIC GRID ---------- */
+.ho-workspace-grid {
+  display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem;
+  padding: 0.5rem 3rem 2.5rem; flex: 1 0 auto; min-height: 0;
+}
 
+/* Base Panel Glass Style */
+.ho-panel {
+  background: var(--ho-glass-clear);
+  backdrop-filter: blur(50px) saturate(200%); -webkit-backdrop-filter: blur(50px) saturate(200%);
+  border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
+  padding: 1.8rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass);
+  height: auto; /* Natural scrolling */
+  animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes hoSlideUp { from { opacity: 0; transform: translateY(35px); } to { opacity: 1; transform: translateY(0); } }
+
+.ho-panel-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; flex-shrink: 0; flex-wrap: wrap; gap: 1rem; }
+.ho-panel-header h2 { font-weight: 800; font-size: 1.2rem; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem; }
+.ho-badge { background: #fff; border: 1px solid var(--ho-glass-border); padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ho-teal-700); box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
+
+/* Source Chip */
+.ho-source-chip {
+  background: rgba(13, 122, 110, 0.08); border: 1px solid rgba(13, 122, 110, 0.15);
+  font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--ho-teal-700);
+  padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.5rem;
+}
+
+/* --- FILTER TOOLBAR (Spans 12) --- */
+.ho-toolbar {
+  grid-column: span 12; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;
+  background: rgba(255,255,255,0.7); border: 1px solid var(--ho-glass-border); border-radius: 20px;
+  padding: 1rem 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+.ho-filter-group { display: flex; align-items: center; gap: 0.8rem; }
+.ho-select {
+  background: #fff; border: 1px solid var(--ho-glass-border-subtle); padding: 0.6rem 1rem;
+  border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; color: var(--ho-teal-900);
+  outline: none; cursor: pointer; transition: 0.2s;
+}
+.ho-select:focus { border-color: var(--ho-teal-600); box-shadow: 0 0 0 3px rgba(13, 122, 110, 0.1); }
+
+/* --- 1. MAIN TRAJECTORY CHART (Spans 8) --- */
+.ho-chart-panel { grid-column: span 8; }
+
+.ho-tabs { display: flex; gap: 0.5rem; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--ho-glass-border-subtle); padding-bottom: 0.5rem; margin-bottom: 1.5rem;}
+.ho-tabs::-webkit-scrollbar { display: none; }
+.ho-tab { background: transparent; border: none; font-size: 0.9rem; font-weight: 700; color: var(--ho-text-muted); padding: 0.5rem 1rem; cursor: pointer; white-space: nowrap; border-radius: 999px; transition: 0.2s;}
+.ho-tab.active { background: #fff; color: var(--ho-teal-900); box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+
+.ho-chart-container {
+  flex: 1; background: rgba(255,255,255,0.7); border: 1px solid var(--ho-glass-border-subtle);
+  border-radius: 16px; padding: 1.5rem 1rem 1rem 1rem; display: flex; flex-direction: column; justify-content: flex-end;
+  position: relative; min-height: 280px; margin-bottom: 1.5rem;
+}
+.ho-chart-bars {
+  display: flex; justify-content: space-between; align-items: flex-end; height: 200px; gap: 0.8rem; padding: 0 1rem;
+}
+.ho-bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; flex: 1; height: 100%; justify-content: flex-end;}
+.ho-bar {
+  width: 100%; max-width: 40px; background: linear-gradient(to top, var(--ho-teal-600), var(--ho-mint-400));
+  border-radius: 8px 8px 4px 4px; box-shadow: 0 4px 10px rgba(66, 184, 157, 0.2);
+  transition: 0.3s ease; position: relative; cursor: pointer;
+}
+.ho-bar:hover { background: linear-gradient(to top, var(--ho-teal-900), var(--ho-teal-600)); transform: scaleY(1.02); transform-origin: bottom; }
+.ho-bar.ho-anomaly { background: linear-gradient(to top, var(--ho-danger), var(--ho-coral)); box-shadow: 0 4px 10px rgba(217, 75, 75, 0.3); }
+
+.ho-bar-tooltip {
+  position: absolute; top: -35px; left: 50%; transform: translateX(-50%); background: var(--ho-teal-900); color: #fff;
+  padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; opacity: 0; transition: 0.2s; pointer-events: none; white-space: nowrap; z-index: 10;
+}
+.ho-bar:hover .ho-bar-tooltip { opacity: 1; top: -40px; }
+.ho-bar-label { font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 700; font-family: 'JetBrains Mono', monospace;}
+
+/* Chart Summary Strip */
+.ho-trend-summary-strip {
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+  background: #fff; border: 1px solid var(--ho-glass-border-subtle); padding: 1.2rem; border-radius: 16px;
+}
+.ho-tss-item { display: flex; flex-direction: column; gap: 0.3rem; }
+.ho-tss-label { font-size: 0.75rem; font-weight: 800; color: var(--ho-text-muted); text-transform: uppercase; letter-spacing: 0.05em;}
+.ho-tss-val { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; font-weight: 800; color: var(--ho-teal-900); display: flex; align-items: baseline; gap: 0.4rem;}
+.ho-tss-val span { font-size: 0.8rem; font-family: 'Inter', sans-serif; font-weight: 600;}
+
+/* --- 2. METRIC CARDS ROW (Spans 4) --- */
+.ho-metrics-panel { grid-column: span 4; display: flex; flex-direction: column; gap: 1rem;}
+
+.ho-metric-card {
+  background: rgba(255,255,255,0.85); border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-lg);
+  padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between; gap: 0.8rem;
+  box-shadow: 0 4px 15px rgba(13, 122, 110, 0.04); transition: 0.2s;
+}
+.ho-metric-card:hover { background: #fff; border-color: var(--ho-teal-600); transform: translateY(-3px); box-shadow: 0 15px 35px rgba(13, 122, 110, 0.08); }
+.ho-mc-head { display: flex; justify-content: space-between; align-items: flex-start; }
+.ho-mc-title { font-size: 0.8rem; color: var(--ho-teal-900); font-weight: 800; display: flex; flex-direction: column;}
+.ho-mc-val { font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; font-weight: 800; color: var(--ho-teal-900); margin-top: 0.3rem;}
+.ho-mc-change { font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 0.3rem;}
+.ho-mc-change.up { color: var(--ho-danger); } /* Up can be red for HR */
+.ho-mc-change.down { color: var(--ho-blue); }
+.ho-mc-change.stable { color: var(--ho-text-muted); }
+
+/* --- 3. DETECTED DEVIATIONS & STABLE (Spans 6 each) --- */
+.ho-split-panel { grid-column: span 6; display: flex; flex-direction: column;}
+.ho-alerts-feed { display: flex; flex-direction: column; gap: 1rem; }
+
+.ho-alert-card {
+  background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 14px;
+  padding: 1.2rem; display: flex; flex-direction: column; gap: 0.8rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: 0.2s;
+}
+.ho-alert-card:hover { transform: translateX(3px); border-color: var(--ho-coral); box-shadow: 0 8px 25px rgba(224, 122, 104, 0.12); }
+.ho-alert-card.stable-card:hover { border-color: var(--ho-mint-400); box-shadow: 0 8px 25px rgba(66, 184, 157, 0.12); }
+
+.ho-ac-top { display: flex; justify-content: space-between; align-items: flex-start;}
+.ho-ac-top strong { font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800; display: block; margin-bottom: 0.3rem;}
+.ho-ac-status { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; }
+.ho-ac-status.attn { background: var(--ho-coral-soft); color: var(--ho-danger); }
+.ho-ac-status.good { background: rgba(46, 204, 113, 0.15); color: #27ae60; }
+
+.ho-ac-data { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; background: var(--ho-bg-airy); padding: 0.8rem; border-radius: 10px;}
+.ho-ac-data div { display: flex; flex-direction: column; }
+.ho-ac-data span { font-size: 0.7rem; font-weight: 700; color: var(--ho-text-muted); text-transform: uppercase; margin-bottom: 0.2rem;}
+.ho-ac-data b { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--ho-teal-900); }
+
+/* --- 4. CROSS-METRIC COMPARISON (Spans 6) --- */
+.ho-correlation-panel { grid-column: span 6; }
+.ho-corr-box { background: rgba(255,255,255,0.7); border: 1px dashed var(--ho-glass-border-subtle); border-radius: 16px; padding: 1.5rem; text-align: center;}
+.ho-corr-metrics { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-bottom: 1rem;}
+.ho-corr-metrics span { font-weight: 800; font-size: 1.1rem; color: var(--ho-teal-900); }
+.ho-corr-metrics .vs { color: var(--ho-text-muted); font-size: 0.8rem; text-transform: uppercase; }
+.ho-corr-stat { font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; font-weight: 800; color: var(--ho-teal-600); margin-bottom: 1rem;}
+.ho-corr-desc { font-size: 0.9rem; color: var(--ho-text-muted); line-height: 1.5; font-weight: 500;}
+
+/* --- 5. REPORT-BASED TRENDS (Spans 6) --- */
+.ho-report-panel { grid-column: span 6; }
+.ho-report-card { background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 14px; padding: 1.2rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02);}
+.ho-rc-head { display: flex; justify-content: space-between; align-items: center;}
+.ho-rc-head strong { font-size: 1.05rem; font-weight: 800; color: var(--ho-teal-900);}
+.ho-rc-compare { display: flex; justify-content: space-between; align-items: center; background: var(--ho-bg-airy); padding: 1rem; border-radius: 10px;}
+.ho-rc-col { display: flex; flex-direction: column; gap: 0.3rem;}
+.ho-rc-col span { font-size: 0.75rem; font-weight: 700; color: var(--ho-text-muted); text-transform: uppercase;}
+.ho-rc-col b { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; color: var(--ho-teal-900); }
+
+/* --- 6. AI HEALTH INSIGHT (Spans 12) --- */
+.ho-ai-insight {
+  grid-column: span 12; background: linear-gradient(135deg, var(--ho-teal-900), var(--ho-teal-700));
+  color: #fff; padding: 2rem 2.5rem; border-radius: var(--ho-radius-xl);
+  display: flex; align-items: flex-start; gap: 1.5rem; box-shadow: 0 15px 35px rgba(11, 94, 85, 0.2);
+}
+.ho-ai-icon { font-size: 2.5rem; animation: hoPulse 2s infinite alternate; }
+.ho-ai-content { flex: 1; }
+.ho-ai-content h3 { font-family: 'Fraunces', serif; font-size: 1.4rem; margin-bottom: 0.6rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;}
+.ho-ai-content p { font-size: 0.95rem; line-height: 1.6; color: rgba(255,255,255,0.9); font-weight: 500; margin-bottom: 1.2rem;}
+
+.ho-safety-disclaimer {
+  background: rgba(255,255,255,0.1); border: 1px dashed rgba(255,255,255,0.3); padding: 1rem 1.2rem;
+  border-radius: 12px; font-size: 0.8rem; font-weight: 600; color: #fff; display: flex; align-items: flex-start; gap: 0.8rem; line-height: 1.5;
+}
+
+
+/* ==========================================================
+   DEDICATED MOBILE-ONLY VIEWPORT RULES (PHONES)
+   ========================================================== */
 @media (max-width: 1200px) {
-  .bento { grid-template-columns: 1fr; }
-  .c-chart, .c-alerts, .c-matrix, .c-synthesis { grid-column: span 1; }
+  .ho-chart-panel, .ho-metrics-panel, .ho-split-panel, .ho-correlation-panel, .ho-report-panel { grid-column: span 12; }
+  .ho-metrics-panel { flex-direction: row; flex-wrap: wrap; }
+  .ho-metric-card { flex: 1; min-width: 200px; }
 }
+
 @media (max-width: 768px) {
-  .shell { flex-direction: column; width: 100%; }
-  .topbar { padding: 1.2rem 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
-  .bento-wrapper { padding: 1.5rem; }
-  .matrix-grid { grid-template-columns: 1fr; }
+  /* Clear Mobile Navbar Overlap */
+  .ho-main-content { padding-top: 5.6rem !important; }
+  
+  .ho-topbar {
+    flex-direction: column; align-items: flex-start; 
+    padding: 0 1.25rem 0.5rem !important; gap: 0.6rem;
+    position: static !important; background: transparent !important;
+    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+    mask-image: none !important; border: none !important;
+  }
+  .ho-topbar-actions { width: 100%; display: flex; flex-direction: column; }
+  .ho-topbar-actions a, .ho-topbar-actions button { width: 100%; text-align: center; }
+  .ho-topbar h1 { font-size: 1.5rem; }
+  
+  /* Single Column Stacking for Grid */
+  .ho-workspace-grid { 
+    grid-template-columns: 1fr !important; 
+    padding: 0.5rem 1.25rem 2.5rem !important;
+    gap: 1.2rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Unconstrain Panels so Mobile Page Scrolls Naturally */
+  .ho-panel {
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 1.5rem !important;
+    border-radius: 24px !important;
+    flex: none !important;
+  }
+
+  /* Toolbar */
+  .ho-toolbar { flex-direction: column; align-items: stretch; border-radius: 16px; padding: 1.2rem; }
+  .ho-filter-group { flex-direction: column; align-items: stretch; width: 100%; }
+
+  /* Main Chart Mobile Adjustments */
+  .ho-chart-bars { gap: 0.2rem; padding: 0 0.2rem; height: 160px;}
+  .ho-bar-label { font-size: 0.6rem; }
+  .ho-trend-summary-strip { flex-direction: column; }
+  
+  /* Horizontal Swipeable Row for Metric Cards */
+  .ho-metrics-panel {
+    display: flex !important; flex-direction: row !important;
+    overflow-x: auto; scroll-snap-type: x mandatory;
+    gap: 1rem; padding-bottom: 1rem;
+    margin: 0 -1.25rem; padding-left: 1.25rem; padding-right: 1.25rem;
+    scrollbar-width: none; background: transparent; border: none; box-shadow: none;
+  }
+  .ho-metrics-panel::-webkit-scrollbar { display: none; }
+  .ho-metric-card {
+    min-width: 75%; scroll-snap-align: start; flex-shrink: 0;
+  }
+
+  .ho-ai-insight { flex-direction: column; gap: 1rem; padding: 1.5rem; }
+  .ho-ai-icon { display: none; }
+  .ho-rc-compare { flex-direction: column; gap: 1rem; align-items: flex-start; }
 }
 </style>
 </head>
 <body>
 
-<div class="ambient"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+<div class="ho-ambient-canvas">
+  <div class="ho-glow-orb ho-orb-1"></div>
+  <div class="ho-glow-orb ho-orb-2"></div>
+  <div class="ho-glow-orb ho-orb-3"></div>
+</div>
 
-<div class="shell">
+<div class="ho-app-layout">
+  
   <!-- UNIVERSAL SIDEBAR IMPORT -->
   <%- include('../partials/sidebar') %>
 
-  <!-- MAIN EXPANDING DASHBOARD -->
-  <main class="main">
-    <header class="topbar">
+  <!-- SCOPED MAIN CONTENT -->
+  <main class="ho-main-content">
+    
+    <header class="ho-topbar">
       <div>
-        <h1>Trends & Anomaly Detection</h1>
-        <div class="sub">Longitudinal pattern recognition comparing historical baselines against live telemetry[cite: 3].</div>
+        <h1>
+          <span class="ho-brand-text">Health<span style="color:var(--ho-coral);">Orbit</span></span> 
+        </h1>
+        <p style="font-size: 1.2rem; font-weight: 800; color: var(--ho-teal-900); margin-bottom: 0.4rem;">Trends & Anomaly Detection</p>
+        <p>Track changes in your health measurements over time and identify unusual changes that may require attention.</p>
       </div>
-      <div class="actions">
-        <a href="/ai-analysis" class="btn ghost">AI Explanation</a>
-        <button class="btn primary" onclick="window.print()">Export Report</button>
+      <div class="ho-topbar-actions">
+        <a href="#ai-summary" class="ho-btn-ghost">✨ AI Explanation</a>
+        <button class="ho-btn-primary">📥 Export Report</button>
       </div>
     </header>
 
-    <div class="bento-wrapper">
-      <div class="bento">
-
-        <!-- 1. TIME-SERIES VISUALIZER (Spans 8 Cols) -->
-        <div class="card c-chart">
-          <div class="card-head">
-            <h3>Longitudinal Multi-Point Analysis</h3>
-            <div class="chart-filter-bar">
-              <button class="chart-tab active" onclick="switchMetric('bpm')">BPM</button>
-              <button class="chart-tab" onclick="switchMetric('spo2')">SpO₂</button>
-              <button class="chart-tab" onclick="switchMetric('sleep')">Sleep</button>
-              <button class="chart-tab" onclick="switchMetric('steps')">Steps</button>
-            </div>
-          </div>
-
-          <div class="chart-visual-box">
-            <div class="chart-axis-y">
-              <span>95</span>
-              <span>85</span>
-              <span>75</span>
-              <span>65</span>
-              <span>55</span>
-            </div>
-
-            <!-- SVG Time Series Curve -->
-            <svg class="chart-svg-main" viewBox="0 0 700 200" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="trendGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="var(--mist)" />
-                  <stop offset="60%" stop-color="var(--sage)" />
-                  <stop offset="100%" stop-color="var(--coral)" />
-                </linearGradient>
-              </defs>
-
-              <!-- Safe Baseline Target Band (65 - 75 BPM) -->
-              <rect x="0" y="80" width="700" height="60" class="baseline-band" />
-
-              <!-- User Trend Line with Smooth Interpolation -->
-              <path class="trend-path" d="M 10,130 C 120,135 180,120 280,125 C 380,130 460,95 560,70 C 620,55 670,40 690,45" stroke="url(#trendGrad)" />
-
-              <!-- Data Node Points -->
-              <circle cx="280" cy="125" r="5" fill="#fff" stroke="var(--sage)" stroke-width="3" />
-              <circle cx="560" cy="70" r="5" fill="#fff" stroke="var(--coral)" stroke-width="3" />
-              <circle cx="690" cy="45" r="6" fill="var(--coral)" stroke="#fff" stroke-width="2" />
-            </svg>
-
-            <div class="chart-axis-x">
-              <span>Week 1</span>
-              <span>Week 2</span>
-              <span>Week 3</span>
-              <span>Week 4</span>
-              <span>Week 5</span>
-              <span>Week 6</span>
-            </div>
-          </div>
-
-          <div class="chart-legend">
-            <div><span class="legend-dot" style="background: var(--coral);"></span> Recorded Values</div>
-            <div><span class="legend-dot" style="background: rgba(66, 184, 157, 0.4);"></span> Historical Baseline Window (65–75 BPM)[cite: 3]</div>
-          </div>
+    <div class="ho-workspace-grid">
+      
+      <!-- TOOLBAR / FILTERS -->
+      <div class="ho-toolbar">
+        <div class="ho-filter-group">
+          <span style="font-size: 0.8rem; font-weight: 800; color: var(--ho-teal-700); text-transform: uppercase;">Time Range:</span>
+          <select class="ho-select">
+            <option>7 Days</option>
+            <option selected>30 Days</option>
+            <option>3 Months</option>
+            <option>6 Months</option>
+            <option>1 Year</option>
+            <option>Custom Range</option>
+          </select>
         </div>
-
-        <!-- 2. ANOMALY ALERTS FEED (Spans 4 Cols) -->
-        <div class="card c-alerts">
-          <div class="card-head">
-            <h3>Detected Deviations</h3>
-            <span style="font-size: 0.75rem; font-weight: 700; color: var(--coral); background: var(--coral-soft); padding: 3px 8px; border-radius: 6px;">2 Active</span>
-          </div>
-
-          <div class="alert-feed">
-            <div class="alert-card">
-              <div class="alert-icon warn">⚠️</div>
-              <div class="alert-body">
-                <strong>Elevated Resting BPM</strong>
-                <p>Resting heart rate shifted from historical baseline (68–72 BPM) to 82 BPM over the last 14 days[cite: 3].</p>
-                <span class="alert-time">Detected: Today, 08:30 AM</span>
-              </div>
-            </div>
-
-            <div class="alert-card">
-              <div class="alert-icon warn">📉</div>
-              <div class="alert-body">
-                <strong>Sleep Duration Reduction</strong>
-                <p>Deep sleep duration decreased by 1.2 hrs/night compared to previous 30-day baseline[cite: 3].</p>
-                <span class="alert-time">Detected: Aug 18, 2026</span>
-              </div>
-            </div>
-
-            <div class="alert-card">
-              <div class="alert-icon info">✓</div>
-              <div class="alert-body">
-                <strong>Oxygen Saturation Optimal</strong>
-                <p>SpO₂ values remain consistent within normal physiological range (98–99%)[cite: 3].</p>
-                <span class="alert-time">Status: Stable</span>
-              </div>
-            </div>
-          </div>
+        <div class="ho-filter-group" style="margin-left: auto;">
+          <span class="ho-source-chip">Source: Health Connect</span>
+          <span class="ho-source-chip">Source: Medical Report</span>
         </div>
-
-        <!-- 3. CORRELATION MATRIX (Spans 6 Cols) -->
-        <div class="card c-matrix">
-          <div class="card-head">
-            <h3>Cross-Metric Correlation Hub</h3>
-            <span style="font-size: 0.75rem; color: var(--ink-soft); font-weight: 600;">Module 7 Engine</span>
-          </div>
-
-          <div class="matrix-grid">
-            <div class="matrix-card">
-              <div class="matrix-header">
-                <strong>Sleep vs. Heart Rate</strong>
-                <span class="matrix-score neg">r = -0.74</span>
-              </div>
-              <p class="matrix-desc">Strong inverse correlation: nights with under 6.5h sleep consistently precede elevated morning BPM spikes[cite: 3].</p>
-            </div>
-
-            <div class="matrix-card">
-              <div class="matrix-header">
-                <strong>Steps vs. Active Energy</strong>
-                <span class="matrix-score pos">r = +0.88</span>
-              </div>
-              <p class="matrix-desc">Direct linear alignment: active calorie burn targets correlate predictably with step cadence goals[cite: 3].</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- 4. AI TREND SYNTHESIS (Spans 6 Cols) -->
-        <div class="card c-synthesis">
-          <div class="card-head">
-            <h3>✨ Longitudinal AI Twin Analysis</h3>
-          </div>
-          <div class="synthesis-box">
-            <p class="synthesis-text">
-              "Multiple health measurements have changed compared with your previous records[cite: 3]. Over the past 6 weeks, your activity cadence remained steady, but resting heart rate shifted upwards alongside a reduction in total sleep volume[cite: 3]. This is not a diagnosis — always discuss these trends with your qualified physician[cite: 3]."
-            </p>
-            <div class="synthesis-tags">
-              <span class="synth-pill">Baseline Deviation: Moderate</span>
-              <span class="synth-pill">Confidence: 94.8%</span>
-              <span class="synth-pill">Doctor Summary Ready</span>
-            </div>
-          </div>
-        </div>
-
       </div>
+
+      <!-- 1. MAIN TRAJECTORY CHART (Spans 8) -->
+      <section class="ho-panel ho-chart-panel">
+        <div class="ho-panel-header">
+          <h2>Health Trend Analysis</h2>
+        </div>
+
+        <div class="ho-tabs">
+          <button class="ho-tab active">Heart Rate</button>
+          <button class="ho-tab">Resting Heart Rate</button>
+          <button class="ho-tab">SpO₂</button>
+          <button class="ho-tab">Sleep</button>
+          <button class="ho-tab">Steps</button>
+          <button class="ho-tab">Activity</button>
+        </div>
+        
+        <div class="ho-chart-container">
+          <!-- Baseline indicator line (CSS mock) -->
+          <div style="position: absolute; top: 40%; left: 0; right: 0; border-top: 1px dashed var(--ho-mint-400); opacity: 0.5;"></div>
+          
+          <div class="ho-chart-bars">
+            <!-- CSS Bar Chart Mockup (Day 1 to Day 5 example) -->
+            <div class="ho-bar-wrap">
+              <div class="ho-bar" style="height: 50%;"><div class="ho-bar-tooltip">72 BPM</div></div>
+              <span class="ho-bar-label">Day 1</span>
+            </div>
+            <div class="ho-bar-wrap">
+              <div class="ho-bar" style="height: 55%;"><div class="ho-bar-tooltip">74 BPM</div></div>
+              <span class="ho-bar-label">Day 2</span>
+            </div>
+            <div class="ho-bar-wrap">
+              <div class="ho-bar" style="height: 48%;"><div class="ho-bar-tooltip">71 BPM</div></div>
+              <span class="ho-bar-label">Day 3</span>
+            </div>
+            <div class="ho-bar-wrap">
+              <div class="ho-bar" style="height: 65%;"><div class="ho-bar-tooltip">78 BPM</div></div>
+              <span class="ho-bar-label">Day 4</span>
+            </div>
+            <div class="ho-bar-wrap">
+              <div class="ho-bar ho-anomaly" style="height: 80%;"><div class="ho-bar-tooltip">82 BPM</div></div>
+              <span class="ho-bar-label" style="color: var(--ho-danger); font-weight: 800;">Day 5</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Trend Summary -->
+        <div class="ho-trend-summary-strip">
+          <div class="ho-tss-item">
+            <span class="ho-tss-label">Current</span>
+            <div class="ho-tss-val">82 <span>BPM</span></div>
+          </div>
+          <div class="ho-tss-item">
+            <span class="ho-tss-label">Average</span>
+            <div class="ho-tss-val">76 <span>BPM</span></div>
+          </div>
+          <div class="ho-tss-item">
+            <span class="ho-tss-label">Min / Max</span>
+            <div class="ho-tss-val">68 / 84 <span>BPM</span></div>
+          </div>
+          <div class="ho-tss-item">
+            <span class="ho-tss-label">Change</span>
+            <div class="ho-tss-val" style="color: var(--ho-danger);">+8%</div>
+          </div>
+          <div class="ho-tss-item">
+            <span class="ho-tss-label">Trend</span>
+            <div class="ho-tss-val">↑ Increasing</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. METRIC CARDS ROW (Spans 4) -->
+      <section class="ho-metrics-panel">
+        
+        <div class="ho-metric-card">
+          <div class="ho-mc-head">
+            <div class="ho-mc-title">Heart Rate <span class="ho-source-chip" style="margin-top:0.5rem; margin-left: 0;">Wearable</span></div>
+          </div>
+          <div>
+            <div class="ho-mc-val">82 <small>BPM</small></div>
+            <div class="ho-mc-change up">↑ 8% from previous period</div>
+          </div>
+        </div>
+
+        <div class="ho-metric-card">
+          <div class="ho-mc-head">
+            <div class="ho-mc-title">SpO₂ <span class="ho-source-chip" style="margin-top:0.5rem;">Wearable</span></div>
+          </div>
+          <div>
+            <div class="ho-mc-val">98 <small>%</small></div>
+            <div class="ho-mc-change stable">→ Stable</div>
+          </div>
+        </div>
+
+        <div class="ho-metric-card">
+          <div class="ho-mc-head">
+            <div class="ho-mc-title">Sleep <span class="ho-source-chip" style="margin-top:0.5rem;">Wearable</span></div>
+          </div>
+          <div>
+            <div class="ho-mc-val">6<small>h</small> 15<small>m</small></div>
+            <div class="ho-mc-change down">↓ 4% from previous period</div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 3. DETECTED DEVIATIONS (Spans 6) -->
+      <section class="ho-panel ho-split-panel">
+        <div class="ho-panel-header">
+          <h2>Detected Deviations</h2>
+        </div>
+        
+        <div class="ho-alerts-feed">
+          <div class="ho-alert-card">
+            <div class="ho-ac-top">
+              <div>
+                <strong>Elevated Resting Heart Rate</strong>
+                <span style="font-size: 0.75rem; color: var(--ho-text-muted);">Detected: Today, 08:30 AM</span>
+              </div>
+              <span class="ho-ac-status attn">Needs Attention</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--ho-text-muted); margin-bottom: 0.5rem;">Heart rate is higher than the user's recent baseline[cite: 2].</p>
+            <div class="ho-ac-data">
+              <div><span>Current</span><b>82 BPM</b></div>
+              <div><span>Baseline</span><b>68–72 BPM</b></div>
+              <div><span>Deviation</span><b style="color: var(--ho-danger);">+12%</b></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. NORMAL / STABLE SECTION (Spans 6) -->
+      <section class="ho-panel ho-split-panel">
+        <div class="ho-panel-header">
+          <h2>Stable Measurements</h2>
+        </div>
+        
+        <div class="ho-alerts-feed">
+          <div class="ho-alert-card stable-card">
+            <div class="ho-ac-top">
+              <strong style="color: var(--ho-teal-700);">✓ Oxygen Saturation Stable</strong>
+              <span class="ho-ac-status good">Stable</span>
+            </div>
+            <div class="ho-ac-data" style="grid-template-columns: 1fr;">
+              <div><span>Recorded Range</span><b>98–99%</b></div>
+            </div>
+          </div>
+
+          <div class="ho-alert-card stable-card">
+            <div class="ho-ac-top">
+              <strong style="color: var(--ho-teal-700);">✓ Step Activity Stable</strong>
+              <span class="ho-ac-status good">Stable</span>
+            </div>
+            <div class="ho-ac-data" style="grid-template-columns: 1fr;">
+              <div><span>Recorded Range</span><b>7,500–9,000 steps/day</b></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. HISTORICAL COMPARISON & CROSS-METRIC (Spans 6 Each) -->
+      <section class="ho-panel ho-split-panel">
+        <div class="ho-panel-header">
+          <h2>Historical Comparison</h2>
+        </div>
+        <div class="ho-report-card">
+          <div class="ho-rc-head">
+            <strong>Average BPM Comparison</strong>
+          </div>
+          <div class="ho-rc-compare">
+            <div class="ho-rc-col"><span>This Month</span><b>78 BPM</b></div>
+            <div class="ho-rc-col"><span>Previous Month</span><b>72 BPM</b></div>
+            <div class="ho-rc-col"><span>Change</span><b style="color: var(--ho-danger);">+8.3%</b></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ho-panel ho-split-panel">
+        <div class="ho-panel-header">
+          <h2>Health Metric Relationships</h2>
+        </div>
+        <div class="ho-corr-box">
+          <div class="ho-corr-metrics">
+            <span>Sleep</span> <span class="vs">vs</span> <span>Resting HR</span>
+          </div>
+          <div class="ho-corr-stat">Correlation: -0.62</div>
+          <p class="ho-corr-desc">Lower sleep duration was associated with higher resting heart rate during this period[cite: 2].</p>
+        </div>
+      </section>
+
+      <!-- 6. REPORT-BASED TRENDS (Spans 12) -->
+      <section class="ho-panel ho-report-panel" style="grid-column: span 12;">
+        <div class="ho-panel-header">
+          <h2>Medical Report Trends</h2>
+          <span class="ho-source-chip" style="margin: 0;">Source: OCR</span>
+        </div>
+        <div class="ho-report-card" style="max-width: 600px;">
+          <div class="ho-rc-head">
+            <strong>Vitamin D Trend</strong>
+          </div>
+          <div class="ho-rc-compare">
+            <div class="ho-rc-col"><span>Latest Report</span><b>18 ng/mL</b></div>
+            <div class="ho-rc-col"><span>Previous Report</span><b>24 ng/mL</b></div>
+            <div class="ho-rc-col"><span>Change</span><b style="color: var(--ho-danger);">-25%</b></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. AI HEALTH INSIGHT (Spans 12) -->
+      <section class="ho-ai-insight" id="ai-summary">
+        <div class="ho-ai-icon">✨</div>
+        <div class="ho-ai-content">
+          <h3>AI Trend Summary</h3>
+          <p>During the selected period, your average resting heart rate increased compared with the previous period, while average sleep duration decreased[cite: 2]. These are observations from your recorded data and are not a medical diagnosis[cite: 2].</p>
+          
+          <div class="ho-safety-disclaimer">
+            <span style="font-size: 1.4rem;">🛡️</span> 
+            <div>
+              <strong>Decision Support Notice:</strong><br>
+              AI-generated health information is for informational purposes and does not replace professional medical advice[cite: 2]. Please discuss these observations with a qualified healthcare professional[cite: 2].
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
+
+    <!-- UNIVERSAL FOOTER -->
+    <%- include('../partials/footer') %>
+
   </main>
 </div>
 
-<script>
-  function switchMetric(metric) {
-    document.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
-  }
-</script>
 </body>
 </html>

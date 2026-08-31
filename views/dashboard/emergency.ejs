@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<link rel="icon" href="/images/Logo.png">
+<head>
+  <%- include('../partials/header', { title: 'HealthOrbit — Emergency Network' }) %>
+
+  <style>
+    /* 
+    ==================================================================
+      STRICTLY SCOPED CSS FOR ADVANCED EMERGENCY UI & MAP
+    ================================================================== 
+    */
+    :root {
+      --ho-bg-airy: #edf6f4;
+      --ho-teal-900: #0b5e55;
+      --ho-teal-700: #0d7a6e;
+      --ho-teal-600: #109485;
+      --ho-mint-400: #42b89d;
+      --ho-coral: #e07a68;
+      --ho-coral-soft: #fbe4de;
+      --ho-text-main: #0f1c1a;
+      --ho-text-muted: #4e6b63;
+      --ho-danger: #e74c3c;
+      --ho-danger-dark: #c0392b;
+      --ho-danger-glow: rgba(231, 76, 60, 0.4);
+      --ho-warning: #f39c12;
+      --ho-blue: #3498db;
+      
+      --ho-glass-clear: rgba(255, 255, 255, 0.5);
+      --ho-glass-solid: rgba(255, 255, 255, 0.88);
+      --ho-glass-border: rgba(255, 255, 255, 0.95);
+      --ho-glass-border-subtle: rgba(255, 255, 255, 0.5);
+      
+      --ho-radius-xl: 32px;
+      --ho-radius-lg: 24px;
+      --ho-radius-md: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      background-color: var(--ho-bg-airy);
+      color: var(--ho-text-main);
+      overflow-x: hidden; 
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
+
+    .ho-main-content { 
+      flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; 
+      overflow-y: auto; scrollbar-width: none;
+    }
+    .ho-main-content::-webkit-scrollbar { display: none; }
+
+    /* --- TOP NAVBAR --- */
+    .ho-topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 2.5rem 3rem 1.2rem; flex-shrink: 0; background: transparent; z-index: 20;
+    }
+    .ho-topbar h1 { font-weight: 800; font-size: 1.8rem; color: var(--ho-teal-900); margin-bottom: 0.3rem; letter-spacing: -0.5px;}
+    .ho-topbar p { font-size: 0.95rem; color: var(--ho-text-muted); font-weight: 500; }
+    
+    .ho-btn-danger-pill {
+      background: linear-gradient(135deg, var(--ho-danger), var(--ho-danger-dark)); color: #fff;
+      border: none; border-radius: 999px; padding: 0.8rem 1.6rem; font-weight: 800; font-size: 0.95rem;
+      cursor: pointer; box-shadow: 0 8px 20px var(--ho-danger-glow); transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; justify-content: center;
+    }
+    .ho-btn-danger-pill:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(231, 76, 60, 0.6); }
+    .ho-btn-danger-pill:active { transform: scale(0.96); }
+
+    /* --- MOSAIC GRID --- */
+    .ho-mosaic-grid {
+      display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.8rem;
+      padding: 0.5rem 3rem 3rem; flex: 1 0 auto;
+    }
+
+    /* Base Premium Panel */
+    .ho-panel {
+      background: var(--ho-glass-clear);
+      backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
+      border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
+      padding: 2.2rem; display: flex; flex-direction: column; 
+      box-shadow: 0 20px 50px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
+      opacity: 0; animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .ho-panel:hover { transform: translateY(-2px); box-shadow: 0 30px 60px rgba(13, 122, 110, 0.12); background: rgba(255,255,255,0.75);}
+    
+    @keyframes hoSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+    .ho-delay-1 { animation-delay: 0.1s; } .ho-delay-2 { animation-delay: 0.2s; } .ho-delay-3 { animation-delay: 0.3s; } .ho-delay-4 { animation-delay: 0.4s; }
+
+    .ho-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.8rem; flex-shrink: 0; flex-wrap: wrap; gap: 1rem;}
+    .ho-panel-header h2 { font-weight: 800; font-size: 1.35rem; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.6rem; margin: 0;}
+
+    /* --- 1. ADVANCED SOS RADAR HERO --- */
+    .ho-hero-sos {
+      grid-column: span 12;
+      background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(251, 228, 222, 0.8));
+      border: 1px solid rgba(231, 76, 60, 0.2);
+      flex-direction: row; align-items: center; justify-content: space-between;
+      padding: 3rem; overflow: hidden; position: relative;
+    }
+    .ho-sos-text-content { flex: 1; z-index: 5; max-width: 60%; }
+    .ho-sos-text-content h2 { font-family: 'Fraunces', serif; font-size: 2.6rem; font-weight: 700; color: var(--ho-danger-dark); line-height: 1.1; margin-bottom: 0.8rem; letter-spacing: -0.5px;}
+    .ho-sos-text-content p { font-size: 1.05rem; color: var(--ho-teal-900); line-height: 1.6; font-weight: 500; margin-bottom: 1.8rem; }
+    
+    .ho-hero-tag {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(231, 76, 60, 0.1); color: var(--ho-danger);
+      padding: 6px 14px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;
+    }
+    .ho-hero-tag .dot { width: 8px; height: 8px; background: var(--ho-danger); border-radius: 50%; box-shadow: 0 0 8px var(--ho-danger); animation: hoBlink 1.5s infinite; }
+    @keyframes hoBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    /* Interactive Radar Button */
+    .ho-radar-zone {
+      position: relative; width: 220px; height: 220px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 5;
+    }
+    .ho-radar-ring {
+      position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--ho-danger);
+      animation: hoRadarPulse 2.5s infinite cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .ho-radar-ring:nth-child(2) { animation-delay: 0.8s; }
+    .ho-radar-ring:nth-child(3) { animation-delay: 1.6s; }
+    
+    @keyframes hoRadarPulse {
+      0% { transform: scale(0.4); opacity: 1; stroke-width: 4px; }
+      100% { transform: scale(1.8); opacity: 0; stroke-width: 1px; }
+    }
+
+    .ho-giant-sos-btn {
+      position: relative; width: 120px; height: 120px; border-radius: 50%;
+      background: linear-gradient(135deg, #ff4b2b, #c0392b); color: #fff;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border: 6px solid #fff; box-shadow: 0 15px 35px var(--ho-danger-glow);
+      cursor: pointer; z-index: 10; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .ho-giant-sos-btn:hover { transform: scale(1.08); box-shadow: 0 20px 45px rgba(231, 76, 60, 0.6); }
+    .ho-giant-sos-btn:active { transform: scale(0.9); }
+    .ho-giant-sos-btn span { font-family: 'JetBrains Mono', monospace; font-weight: 900; font-size: 2.2rem; letter-spacing: 2px;}
+
+    /* --- 2. LIQUID BLOOD PROFILE (Spans 4) --- */
+    .ho-profile-panel { grid-column: span 4; display: flex; flex-direction: column; }
+    
+    .ho-blood-vial {
+      width: 90px; height: 90px; margin: 0 auto 1.5rem;
+      background: rgba(231, 76, 60, 0.1); border: 3px solid rgba(231, 76, 60, 0.3);
+      border-radius: 30%; 
+      display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;
+      box-shadow: inset 0 0 20px rgba(231, 76, 60, 0.15), 0 10px 25px rgba(231, 76, 60, 0.1);
+      transform: rotate(45deg);
+    }
+    .ho-blood-liquid {
+      position: absolute; bottom: -10%; left: -50%; width: 200%; height: 100%;
+      background: linear-gradient(180deg, var(--ho-danger-dark), var(--ho-danger));
+      border-radius: 40%; animation: hoLiquidWave 4s infinite linear;
+    }
+    @keyframes hoLiquidWave { 100% { transform: rotate(360deg); } }
+    
+    .ho-blood-type {
+      position: relative; z-index: 5; color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 2.4rem; font-weight: 900; transform: rotate(-45deg); text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .ho-vial-info { text-align: center; margin-bottom: 2rem; }
+    .ho-vial-info h4 { font-size: 1.2rem; color: var(--ho-teal-900); font-weight: 800; }
+    .ho-vial-info p { font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 600;}
+
+    .ho-status-toggle {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #fff; padding: 1.2rem; border-radius: 16px;
+      border: 1px solid var(--ho-glass-border-subtle); margin-bottom: 0.8rem; transition: 0.2s;
+    }
+    .ho-status-toggle:hover { border-color: var(--ho-mint-400); transform: translateX(4px); }
+    .ho-st-text strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800;}
+    .ho-st-text span { font-size: 0.8rem; color: var(--ho-text-muted); font-weight: 600;}
+
+    /* Modern Toggle */
+    .ho-toggle { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0;}
+    .ho-toggle input { opacity: 0; width: 0; height: 0; }
+    .ho-toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(13, 122, 110, 0.15); transition: .4s; border-radius: 26px; }
+    .ho-toggle-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s cubic-bezier(0.16, 1, 0.3, 1); border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    .ho-toggle input:checked + .ho-toggle-slider { background-color: var(--ho-danger); }
+    .ho-toggle input:checked + .ho-toggle-slider:before { transform: translateX(22px); }
+
+    /* --- 3. LIVE COMMUNITY REQUESTS (Spans 8) --- */
+    .ho-requests-panel { grid-column: span 8; display: flex; flex-direction: column; }
+    .ho-live-indicator { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 700; color: var(--ho-mint-400); background: rgba(66, 184, 157, 0.1); padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(66, 184, 157, 0.2); }
+    .ho-live-indicator .dot { width: 6px; height: 6px; background: var(--ho-mint-400); border-radius: 50%; animation: hoBlink 1.5s infinite; }
+
+    .ho-req-list { display: flex; flex-direction: column; gap: 1.2rem; overflow-y: auto; flex: 1; padding-right: 0.5rem; }
+    .ho-req-list::-webkit-scrollbar { width: 5px; }
+    .ho-req-list::-webkit-scrollbar-thumb { background: rgba(13, 122, 110, 0.2); border-radius: 10px; }
+    
+    .ho-req-card {
+      background: #fff; border: 1px solid var(--ho-glass-border); border-radius: 20px;
+      padding: 1.8rem; display: flex; flex-direction: column; gap: 1.2rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.03); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .ho-req-card:hover { transform: translateY(-4px); box-shadow: 0 15px 35px rgba(13, 122, 110, 0.1); border-color: var(--ho-teal-600); }
+    .ho-req-card.urgent { border-left: 5px solid var(--ho-danger); }
+    
+    .ho-req-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .ho-req-title { display: flex; align-items: center; gap: 1rem; }
+    .ho-req-icon {
+      width: 48px; height: 48px; border-radius: 14px; background: var(--ho-coral-soft); color: var(--ho-danger);
+      display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; box-shadow: inset 0 0 10px rgba(255,255,255,0.5);
+    }
+    .ho-req-title-text strong { display: block; font-size: 1.2rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.2rem;}
+    .ho-req-title-text span { font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 600;}
+    
+    .ho-req-meta { display: flex; gap: 0.8rem; font-size: 0.85rem; color: var(--ho-teal-900); font-weight: 700; flex-wrap: wrap;}
+    .ho-req-meta div { display: flex; align-items: center; gap: 0.5rem; background: var(--ho-bg-airy); padding: 0.6rem 1rem; border-radius: 10px; border: 1px solid rgba(13, 122, 110, 0.05);}
+    
+    .ho-req-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; padding-top: 1.2rem; border-top: 1px dashed var(--ho-glass-border-subtle); }
+    
+    .ho-btn-action-primary {
+      background: var(--ho-teal-900); color: #fff; border: none; padding: 0.8rem 1.6rem;
+      border-radius: 12px; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(11, 94, 85, 0.2);
+    }
+    .ho-btn-action-primary:hover { background: var(--ho-teal-700); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(11, 94, 85, 0.3); }
+
+    /* --- 4. ✨ TACTICAL DISPATCH MAP (Spans 12) ✨ --- */
+    .ho-map-panel { grid-column: span 12; padding: 0; flex-direction: row; overflow: hidden; background: #fff; }
+    
+    /* The Interactive CSS Radar Map */
+    .ho-map-visual {
+      flex: 1.5; position: relative; background: #cbd5e1; overflow: hidden; min-height: 400px;
+    }
+    
+    /* High-tech grid background */
+    .ho-map-grid-bg {
+      position: absolute; inset: 0;
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.8;
+    }
+    
+    /* Pulsing user location */
+    .ho-map-user-pin {
+      position: absolute; top: 50%; left: 40%; width: 20px; height: 20px;
+      background: var(--ho-blue); border: 3px solid #fff; border-radius: 50%;
+      transform: translate(-50%, -50%); box-shadow: 0 0 15px var(--ho-blue); z-index: 10;
+    }
+    .ho-map-user-pin::before {
+      content: ''; position: absolute; inset: -20px; border: 2px solid var(--ho-blue);
+      border-radius: 50%; animation: hoRadarPulse 2s infinite ease-out;
+    }
+
+    /* Hospital Pins */
+    .ho-map-hos-pin {
+      position: absolute; width: 44px; height: 44px; background: #fff; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2); transform: translate(-50%, -50%); cursor: pointer;
+      border: 2px solid var(--ho-teal-600); z-index: 5; transition: 0.2s;
+    }
+    .ho-map-hos-pin:hover { transform: translate(-50%, -50%) scale(1.15); z-index: 15; box-shadow: 0 10px 25px rgba(13, 122, 110, 0.4); }
+    .ho-map-hos-pin::after {
+      content: attr(data-name); position: absolute; bottom: -28px; background: rgba(0,0,0,0.8);
+      color: #fff; font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 6px;
+      white-space: nowrap; pointer-events: none; opacity: 0; transition: 0.2s;
+    }
+    .ho-map-hos-pin:hover::after { opacity: 1; bottom: -32px; }
+
+    /* The list of nearby hospitals next to the map */
+    .ho-map-list {
+      flex: 1; padding: 2.2rem; display: flex; flex-direction: column; gap: 1.2rem;
+      background: #fff; z-index: 2; box-shadow: -10px 0 30px rgba(0,0,0,0.03); overflow-y: auto; max-height: 450px;
+    }
+    
+    .ho-nearby-card {
+      background: var(--ho-bg-airy); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px;
+      padding: 1.2rem; display: flex; flex-direction: column; gap: 1rem;
+      transition: 0.2s ease; cursor: pointer; position: relative; overflow: hidden;
+    }
+    .ho-nearby-card:hover { transform: translateX(-5px); border-color: var(--ho-teal-600); box-shadow: 0 10px 25px rgba(13, 122, 110, 0.1); background: #fff;}
+    .ho-nearby-card::before { content:''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--ho-teal-600); transition: width 0.2s;}
+    .ho-nearby-card:hover::before { width: 6px; }
+
+    .ho-nc-top { display: flex; gap: 1rem; align-items: flex-start; }
+    .ho-nc-info strong { display: block; font-size: 1.05rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.2rem; line-height: 1.2;}
+    .ho-nc-info span { display: block; font-size: 0.8rem; color: var(--ho-text-muted); font-weight: 600; margin-bottom: 0.2rem;}
+    
+    .ho-nc-actions { display: flex; gap: 0.8rem; margin-top: 0.5rem; }
+    .ho-nc-btn { 
+      flex: 1; padding: 0.8rem 0; text-align: center; border-radius: 10px; font-weight: 800; font-size: 0.85rem; 
+      text-decoration: none; cursor: pointer; transition: 0.2s; border: none; display: inline-block;
+    }
+    .ho-nc-btn.call { background: var(--ho-danger); color: #fff; box-shadow: 0 4px 15px rgba(231,76,60,0.2); }
+    .ho-nc-btn.call:hover { background: var(--ho-danger-dark); transform: scale(1.05); }
+    .ho-nc-btn.nav { background: #fff; color: var(--ho-teal-900); border: 1px solid var(--ho-glass-border-subtle); }
+    .ho-nc-btn.nav:hover { background: var(--ho-glass-border); transform: scale(1.05); }
+
+    /* --- 5. 3D GLASS TILES FOR DIRECTORY & PROTOCOLS (Spans 6) --- */
+    .ho-directory-panel, .ho-protocol-panel { grid-column: span 6; }
+    .ho-grid-links { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    
+    .ho-3d-tile {
+      background: linear-gradient(145deg, #ffffff, rgba(255,255,255,0.7)); 
+      border: 1px solid var(--ho-glass-border); border-radius: 20px;
+      padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; text-decoration: none; color: inherit;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.03), inset 0 -4px 0 rgba(13, 122, 110, 0.05);
+    }
+    .ho-3d-tile:hover { 
+      transform: translateY(-6px); border-color: var(--ho-teal-600); 
+      box-shadow: 0 20px 40px rgba(13, 122, 110, 0.1), inset 0 -4px 0 var(--ho-teal-600); 
+    }
+    .ho-3d-tile .tile-icon { 
+      font-size: 1.8rem; background: var(--ho-bg-airy); width: 54px; height: 54px; 
+      display: flex; align-items: center; justify-content: center; border-radius: 16px; 
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.05); transition: 0.3s;
+    }
+    .ho-3d-tile:hover .tile-icon { transform: scale(1.1) rotate(5deg); background: var(--ho-coral-soft); color: var(--ho-danger); }
+    .ho-tile-text strong { display: block; font-size: 1.05rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.2rem;}
+    .ho-tile-text span { font-size: 0.8rem; color: var(--ho-text-muted); font-weight: 600; line-height: 1.4;}
+
+    /* --- MODALS & TOASTS --- */
+    .ho-modal { position: fixed; inset: 0; background: rgba(11, 94, 85, 0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 1.2rem; opacity: 0; transition: opacity 0.3s ease; }
+    .ho-modal.active { display: flex; opacity: 1; }
+    
+    .ho-modal-box { 
+      background: #ffffff; border: 1px solid var(--ho-glass-border); border-radius: 32px; 
+      padding: 3rem 2.5rem; width: 100%; max-width: 500px; text-align: center;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.25); transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .ho-modal.active .ho-modal-box { transform: scale(1); }
+    
+    .ho-modal-box.critical-alert { border: 2px solid var(--ho-danger); background: linear-gradient(180deg, #fff, var(--ho-coral-soft)); box-shadow: 0 0 60px rgba(231, 76, 60, 0.3); }
+
+    .ho-form-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; text-align: left; }
+    .ho-form-group label { font-size: 0.85rem; font-weight: 800; color: var(--ho-teal-900); text-transform: uppercase; letter-spacing: 0.05em;}
+    .ho-input { width: 100%; padding: 1rem 1.2rem; border: 1px solid #cbd5e1; border-radius: 16px; font-family: inherit; font-size: 1rem; color: var(--ho-text-main); font-weight: 500; outline: none; transition: 0.2s; background: #f8fcfb;}
+    .ho-input:focus { border-color: var(--ho-teal-600); box-shadow: 0 0 0 4px rgba(13, 122, 110, 0.1); background: #fff;}
+    
+    /* Loading Bar inside SOS Modal */
+    .ho-sos-loader { width: 100%; height: 8px; background: rgba(231,76,60,0.2); border-radius: 999px; margin: 1.5rem 0; overflow: hidden; display: none; }
+    .ho-sos-loader-fill { width: 0%; height: 100%; background: var(--ho-danger); animation: hoFillBar 2s linear forwards; }
+    @keyframes hoFillBar { to { width: 100%; } }
+
+    .ho-toast { position: fixed; bottom: 2.5rem; left: 50%; transform: translateX(-50%) translateY(30px); background: var(--ho-teal-900); color: #fff; padding: 1rem 2rem; border-radius: 999px; font-weight: 700; font-size: 0.95rem; box-shadow: 0 20px 40px rgba(0,0,0,0.25); z-index: 4000; opacity: 0; transition: all 0.4s cubic-bezier(0.16,1,0.3,1); pointer-events: none; border: 1px solid rgba(255,255,255,0.1); white-space: nowrap; }
+    .ho-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ==========================================================
+       BULLETPROOF MOBILE UX OVERRIDES (MAX-WIDTH: 768px)
+       Guarantees perfect stacking, no overflow, and large touch targets.
+    ========================================================== */
+    @media (max-width: 1280px) {
+      .ho-mosaic-grid { grid-template-columns: repeat(12, 1fr); }
+      .ho-profile-panel, .ho-requests-panel, .ho-directory-panel, .ho-protocol-panel, .ho-map-panel { grid-column: span 12; }
+      .ho-map-panel { flex-direction: column; }
+      .ho-map-visual { min-height: 300px; }
+      .ho-map-list { max-height: none; }
+    }
+
+    @media (max-width: 768px) {
+      body, html { height: auto !important; min-height: 100vh !important; overflow-x: hidden !important; background: var(--ho-bg-airy) !important; margin: 0 !important; padding: 0 !important; }
+      
+      .ho-app-layout { flex-direction: column !important; height: auto !important; min-height: 100vh !important; }
+      .ho-main-content { padding-top: 5rem !important; height: auto !important; min-height: 100vh !important; overflow: visible !important; margin-left: 0 !important;}
+      
+      /* Reset Topbar */
+      .ho-topbar {
+        flex-direction: column !important; align-items: flex-start !important; padding: 0 1.25rem 1.2rem !important; gap: 1rem !important;
+        position: static !important; background: transparent !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; border: none !important;
+      }
+      .ho-topbar-actions { width: 100% !important; display: flex !important; flex-direction: column !important; }
+      .ho-topbar-actions button, .ho-topbar-actions a { width: 100% !important; justify-content: center !important; }
+      .ho-topbar h1 { font-size: 1.6rem !important; }
+      
+      /* Grid Stacking */
+      .ho-mosaic-grid { 
+        grid-template-columns: 1fr !important; padding: 0 1.25rem 2.5rem !important; gap: 1.5rem !important; 
+        display: flex !important; flex-direction: column !important; flex: 1 0 auto !important; 
+      }
+      .ho-panel { height: auto !important; min-height: 0 !important; padding: 1.5rem !important; border-radius: 24px !important; flex: none !important; margin: 0 !important;}
+
+      /* SOS Hero Tweaks */
+      .ho-hero-sos { flex-direction: column-reverse !important; text-align: center !important; align-items: center !important; padding: 2rem 1.2rem !important; gap: 2.5rem !important;}
+      .ho-sos-text-content { max-width: 100% !important; }
+      .ho-sos-text-content h2 { font-size: 1.8rem !important; }
+      .ho-radar-zone { width: 180px !important; height: 180px !important; }
+      .ho-giant-sos-btn { width: 100px !important; height: 100px !important; }
+      .ho-giant-sos-btn span { font-size: 1.8rem !important; }
+      
+      /* Community Requests Tweaks */
+      .ho-req-header { flex-direction: column !important; gap: 1rem !important; }
+      .ho-req-meta { flex-direction: column !important; align-items: stretch !important; }
+      .ho-req-meta div { justify-content: flex-start !important; }
+      .ho-req-footer { flex-direction: column !important; gap: 1rem !important; align-items: stretch !important; text-align: center !important;}
+      .ho-req-footer button { width: 100% !important; padding: 1rem !important; }
+      
+      .ho-grid-links { grid-template-columns: 1fr !important; }
+
+      /* Map View Resets */
+      .ho-map-panel { padding: 0 !important; overflow: hidden !important; }
+      .ho-map-visual { min-height: 250px !important; width: 100% !important;}
+      .ho-map-list { padding: 1.5rem 1.2rem !important; width: 100% !important;}
+      .ho-nc-actions { flex-direction: column !important; gap: 0.8rem !important; }
+      .ho-nc-btn { width: 100% !important; padding: 1rem !important;}
+
+      /* Modals */
+      .ho-modal { padding: 1rem !important; }
+      .ho-modal-box { padding: 2.5rem 1.5rem !important; max-width: 95% !important; border-radius: 24px !important; max-height: 90vh !important; overflow-y: auto !important;}
+      .ho-modal-box h3 { font-size: 1.5rem !important; }
+      
+      /* Toast */
+      .ho-toast { width: 90% !important; text-align: center !important; font-size: 0.85rem !important; padding: 1rem !important; white-space: normal !important;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- Ambient Lighting -->
+<%- include('../partials/ambient') %>
+
+<div class="ho-app-layout">
+  
+  <!-- Sidebar -->
+  <%- include('../partials/sidebar') %>
+
+  <main class="ho-main-content">
+    
+    <header class="ho-topbar">
+      <div>
+        <h1>Emergency & Medical Network</h1>
+        <p>Trigger SOS alerts, dispatch responders, and view critical medical requests.</p>
+      </div>
+      <div class="ho-topbar-actions">
+        <button class="ho-btn-danger-pill" onclick="openModal('sosModal')">🚨 Trigger SOS Override</button>
+      </div>
+    </header>
+
+    <div class="ho-mosaic-grid">
+      
+      <!-- 1. ADVANCED SOS RADAR HERO -->
+      <section class="ho-panel ho-hero-sos ho-delay-1">
+        <div class="ho-sos-text-content">
+          <div class="ho-hero-tag"><div class="dot"></div> Critical Action Hub</div>
+          <h2>Are you in an emergency?</h2>
+          <p>Instantly broadcast your live GPS coordinates, blood group, allergies, and condition to your designated family members and nearby emergency dispatchers.</p>
+          <a href="tel:108" class="ho-btn-danger-pill">📞 Call Local Ambulance (108)</a>
+        </div>
+
+        <div class="ho-radar-zone" onclick="openModal('sosModal')">
+          <div class="ho-radar-ring"></div>
+          <div class="ho-radar-ring"></div>
+          <div class="ho-radar-ring"></div>
+          <div class="ho-giant-sos-btn">
+            <span>SOS</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. LIQUID BLOOD PROFILE -->
+      <section class="ho-panel ho-profile-panel ho-delay-2">
+        <div class="ho-panel-header">
+          <h2><span>❤️</span> Donor Identity</h2>
+        </div>
+        
+        <div class="ho-blood-vial">
+          <div class="ho-blood-liquid"></div>
+          <div class="ho-blood-type">O+</div>
+        </div>
+
+        <div class="ho-vial-info">
+          <h4>O Positive</h4>
+          <p>Universal Donor Status Active</p>
+        </div>
+
+        <div class="ho-status-toggle">
+          <div class="ho-st-text">
+            <strong>Emergency Donor</strong>
+            <span>Visible in local network.</span>
+          </div>
+          <label class="ho-toggle">
+            <input type="checkbox" checked>
+            <span class="ho-toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="ho-status-toggle">
+          <div class="ho-st-text">
+            <strong>Organ Registry</strong>
+            <span>Legally pledged donor.</span>
+          </div>
+          <label class="ho-toggle">
+            <input type="checkbox" checked disabled>
+            <span class="ho-toggle-slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- 3. LIVE COMMUNITY REQUESTS -->
+      <section class="ho-panel ho-requests-panel ho-delay-2">
+        <div class="ho-panel-header">
+          <h2><span>📢</span> Community Requests</h2>
+          <div style="display: flex; gap: 1rem; align-items: center;">
+            <div class="ho-live-indicator"><div class="dot"></div> Live Sync</div>
+            <button class="ho-btn-danger-pill" style="padding: 0.6rem 1.2rem; font-size: 0.85rem;" onclick="openModal('requestModal')">+ Broadcast</button>
+          </div>
+        </div>
+
+        <div class="ho-req-list">
+          <!-- Request Card 1 -->
+          <div class="ho-req-card urgent">
+            <div class="ho-req-header">
+              <div class="ho-req-title">
+                <div class="ho-req-icon">🩸</div>
+                <div class="ho-req-title-text">
+                  <strong>Urgent: O+ Blood Required</strong>
+                  <span>Posted by Rahul Sharma • 15 mins ago</span>
+                </div>
+              </div>
+              <span class="ho-badge" style="color: var(--ho-danger); border-color: var(--ho-coral-soft); background: var(--ho-coral-soft);">High Priority</span>
+            </div>
+            <div class="ho-req-meta">
+              <div>🏥 City Care Hospital, Nagpur</div>
+              <div>⏳ Needed within 4 hours</div>
+              <div>📦 2 Units Required</div>
+            </div>
+            <div class="ho-req-footer">
+              <span style="font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 600;">System Match: You are (O+)</span>
+              <button class="ho-btn-action-primary" style="background: var(--ho-danger);" onclick="showToast('✅ Contact details shared securely with Rahul.')">Accept & Share Contact</button>
+            </div>
+          </div>
+
+          <!-- Request Card 2 -->
+          <div class="ho-req-card">
+            <div class="ho-req-header">
+              <div class="ho-req-title">
+                <div class="ho-req-icon" style="background: rgba(52, 152, 219, 0.15); color: #2980b9;">💨</div>
+                <div class="ho-req-title-text">
+                  <strong>Oxygen Cylinder Needed</strong>
+                  <span>Posted by Sneha Patil • 2 hours ago</span>
+                </div>
+              </div>
+            </div>
+            <div class="ho-req-meta">
+              <div>📍 Ram Nagar Area, Nagpur</div>
+              <div>📦 10L Portable Cylinder</div>
+            </div>
+            <div class="ho-req-footer">
+              <span style="font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 600;">Home Care Requirement</span>
+              <button class="ho-btn-action-primary" style="background: var(--ho-glass-solid); color: var(--ho-teal-900); border: 1px solid var(--ho-glass-border-subtle); box-shadow: none;" onclick="showToast('✉️ Secure message ping sent to Sneha Patil.')">Message Family</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. ✨ TACTICAL DISPATCH MAP (Spans 12) ✨ -->
+      <section class="ho-panel ho-map-panel ho-delay-3">
+        
+        <!-- Interactive CSS Radar Map View -->
+        <div class="ho-map-visual">
+          <div class="ho-map-grid-bg"></div>
+          
+          <!-- User Location -->
+          <div class="ho-map-user-pin"></div>
+          
+          <!-- Nearby Hospitals Pins -->
+          <div class="ho-map-hos-pin" data-name="City Care Super Specialty" style="top: 25%; left: 30%;" onclick="focusHospital(this)">🏥</div>
+          <div class="ho-map-hos-pin" data-name="Wockhardt Hospital" style="top: 70%; left: 60%;" onclick="focusHospital(this)">🏥</div>
+          <div class="ho-map-hos-pin" data-name="Dr. Mehta Clinic" style="top: 40%; left: 75%; border-color: #9b59b6;" onclick="focusHospital(this)">🩺</div>
+        </div>
+
+        <!-- Scrollable Hospital Directory -->
+        <div class="ho-map-list">
+          <div class="ho-panel-header" style="margin-bottom: 0.5rem;">
+            <h2 style="font-size: 1.2rem;"><span>📍</span> Live Dispatch Directory</h2>
+            <div class="ho-live-indicator" style="background: rgba(52, 152, 219, 0.1); color: var(--ho-blue); border-color: rgba(52, 152, 219, 0.2);"><div class="dot" style="background: var(--ho-blue);"></div> GPS Active</div>
+          </div>
+
+          <!-- Hospital Card 1 -->
+          <div class="ho-nearby-card" onclick="showToast('Focusing on City Care Hospital...')">
+            <div class="ho-nc-top">
+              <div class="ho-nc-info">
+                <strong>City Care Super Specialty</strong>
+                <span>1.2 km • Open 24/7 • Trauma Center</span>
+                <span style="color: var(--ho-mint-400);">🟢 ER Available Now</span>
+              </div>
+            </div>
+            <div class="ho-nc-actions">
+              <a href="tel:1234567890" class="ho-nc-btn call" onclick="event.stopPropagation();">📞 Call ER</a>
+              <button class="ho-nc-btn nav" onclick="event.stopPropagation(); showToast('🧭 Opening Navigation...')">Navigate</button>
+            </div>
+          </div>
+
+          <!-- Hospital Card 2 -->
+          <div class="ho-nearby-card" onclick="showToast('Focusing on Dr. Mehta Clinic...')">
+            <div class="ho-nc-top">
+              <div class="ho-nc-info">
+                <strong>Dr. Mehta Clinic</strong>
+                <span>2.5 km • General Physician</span>
+                <span style="color: var(--ho-mint-400);">🟢 Open till 10:00 PM</span>
+              </div>
+            </div>
+            <div class="ho-nc-actions">
+              <a href="tel:1234567891" class="ho-nc-btn call" style="background: var(--ho-teal-900); box-shadow: 0 4px 15px rgba(11,94,85,0.2);" onclick="event.stopPropagation();">📞 Call Clinic</a>
+              <button class="ho-nc-btn nav" onclick="event.stopPropagation(); showToast('🧭 Opening Navigation...')">Navigate</button>
+            </div>
+          </div>
+
+          <!-- Hospital Card 3 -->
+          <div class="ho-nearby-card" onclick="showToast('Focusing on Wockhardt Hospital...')">
+            <div class="ho-nc-top">
+              <div class="ho-nc-info">
+                <strong>Wockhardt Hospital</strong>
+                <span>4.1 km • Open 24/7 • Cardiac Unit</span>
+                <span style="color: var(--ho-mint-400);">🟢 ER Available Now</span>
+              </div>
+            </div>
+            <div class="ho-nc-actions">
+              <a href="tel:1234567892" class="ho-nc-btn call" onclick="event.stopPropagation();">📞 Call ER</a>
+              <button class="ho-nc-btn nav" onclick="event.stopPropagation(); showToast('🧭 Opening Navigation...')">Navigate</button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 5. 3D QUICK DIRECTORY -->
+      <section class="ho-panel ho-directory-panel ho-delay-4">
+        <div class="ho-panel-header">
+          <h2><span>🏥</span> Emergency Directory</h2>
+        </div>
+        <div class="ho-grid-links">
+          <a href="#" class="ho-3d-tile" onclick="showToast('Opening Nearby Hospitals...')">
+            <div class="tile-icon">🚑</div>
+            <div class="ho-tile-text">
+              <strong>Nearby Hospitals</strong>
+              <span>Find ER & Trauma Centers</span>
+            </div>
+          </a>
+          <a href="#" class="ho-3d-tile" onclick="showToast('Opening 24/7 Pharmacies...')">
+            <div class="tile-icon">💊</div>
+            <div class="ho-tile-text">
+              <strong>24/7 Pharmacies</strong>
+              <span>Locate open medical stores</span>
+            </div>
+          </a>
+          <a href="#" class="ho-3d-tile" onclick="showToast('Checking Blood Bank inventory...')">
+            <div class="tile-icon">🩸</div>
+            <div class="ho-tile-text">
+              <strong>Blood Banks</strong>
+              <span>Check available stock levels</span>
+            </div>
+          </a>
+          <a href="#" class="ho-3d-tile" onclick="showToast('Connecting to Telehealth...')">
+            <div class="tile-icon">👩‍⚕️</div>
+            <div class="ho-tile-text">
+              <strong>On-Call Doctors</strong>
+              <span>Connect via Telehealth Video</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <!-- 6. 3D FIRST AID PROTOCOLS -->
+      <section class="ho-panel ho-protocol-panel ho-delay-4">
+        <div class="ho-panel-header">
+          <h2><span>📘</span> First Aid Handbooks</h2>
+        </div>
+        <div class="ho-grid-links">
+          <a href="#" class="ho-3d-tile" onclick="showToast('Opening CPR Guide...')">
+            <div class="tile-icon" style="color: #e74c3c;">🫀</div>
+            <div class="ho-tile-text">
+              <strong>CPR Protocol</strong>
+              <span>Steps for Cardiac Arrest</span>
+            </div>
+          </a>
+          <a href="#" class="ho-3d-tile" onclick="showToast('Opening Choking Guide...')">
+            <div class="tile-icon" style="color: #3498db;">🗣️</div>
+            <div class="ho-tile-text">
+              <strong>Choking Guide</strong>
+              <span>Heimlich Maneuver steps</span>
+            </div>
+          </a>
+          <a href="#" class="ho-3d-tile" onclick="showToast('Opening Burns Protocol...')">
+            <div class="tile-icon" style="color: #f39c12;">🔥</div>
+            <div class="ho-tile-text">
+              <strong>Severe Burns</strong>
+              <span>Immediate cooling protocol</span>
+            </div>
+          </a>
+          <a href="#" class="ho-3d-tile" onclick="showToast('Opening Seizures Guide...')">
+            <div class="tile-icon" style="color: #9b59b6;">🧠</div>
+            <div class="ho-tile-text">
+              <strong>Seizures</strong>
+              <span>How to protect the patient</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- UNIVERSAL FOOTER -->
+    <%- include('../partials/footer') %>
+
+  </main>
+</div>
+
+<!-- ==========================================
+     INTERACTIVE MODALS & TOASTS
+========================================== -->
+
+<!-- Premium Toast Notification -->
+<div class="ho-toast" id="hoToast">Action completed successfully.</div>
+
+<!-- Dramatic SOS Confirmation Modal -->
+<div class="ho-modal" id="sosModal" onclick="closeModal('sosModal', event)">
+  <div class="ho-modal-box critical-alert" onclick="event.stopPropagation()">
+    <div style="font-size: 4rem; margin-bottom: 0.5rem; animation: hoPulseDanger 1s infinite;">🚨</div>
+    <h3 style="color: var(--ho-danger-dark); font-size: 2rem; margin-bottom: 0.8rem; font-weight: 900;">TRIGGER SOS?</h3>
+    <p style="color: var(--ho-danger-dark); margin-bottom: 2rem; font-weight: 600; line-height: 1.5; font-size: 1.05rem;">This will instantly broadcast your live GPS location, blood type, and emergency medical profile to your trusted contacts and local dispatchers.</p>
+    
+    <div class="ho-sos-loader" id="sosLoader"><div class="ho-sos-loader-fill"></div></div>
+
+    <div style="display: flex; gap: 1rem; flex-direction: column;" id="sosActionBtns">
+      <button class="ho-btn-danger-pill" style="width: 100%; padding: 1.2rem; font-size: 1.1rem; border-radius: 16px; justify-content: center;" onclick="executeSOS()">YES, BROADCAST NOW</button>
+      <button class="ho-btn-action-primary" style="background: rgba(255,255,255,0.8); color: var(--ho-teal-900); border: 2px solid var(--ho-glass-border-subtle); width: 100%; padding: 1rem; font-size: 1rem; box-shadow: none;" onclick="closeModal('sosModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Post Community Request Modal -->
+<div class="ho-modal" id="requestModal" onclick="closeModal('requestModal', event)">
+  <div class="ho-modal-box" style="text-align: left;" onclick="event.stopPropagation()">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <h3 style="color: var(--ho-teal-900); font-size: 1.6rem; font-weight: 800;">Post Medical Request</h3>
+      <button style="background:none; border:none; font-size: 2.2rem; color: var(--ho-text-muted); cursor:pointer; line-height: 1;" onclick="closeModal('requestModal')">&times;</button>
+    </div>
+    
+    <form onsubmit="event.preventDefault(); submitRequest();">
+      <div class="ho-form-group">
+        <label>Requirement Type</label>
+        <select class="ho-input" required>
+          <option>Blood Donation</option>
+          <option>Oxygen / Respiratory Equipment</option>
+          <option>Emergency Medicine</option>
+          <option>Other Urgent Need</option>
+        </select>
+      </div>
+      <div class="ho-form-group">
+        <label>Urgency Level</label>
+        <select class="ho-input" style="color: var(--ho-danger); font-weight: 700;">
+          <option>High Priority (Within Hours)</option>
+          <option>Medium Priority (Within 24 Hours)</option>
+          <option>Low Priority</option>
+        </select>
+      </div>
+      <div class="ho-form-group">
+        <label>Location Details</label>
+        <input type="text" class="ho-input" placeholder="Hospital or Area Name" required>
+      </div>
+      <button type="submit" class="ho-btn-action-primary" style="width: 100%; padding: 1.2rem; margin-top: 1rem; font-size: 1.1rem; border-radius: 16px;">Broadcast Request</button>
+    </form>
+  </div>
+</div>
+
+<!-- UI Scripts -->
+<script>
+  function openModal(id) {
+    const modal = document.getElementById(id);
+    modal.style.display = 'flex';
+    // Small delay allows display:flex to register before adding opacity class
+    setTimeout(() => modal.classList.add('active'), 10);
+  }
+
+  function closeModal(id, e) {
+    // If e is null (called via code) OR click was on the overlay background
+    if (!e || e.target === document.getElementById(id)) {
+      const modal = document.getElementById(id);
+      modal.classList.remove('active');
+      setTimeout(() => {
+        modal.style.display = 'none';
+        // Reset SOS loader state when closed so it can be used again
+        if(id === 'sosModal') {
+          document.getElementById('sosLoader').style.display = 'none';
+          document.getElementById('sosActionBtns').style.display = 'flex';
+        }
+      }, 300);
+    }
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('hoToast');
+    toast.innerText = message;
+    toast.classList.add('show');
+    // Hide toast after 4 seconds
+    setTimeout(() => toast.classList.remove('show'), 4000);
+  }
+
+  function executeSOS() {
+    // Hide buttons, show loading bar to build tension
+    document.getElementById('sosActionBtns').style.display = 'none';
+    document.getElementById('sosLoader').style.display = 'block';
+    
+    // Simulate API call delay (2 seconds)
+    setTimeout(() => {
+      closeModal('sosModal');
+      showToast('🚨 SOS Broadcast Successful! Live location shared with trusted contacts.');
+    }, 2000);
+  }
+
+  function submitRequest() {
+    closeModal('requestModal');
+    showToast('✅ Medical requirement posted to the local network.');
+  }
+
+  function focusHospital(element) {
+    const hospitalName = element.getAttribute('data-name');
+    showToast(`📍 Centering map on ${hospitalName}...`);
+  }
+</script>
+
+</body>
+</html>

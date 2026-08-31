@@ -15,7 +15,13 @@ const User = require('./models/User');
 const MedicalReport = require('./models/MedicalReport');
 const HealthMeasurement = require('./models/HealthMeasurement');
 const { extractTextFromFile } = require('./services/ocrService');
-const { analyzeMedicalTextWithAI } = require('./services/aiService');
+
+
+const { analyzeMedicalTextWithAI, chatWithMeshAPI } = require('./services/aiService');
+
+const FamilyMember = require('./models/FamilyMember'); // <--- ADD THIS
+
+
 
 connectDB();
 
@@ -232,17 +238,48 @@ app.get('/nutrition', requireAuth, (req, res) => {
     }
 });
 
-// ==========================================
-// PROFILE & FAMILY ROUTE
-// ==========================================
-// ==========================================
-// PROFILE & FAMILY ROUTE
-// ==========================================
-app.get('/profile', requireAuth, async (req, res) => {
+app.get("/error",requireAuth, (req, res) => {
     try {
-        res.render('profile/profile.ejs', { 
+        res.render('errors/not-found.ejs', { 
             userName: req.session.userName || (req.user ? req.user.fullName : 'User'),
             userEmail: req.session.userEmail || (req.user ? req.user.email : '')
+        });
+    } catch (error) {
+        console.error('[HealthOrbit] Nutrition Load Error:', error);
+        res.redirect('/dashboard');
+    }
+});
+
+// ==========================================
+// PROFILE & FAMILY ROUTE
+// ==========================================
+// ==========================================
+// PROFILE & FAMILY ROUTE
+// ==========================================
+// ==========================================
+// PROFILE, HEALTH & EMERGENCY ROUTES
+// ==================================
+// ==========================================
+// PROFILE, HEALTH & FAMILY ROUTES
+// ==========================================
+
+// 1. Load the Profile Page with Saved Data & Family Members
+app.get('/profile', requireAuth, async (req, res) => {
+    try {
+        const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        
+        // Fetch User and Family data concurrently
+        const [user, familyMembers] = await Promise.all([
+            User.findById(activeUserId),
+            FamilyMember.find({ userId: activeUserId }).sort({ createdAt: -1 })
+        ]);
+        
+        res.render('profile/profile.ejs', { 
+            user: user,
+            userName: user.fullName,
+            userEmail: user.email,
+            familyMembers: familyMembers, // Passes the family list to the EJS template
+            profileSuccess: req.query.success // Triggers the green Toast notification
         });
     } catch (error) {
         console.error('[HealthOrbit] Profile Load Error:', error);
@@ -250,27 +287,145 @@ app.get('/profile', requireAuth, async (req, res) => {
     }
 });
 
-// --- ADD THIS NEW POST ROUTE ---
+// 2. Save Personal Details
 app.post('/profile', requireAuth, async (req, res) => {
     try {
         const activeUserId = req.session.userId || (req.user ? req.user._id : null);
-        const { fullName } = req.body;
+        const { fullName, age, gender, phone } = req.body;
         
-        if (fullName) {
-            // Update the User in the database
-            await User.findByIdAndUpdate(activeUserId, { fullName: fullName.trim() });
-            // Update the current session so the UI reflects the change immediately
-            req.session.userName = fullName.trim();
-        }
+        await User.findByIdAndUpdate(activeUserId, { 
+            fullName: fullName.trim(),
+            age: age ? parseInt(age) : null,
+            gender: gender,
+            phone: phone.trim()
+        });
         
-        // Redirect back to the profile page to see the changes
-        return res.redirect('/profile');
+        req.session.userName = fullName.trim();
+        return res.redirect('/profile?success=Profile+updated+successfully');
     } catch (error) {
         console.error('[HealthOrbit] Profile Update Error:', error);
         return res.redirect('/profile');
     }
 });
-// -------------------------------
+
+// 3. Save Health Information
+app.post('/profile/health', requireAuth, async (req, res) => {
+    try {
+        const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        const { bloodGroup, allergies, medicalConditions, currentMedicines } = req.body;
+        const toArray = (str) => str ? str.split(',').map(s => s.trim()).filter(s => s) : [];
+
+        await User.findByIdAndUpdate(activeUserId, { 
+            bloodGroup,
+            allergies: toArray(allergies),
+            medicalConditions: toArray(medicalConditions),
+            currentMedicines: toArray(currentMedicines)
+        });
+        return res.redirect('/profile?success=Health+information+updated');
+    } catch (error) {
+        console.error('[HealthOrbit] Health Update Error:', error);
+        return res.redirect('/profile');
+    }
+});
+
+// 4. Save Emergency Contacts
+app.post('/profile/emergency', requireAuth, async (req, res) => {
+    try {
+        const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        const { emergencyContactName, emergencyContactRelation, emergencyContactPhone } = req.body;
+        
+        await User.findByIdAndUpdate(activeUserId, { 
+            emergencyContactName: emergencyContactName.trim(),
+            emergencyContactRelation: emergencyContactRelation.trim(),
+            emergencyContactPhone: emergencyContactPhone.trim()
+        });
+        return res.redirect('/profile?success=Emergency+contact+updated');
+    } catch (error) {
+        console.error('[HealthOrbit] Emergency Update Error:', error);
+        return res.redirect('/profile');
+    }
+});
+
+// ==========================================
+// FAMILY NETWORK ROUTES
+// ==========================================
+
+// 5. Add a New Family Member
+app.post('/family/add', requireAuth, async (req, res) => {
+    try {
+        const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        const { name, relationship, contact, permissions } = req.body;
+        
+        // Convert the HTML checkbox array into a boolean object
+        let permObj = {
+            emergencyInfo: false, medicalReports: false, healthSummary: false,
+            medicines: false, symptoms: false, insurance: false, wearableData: false, healthTimeline: false
+        };
+
+        if (permissions) {
+            const permArray = Array.isArray(permissions) ? permissions : [permissions];
+            permArray.forEach(p => { if (permObj.hasOwnProperty(p)) permObj[p] = true; });
+        }
+
+        await FamilyMember.create({
+            userId: activeUserId,
+            name: name.trim(),
+            relationship: relationship,
+            contact: contact.trim(),
+            permissions: permObj
+        });
+
+        res.redirect('/profile?success=Family+member+added+successfully');
+    } catch (error) {
+        console.error('[HealthOrbit] Add Family Error:', error);
+        res.redirect('/profile');
+    }
+});
+
+// 6. Update Family Member Permissions
+app.post('/family/:id/permissions', requireAuth, async (req, res) => {
+    try {
+        const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        const { permissions } = req.body;
+        
+        let permObj = {
+            emergencyInfo: false, medicalReports: false, healthSummary: false,
+            medicines: false, symptoms: false, insurance: false, wearableData: false, healthTimeline: false
+        };
+
+        if (permissions) {
+            const permArray = Array.isArray(permissions) ? permissions : [permissions];
+            permArray.forEach(p => { if (permObj.hasOwnProperty(p)) permObj[p] = true; });
+        }
+
+        await FamilyMember.findOneAndUpdate(
+            { _id: req.params.id, userId: activeUserId },
+            { permissions: permObj }
+        );
+
+        res.redirect('/profile?success=Permissions+updated+successfully');
+    } catch (error) {
+        console.error('[HealthOrbit] Update Permissions Error:', error);
+        res.redirect('/profile');
+    }
+});
+
+// 7. Remove Family Member
+app.post('/family/:id/remove', requireAuth, async (req, res) => {
+    try {
+        const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        await FamilyMember.findOneAndDelete({ _id: req.params.id, userId: activeUserId });
+        
+        res.redirect('/profile?success=Family+member+removed');
+    } catch (error) {
+        console.error('[HealthOrbit] Remove Family Error:', error);
+        res.redirect('/profile');
+    }
+});
+
+
+
+
 
 // ==========================================
 // AI ANALYSIS & TRENDS ROUTE (MODULE 6 & 7)
@@ -395,11 +550,36 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.get('/logout', (req, res) => {
-    if (req.logout) req.logout(() => {});
-    req.session.destroy(() => res.redirect('/auth'));
-});
 
+
+
+// ==========================================
+// SECURE SIGN OUT ROUTE
+// ==========================================
+app.get('/logout', (req, res, next) => {
+    req.logout((err) => {
+        if (err) return next(err);
+        
+        req.session.destroy(() => {
+            res.clearCookie('connect.sid'); // Clears the session cookie
+            res.render('auth/logout');      // Renders the sign-out confirmation page
+        });
+    });
+});
+// ==========================================
+// EMERGENCY & MEDICAL NETWORK ROUTE
+// ==========================================
+app.get('/emergency', requireAuth, (req, res) => {
+    try {
+        res.render('dashboard/emergency.ejs', { 
+            userName: req.session.userName || (req.user ? req.user.fullName : 'User'),
+            userEmail: req.session.userEmail || (req.user ? req.user.email : '')
+        });
+    } catch (error) {
+        console.error('[HealthOrbit] Emergency Load Error:', error);
+        res.redirect('/dashboard');
+    }
+});
 // ==========================================
 // WORKSPACE & OCR ROUTES 
 // ==========================================
@@ -548,6 +728,89 @@ app.post('/reports/update/:id', requireAuth, async (req, res) => {
         return res.redirect('/ocr');
     }
 });
+
+
+// ==========================================
+// ACCOUNT DATA EXPORT & DELETE ROUTES
+// ==========================================
+
+// 8. Export User Data as JSON
+app.get('/account/export', requireAuth, async (req, res) => {
+    try {
+        const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        
+        // Fetch all data associated with the user concurrently
+        const [user, reports, measurements, family] = await Promise.all([
+            User.findById(activeUserId),
+            MedicalReport.find({ userId: activeUserId }),
+            HealthMeasurement.find({ userId: activeUserId }),
+            FamilyMember.find({ userId: activeUserId })
+        ]);
+        
+        const exportData = {
+            profile: user,
+            familyMembers: family,
+            medicalReports: reports,
+            healthMeasurements: measurements,
+            exportDate: new Date()
+        };
+
+        // Tell the browser to download this as a file
+        res.setHeader('Content-disposition', 'attachment; filename=HealthOrbit_Data_Export.json');
+        res.setHeader('Content-type', 'application/json');
+        res.write(JSON.stringify(exportData, null, 2));
+        res.end();
+    } catch (error) {
+        console.error('[HealthOrbit] Data Export Error:', error);
+        res.redirect('/profile');
+    }
+});
+
+// 9. Delete Account Permanently
+app.post('/account/delete', requireAuth, async (req, res) => {
+    try {
+        const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        
+        // Wipe all user data from the database
+        await MedicalReport.deleteMany({ userId: activeUserId });
+        await HealthMeasurement.deleteMany({ userId: activeUserId });
+        await FamilyMember.deleteMany({ userId: activeUserId });
+        await User.findByIdAndDelete(activeUserId);
+        
+        // Safely log the user out and destroy the session
+        req.logout((err) => {
+            if (err) console.error(err);
+            req.session.destroy(() => {
+                res.clearCookie('connect.sid');
+                res.redirect('/auth');
+            });
+        });
+    } catch (error) {
+        console.error('[HealthOrbit] Account Delete Error:', error);
+        res.redirect('/profile');
+    }
+});
+
+// ==========================================
+// AI CHAT API ROUTE
+// ==========================================
+app.post('/api/chat', requireAuth, async (req, res) => {
+    try {
+        const { message } = req.body;
+        if (!message) {
+            return res.status(400).json({ error: 'Message is required' });
+        }
+
+        // Call the Mesh API service
+        const reply = await chatWithMeshAPI(message);
+        
+        res.json({ reply: reply });
+    } catch (error) {
+        console.error('[HealthOrbit Chat API Error]:', error);
+        res.status(500).json({ error: 'Failed to process chat request' });
+    }
+});
+
 
 app.listen(PORT, () => {
     console.log(`[HealthOrbit] Server running on http://localhost:${PORT}`);

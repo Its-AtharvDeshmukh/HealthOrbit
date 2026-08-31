@@ -1,0 +1,87 @@
+/* ==========================================================
+   GLOBAL HEALTHORBIT DESIGN SYSTEM (Variables & Resets)
+   This applies to EVERY page in the dashboard.
+========================================================== */
+:root {
+  --ho-bg-airy: #edf6f4;
+  --ho-teal-900: #0b5e55;
+  --ho-teal-700: #0d7a6e;
+  --ho-teal-600: #109485;
+  --ho-mint-400: #42b89d;
+  --ho-coral: #e07a68;
+  --ho-coral-soft: #fbe4de;
+  --ho-text-main: #0f1c1a;
+  --ho-text-muted: #4e6b63;
+  --ho-danger: #d94b4b;
+  --ho-warning: #f39c12;
+  --ho-blue: #3498db;
+  
+  --ho-glass-clear: rgba(255, 255, 255, 0.55);
+  --ho-glass-solid: rgba(255, 255, 255, 0.85);
+  --ho-glass-border: rgba(255, 255, 255, 0.95);
+  --ho-glass-border-subtle: rgba(255, 255, 255, 0.5);
+  
+  --ho-radius-xl: 32px;
+  --ho-radius-lg: 20px;
+  --ho-radius-md: 12px;
+  
+  --ho-shadow-glass: 0 30px 60px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  background-color: var(--ho-bg-airy);
+  color: var(--ho-text-main);
+  overflow-x: hidden; 
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Global Ambient Orbs --- */
+.ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
+.ho-orb-1 { width: 550px; height: 550px; background: #76d7c4; top: -100px; left: -100px; }
+.ho-orb-2 { width: 600px; height: 600px; background: #fadbd8; bottom: -150px; right: -100px; animation-delay: -5s; }
+.ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 35%; left: 35%; opacity: 0.3; animation-delay: -10s; }
+@keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 60px) scale(1.15); } }
+
+/* --- Global Layout Containers --- */
+.ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
+.ho-main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; scrollbar-width: none; }
+.ho-main-content::-webkit-scrollbar { display: none; }
+
+.ho-workspace-grid {
+  display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem;
+  padding: 0.5rem 3rem 2.5rem; flex: 1 0 auto; min-height: 0;
+}
+
+/* --- Global Glass Panels --- */
+.ho-panel {
+  background: var(--ho-glass-clear);
+  backdrop-filter: blur(50px) saturate(200%); -webkit-backdrop-filter: blur(50px) saturate(200%);
+  border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
+  padding: 1.8rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass);
+  height: auto; min-height: 0;
+  opacity: 0; animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.ho-panel:hover { transform: translateY(-3px); box-shadow: 0 30px 60px rgba(13, 122, 110, 0.1); border-color: #fff; background: rgba(255, 255, 255, 0.7); }
+@keyframes hoSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+.ho-panel-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; flex-shrink: 0; flex-wrap: wrap; gap: 0.8rem;}
+.ho-panel-header h2 { font-weight: 800; font-size: 1.15rem; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem; margin:0;}
+.ho-badge { background: #fff; border: 1px solid var(--ho-glass-border); padding: 0.3rem 0.8rem; border-radius: 999px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ho-teal-700); box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
+
+/* ==========================================================
+   GLOBAL MOBILE OVERRIDES
+========================================================== */
+@media screen and (max-width: 768px) {
+  body, html { height: auto !important; min-height: 100vh !important; overflow-x: hidden !important; background: #edf6f4 !important; }
+  .ho-main-content { height: auto !important; min-height: 100vh !important; padding-top: 5.6rem !important; overflow-y: visible !important; }
+  .ho-workspace-grid { 
+    grid-template-columns: 1fr !important; padding: 0.5rem 1.25rem 2.5rem !important; gap: 1.2rem !important;
+    display: flex !important; flex-direction: column !important; flex: 1 0 auto !important;
+  }
+  .ho-panel { height: auto !important; min-height: 0 !important; padding: 1.5rem !important; border-radius: 24px !important; flex: none !important; }
+}

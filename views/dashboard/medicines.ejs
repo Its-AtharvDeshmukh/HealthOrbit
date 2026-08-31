@@ -1,327 +1,601 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HealthOrbit — Meds & Symptoms</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/sidebar.css">
-<style>
-:root {
-  --void: #084039; --void-soft: #0d7a6e;
-  --paper: #f2f8f6; --card: #ffffff;
-  --ink: #0f1c1a; --ink-soft: #5e736f;
-  --coral: #ef6f5b; --coral-soft: #fbe4de;
-  --sage: #109485; --sage-soft: #dff1ec;
-  --mist: #42b89d; --line: rgba(13, 122, 110, 0.15);
-  --radius: 24px;
-  --glass-bg: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.95);
-  --shadow-glass: 0 10px 30px rgba(8, 64, 57, 0.05);
-}
+  <!-- Safely imports your universal header -->
+  <%- include('../partials/header', { title: 'HealthOrbit — Medicines & Symptoms' }) %>
+<link rel="icon" href="/images/Logo.png">
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background: var(--paper); color: var(--ink); overflow-x: hidden; }
-.mono { font-family: 'JetBrains Mono', monospace; }
+  <style>
+    /* 
+    ==================================================================
+      STRICTLY SCOPED CSS FOR MEDICINES & SYMPTOMS
+    ================================================================== 
+    */
+    :root {
+      --ho-bg-airy: #edf6f4;
+      --ho-teal-900: #0b5e55;
+      --ho-teal-700: #0d7a6e;
+      --ho-teal-600: #109485;
+      --ho-mint-400: #42b89d;
+      --ho-coral: #e07a68;
+      --ho-coral-soft: #fbe4de;
+      --ho-text-main: #0f1c1a;
+      --ho-text-muted: #4e6b63;
+      --ho-danger: #d94b4b;
+      --ho-warning: #f39c12;
+      --ho-blue: #3498db;
+      
+      --ho-glass-clear: rgba(255, 255, 255, 0.55);
+      --ho-glass-solid: rgba(255, 255, 255, 0.85);
+      --ho-glass-border: rgba(255, 255, 255, 0.95);
+      --ho-glass-border-subtle: rgba(255, 255, 255, 0.5);
+      
+      --ho-radius-xl: 32px;
+      --ho-radius-lg: 20px;
+      --ho-radius-md: 12px;
+      
+      --ho-shadow-glass: 0 30px 60px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
+    }
 
-/* Ambient Orbs */
-.ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.35; animation: float 22s infinite alternate; }
-.orb1 { width: 420px; height: 420px; background: #a3e4d7; top: -120px; left: -100px; }
-.orb2 { width: 460px; height: 460px; background: #fcefc9; bottom: -140px; right: -100px; animation-delay: -6s; }
-@keyframes float { 100% { transform: translate(40px, 40px) scale(1.1); } }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* App Layout */
-.shell { display: flex; width: 100vw; min-height: 100vh; position: relative; z-index: 1; }
-.main { flex: 1; min-width: 0; display: flex; flex-direction: column; transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+    body {
+      min-height: 100vh;
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      background-color: var(--ho-bg-airy);
+      color: var(--ho-text-main);
+      overflow-x: hidden; 
+      -webkit-font-smoothing: antialiased;
+    }
 
-/* Topbar */
-.topbar { display: flex; justify-content: space-between; align-items: center; padding: 2.5rem 3.5rem 1rem; background: transparent; z-index: 10; }
-.topbar h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.8rem; color: var(--void); }
-.topbar .sub { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.4rem; font-weight: 500; }
-.actions { display: flex; gap: 0.8rem; align-items: center; }
+    .ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
 
-.btn { border: none; border-radius: 999px; padding: 0.75rem 1.4rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.2s; font-family: inherit; display: inline-flex; align-items: center; gap: 0.4rem; }
-.btn.primary { background: var(--coral); color: #fff; box-shadow: 0 4px 15px rgba(239, 111, 91, 0.2); }
-.btn.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239, 111, 91, 0.35); background: #d95a46; }
+    .ho-main-content { 
+      flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; 
+      overflow-y: auto; scrollbar-width: none;
+    }
+    .ho-main-content::-webkit-scrollbar { display: none; }
 
-/* Bento Grid */
-.bento-wrapper { padding: 1rem 3.5rem 4rem; flex: 1; }
-.bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; }
+    /* --- TOP NAVBAR --- */
+    .ho-topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 2.2rem 3rem 1.2rem; flex-shrink: 0; background: transparent; z-index: 20;
+    }
+    .ho-topbar h1 { 
+      font-weight: 800; font-size: 1.8rem; color: var(--ho-teal-900); 
+      margin-bottom: 0.3rem; letter-spacing: -0.5px; 
+      display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    }
+    .ho-brand-text { display: inline-flex; align-items: center; white-space: nowrap; }
+    .ho-topbar p { font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 500; display: flex; align-items: center; gap: 0.5rem;}
+    .ho-topbar-actions { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; }
 
-.card {
-  background: var(--glass-bg); backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
-  border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 2rem;
-  overflow: hidden; position: relative; box-shadow: var(--shadow-glass);
-  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s; display: flex; flex-direction: column;
-}
-.card::before {
-  content: ""; position: absolute; top: 0; left: -150%; width: 60%; height: 100%;
-  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.7) 45%, transparent 90%);
-  transform: skewX(-18deg); transition: left 0.7s ease; pointer-events: none; z-index: 20;
-}
-.card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(8, 64, 57, 0.1); border-color: var(--sage-soft); }
-.card:hover::before { left: 150%; }
-.card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-.card h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.3rem; color: var(--void); }
+    /* Buttons */
+    .ho-btn-primary {
+      background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); color: #fff;
+      border: none; border-radius: 999px; padding: 0.8rem 1.6rem; font-weight: 700; font-size: 0.9rem;
+      cursor: pointer; box-shadow: 0 10px 25px rgba(13, 122, 110, 0.25); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap;
+    }
+    .ho-btn-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 35px rgba(13, 122, 110, 0.35); }
+    .ho-btn-primary:active { transform: scale(0.96); }
 
-/* 1. ACTIVE MEDICATIONS (Spans 8 Cols) */
-.c-meds { grid-column: span 8; }
-.med-timeline { display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1rem; scrollbar-width: none; }
-.med-timeline::-webkit-scrollbar { display: none; }
-.time-block { flex: 1; min-width: 200px; background: rgba(255,255,255,0.6); border: 1px solid var(--line); border-radius: 16px; padding: 1.2rem; }
-.time-header { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px dashed var(--line);}
+    .ho-btn-ghost {
+      padding: 0.8rem 1.6rem; background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border);
+      border-radius: 999px; color: var(--ho-teal-900); font-weight: 700; font-size: 0.9rem;
+      cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap;
+    }
+    .ho-btn-ghost:hover { background: #fff; transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 25px rgba(13, 122, 110, 0.1); border-color: var(--ho-teal-600);}
+    .ho-btn-ghost:active { transform: scale(0.96); }
 
-.pill-card { background: #fff; border-radius: 12px; padding: 1rem; border: 1px solid var(--line); box-shadow: 0 4px 10px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.8rem; transition: 0.2s; cursor: pointer;}
-.pill-card:hover { border-color: var(--mist); transform: translateY(-2px);}
-.pill-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--sage-soft); color: var(--sage); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;}
-.pill-info strong { display: block; font-size: 0.95rem; color: var(--void); margin-bottom: 0.2rem;}
-.pill-info span { font-size: 0.75rem; color: var(--ink-soft); font-family: 'JetBrains Mono', monospace;}
-.status-tick { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; color: transparent; transition: 0.2s;}
-.pill-card.taken .status-tick { background: var(--sage); border-color: var(--sage); color: #fff; }
-.pill-card.taken .pill-info strong { text-decoration: line-through; opacity: 0.6;}
+    /* --- MOSAIC GRID --- */
+    .ho-workspace-grid {
+      display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.8rem;
+      padding: 0.5rem 3rem 2.5rem; flex: 1 0 auto; min-height: 0;
+    }
 
-/* 2. SYMPTOM QUICK LOG (Spans 4 Cols) */
-.c-log { grid-column: span 4; background: linear-gradient(135deg, var(--void), var(--void-soft)); color: #fff; }
-.c-log::before { background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.1) 45%, transparent 90%); }
-.c-log h3 { color: #fff; }
-.symptom-form { display: flex; flex-direction: column; gap: 1.2rem; position: relative; z-index: 2;}
-.symptom-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.s-tag { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 0.4rem 0.8rem; border-radius: 999px; font-size: 0.8rem; cursor: pointer; transition: 0.2s;}
-.s-tag:hover, .s-tag.selected { background: var(--coral); border-color: var(--coral); }
+    .ho-panel {
+      background: var(--ho-glass-clear);
+      backdrop-filter: blur(50px) saturate(200%); -webkit-backdrop-filter: blur(50px) saturate(200%);
+      border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
+      padding: 2rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .ho-panel:hover { transform: translateY(-4px); box-shadow: 0 40px 80px rgba(13, 122, 110, 0.12); border-color: #fff; background: rgba(255, 255, 255, 0.65); }
+    @keyframes hoSlideUp { from { opacity: 0; transform: translateY(35px); } to { opacity: 1; transform: translateY(0); } }
 
-.severity-slider { width: 100%; margin-top: 0.5rem; }
-.severity-labels { display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700; color: #a4c9c3; text-transform: uppercase; margin-top: 0.4rem;}
-.log-btn { width: 100%; background: #fff; color: var(--void); border: none; padding: 0.9rem; border-radius: 12px; font-weight: 800; font-family: inherit; margin-top: 0.5rem; cursor: pointer; transition: 0.2s;}
-.log-btn:hover { background: var(--mist); color: #fff;}
+    .ho-delay-1 { animation-delay: 0.1s; } .ho-delay-2 { animation-delay: 0.2s; } .ho-delay-3 { animation-delay: 0.3s; }
 
-/* 3. SYMPTOM TIMELINE (Spans 7 Cols) */
-.c-history { grid-column: span 7; }
-.history-feed { display: flex; flex-direction: column; gap: 1rem; }
-.history-item { display: flex; gap: 1rem; padding: 1.2rem; border-radius: 16px; background: rgba(255,255,255,0.5); border: 1px solid var(--line); }
-.history-date { display: flex; flex-direction: column; align-items: center; min-width: 50px; }
-.h-day { font-size: 1.2rem; font-weight: 800; color: var(--void); font-family: 'JetBrains Mono', monospace;}
-.h-month { font-size: 0.75rem; text-transform: uppercase; color: var(--ink-soft); font-weight: 700;}
-.history-content { flex: 1; border-left: 2px solid var(--mist); padding-left: 1rem; }
-.history-content h4 { font-size: 1rem; color: var(--void); margin-bottom: 0.3rem;}
-.severity-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-bottom: 0.5rem;}
-.severity-badge.mild { background: var(--sage-soft); color: var(--sage); }
-.severity-badge.moderate { background: #fdecd2; color: #d68910; }
-.history-content p { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.5;}
+    .ho-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-shrink: 0; }
+    .ho-panel-header h2 { font-weight: 800; font-size: 1.25rem; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem; }
+    .ho-badge { background: #fff; border: 1px solid var(--ho-glass-border); padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ho-teal-700); box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
 
-/* 4. AI CONTRAINDICATION (Spans 5 Cols) */
-.c-ai { grid-column: span 5; }
-.ai-insight-box { background: rgba(255,255,255,0.8); border: 1px solid var(--coral-soft); border-radius: 16px; padding: 1.5rem; position: relative; overflow: hidden;}
-.ai-insight-box::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--coral); }
-.ai-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; }
-.ai-icon { width: 32px; height: 32px; background: var(--coral); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 4px 10px rgba(239, 111, 91, 0.3);}
-.ai-header strong { font-family: 'Fraunces', serif; font-size: 1.1rem; color: var(--void);}
-.ai-insight-box p { font-size: 0.9rem; color: var(--ink-soft); line-height: 1.6; margin-bottom: 1rem;}
-.ai-rx-check { background: var(--paper); border-radius: 10px; padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--void);}
+    /* --- 1. ACTIVE MEDICATIONS (Spans 8) --- */
+    .ho-med-panel { grid-column: span 8; }
+    .ho-med-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
 
-@media (max-width: 1200px) {
-  .bento { grid-template-columns: 1fr; }
-  .c-meds, .c-log, .c-history, .c-ai { grid-column: span 1; }
-  .med-timeline { flex-direction: column; }
-}
-@media (max-width: 768px) {
-  .shell { flex-direction: column; width: 100%; }
-  .topbar { padding: 1.2rem 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
-  .bento-wrapper { padding: 1.5rem; }
-}
-</style>
+    .ho-med-card {
+      background: rgba(255,255,255,0.85); border: 1px solid var(--ho-glass-border); border-radius: 16px;
+      padding: 1.4rem; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;
+      box-shadow: 0 4px 15px rgba(13, 122, 110, 0.03); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); position: relative; overflow: hidden;
+    }
+    .ho-med-card:hover { background: #fff; border-color: var(--ho-teal-600); transform: translateY(-4px) scale(1.02); box-shadow: 0 15px 30px rgba(13, 122, 110, 0.1); }
+    .ho-med-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background: var(--ho-teal-600); border-radius: 16px 0 0 16px; transition: width 0.2s;}
+    .ho-med-card:hover::before { width: 8px; }
+    .ho-med-card.as-needed::before { background: var(--ho-blue); }
+
+    .ho-mc-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .ho-mc-info strong { font-size: 1.1rem; color: var(--ho-teal-900); font-weight: 800; display: block; margin-bottom: 0.2rem;}
+    .ho-mc-info span { font-size: 0.8rem; color: var(--ho-text-muted); font-weight: 600; font-family: 'JetBrains Mono', monospace;}
+    .ho-mc-icon { width: 42px; height: 42px; background: rgba(13, 122, 110, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;}
+
+    .ho-mc-bot { display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; padding-top: 1rem; border-top: 1px dashed var(--ho-glass-border-subtle);}
+    .ho-mc-freq { font-size: 0.75rem; font-weight: 700; color: var(--ho-text-muted); text-transform: uppercase;}
+    .ho-mc-pill { font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; background: var(--ho-bg-airy); color: var(--ho-teal-900); }
+
+    /* --- 2. QUICK SYMPTOM LOG (Spans 4) --- */
+    .ho-symptom-quick { grid-column: span 4; background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(251, 228, 222, 0.4));}
+    .ho-sq-desc { font-size: 0.9rem; color: var(--ho-text-muted); margin-bottom: 1.5rem; font-weight: 500;}
+    .ho-sq-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    
+    .ho-sq-btn {
+      background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px;
+      padding: 1.2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.02); cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .ho-sq-btn:hover { border-color: var(--ho-coral); transform: translateY(-4px) scale(1.05); box-shadow: 0 12px 25px rgba(224, 122, 104, 0.15); color: var(--ho-danger);}
+    .ho-sq-btn:active { transform: scale(0.95); }
+    .ho-sq-icon { font-size: 1.8rem; transition: transform 0.2s;}
+    .ho-sq-btn:hover .ho-sq-icon { transform: scale(1.1); }
+    .ho-sq-label { font-size: 0.85rem; font-weight: 700; color: var(--ho-teal-900); }
+
+    /* --- 3. TODAY'S SCHEDULE TIMELINE (Spans 8) --- */
+    .ho-schedule-panel { grid-column: span 8; }
+    .ho-timeline { display: flex; flex-direction: column; position: relative; margin-left: 1rem; padding-left: 1.8rem; border-left: 2px solid rgba(13, 122, 110, 0.15); margin-top: 0.5rem;}
+    .ho-tl-item { position: relative; margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .ho-tl-item:last-child { margin-bottom: 0; }
+    
+    .ho-tl-dot {
+      position: absolute; left: -1.8rem; top: 0; transform: translateX(-50%); width: 16px; height: 16px;
+      border-radius: 50%; background: #fff; border: 3px solid var(--ho-teal-600); box-shadow: 0 0 0 4px rgba(255,255,255,0.8);
+      transition: all 0.4s ease;
+    }
+    .ho-tl-item.completed .ho-tl-dot { background: var(--ho-teal-600); box-shadow: 0 0 0 4px rgba(13, 122, 110, 0.2); }
+    .ho-tl-item.upcoming .ho-tl-dot { border-color: var(--ho-warning); animation: hoBlink 2s infinite;}
+    @keyframes hoBlink { 0%, 100% { box-shadow: 0 0 0 4px rgba(243, 156, 18, 0.2); } 50% { box-shadow: 0 0 0 8px rgba(243, 156, 18, 0.4); } }
+
+    .ho-tl-time { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; font-weight: 800; color: var(--ho-teal-900); }
+    .ho-tl-card {
+      background: rgba(255,255,255,0.85); border: 1px solid var(--ho-glass-border-subtle); border-radius: 14px;
+      padding: 1.2rem 1.4rem; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;
+    }
+    .ho-tl-card:hover { background: #fff; border-color: var(--ho-teal-600); box-shadow: 0 8px 25px rgba(13, 122, 110, 0.08); transform: translateX(4px);}
+    .ho-tl-info strong { display: block; font-size: 1rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.2rem;}
+    .ho-tl-info span { font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 500; }
+
+    .ho-btn-action {
+      background: var(--ho-bg-airy); border: 1px solid rgba(13, 122, 110, 0.2); color: var(--ho-teal-900);
+      padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .ho-btn-action:hover { background: var(--ho-teal-900); color: #fff; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(13, 122, 110, 0.2); }
+    .ho-btn-action:active { transform: scale(0.95); }
+
+    .ho-taken-badge { font-size: 0.95rem; font-weight: 800; color: #27ae60; display: flex; align-items: center; gap: 0.4rem; animation: hoPopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);}
+    @keyframes hoPopIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    /* --- 4. SYMPTOM HISTORY (Spans 4) --- */
+    .ho-history-panel { grid-column: span 4; }
+    .ho-symptom-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem; }
+    .ho-sym-card {
+      background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 14px;
+      padding: 1.2rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s;
+    }
+    .ho-sym-card:hover { transform: translateX(4px); border-color: var(--ho-coral); box-shadow: 0 6px 20px rgba(224, 122, 104, 0.08); }
+    .ho-sym-left { display: flex; align-items: center; gap: 1rem; }
+    .ho-sym-icon { font-size: 1.6rem; }
+    .ho-sym-text strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.1rem;}
+    .ho-sym-text span { font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600;}
+    .ho-sym-severity { font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; }
+    .ho-sym-severity.mild { background: rgba(243, 156, 18, 0.15); color: #d35400; }
+    .ho-sym-severity.high { background: var(--ho-coral-soft); color: var(--ho-danger); }
+
+    /* --- MODALS & TOASTS --- */
+    .ho-modal { position: fixed; inset: 0; background: rgba(11, 94, 85, 0.45); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 1.2rem; opacity: 0; transition: opacity 0.3s ease; }
+    .ho-modal.active { display: flex; opacity: 1; }
+    .ho-modal-box { background: #ffffff; border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl); padding: 2.5rem; width: 100%; max-width: 520px; box-shadow: 0 35px 70px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);}
+    .ho-modal.active .ho-modal-box { transform: translateY(0); }
+    .ho-modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.8rem; }
+    .ho-modal-head h3 { font-size: 1.4rem; font-weight: 800; color: var(--ho-teal-900); }
+    .ho-modal-close { background: none; border: none; font-size: 2.2rem; color: var(--ho-text-muted); cursor: pointer; transition: 0.2s; line-height: 1;}
+    .ho-modal-close:hover { color: var(--ho-danger); }
+
+    .ho-form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.2rem; }
+    .ho-form-group label { font-size: 0.8rem; font-weight: 800; color: var(--ho-teal-900); text-transform: uppercase;}
+    .ho-input { width: 100%; padding: 1rem 1.2rem; border: 1px solid #cbd5e1; border-radius: 16px; font-family: inherit; font-size: 1rem; color: var(--ho-text-main); font-weight: 500; outline: none; transition: 0.2s; background: #f8fcfb;}
+    .ho-input:focus { border-color: var(--ho-teal-600); box-shadow: 0 0 0 4px rgba(16, 148, 133, 0.1); background: #fff;}
+
+    .ho-toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ho-teal-900); color: #fff; padding: 1rem 2rem; border-radius: 999px; font-weight: 700; font-size: 0.95rem; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 4000; opacity: 0; transition: all 0.4s cubic-bezier(0.16,1,0.3,1); pointer-events: none; }
+    .ho-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ==========================================================
+       BULLETPROOF MOBILE UX OVERRIDES (MAX-WIDTH: 768px)
+    ========================================================== */
+    @media (max-width: 1200px) {
+      .ho-med-panel, .ho-symptom-quick, .ho-schedule-panel, .ho-history-panel { grid-column: span 12; }
+    }
+
+    @media screen and (max-width: 768px) {
+      body, html { height: auto !important; min-height: 100vh !important; overflow-x: hidden !important; background: var(--ho-bg-airy) !important; }
+      
+      .ho-main-content { 
+        height: auto !important; min-height: 100vh !important;
+        padding-top: 5.6rem !important; overflow-y: visible !important;
+      }
+      
+      .ho-topbar {
+        flex-direction: column; align-items: flex-start; padding: 0 1.25rem 0.5rem !important; gap: 0.8rem;
+        position: static !important; background: transparent !important; backdrop-filter: none !important; border: none !important;
+      }
+      .ho-topbar h1 { font-size: 1.6rem; }
+      .ho-topbar p { font-size: 0.85rem; line-height: 1.4;}
+      .ho-topbar-actions { width: 100%; display: flex; flex-direction: column; gap: 0.8rem; }
+      .ho-topbar-actions button { width: 100%; justify-content: center; }
+
+      .ho-workspace-grid { 
+        grid-template-columns: 1fr !important; padding: 0.5rem 1.25rem 2.5rem !important; gap: 1.2rem !important;
+        display: flex !important; flex-direction: column !important; flex: 1 0 auto !important;
+      }
+
+      .ho-panel { height: auto !important; min-height: 0 !important; padding: 1.5rem !important; border-radius: 24px !important; flex: none !important; }
+
+      .ho-med-grid { grid-template-columns: 1fr; }
+      .ho-sq-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem;}
+      .ho-sq-btn { padding: 1rem; }
+      
+      .ho-tl-card { flex-direction: column; align-items: flex-start; gap: 1rem; }
+      .ho-tl-action { width: 100%; }
+      .ho-btn-action { width: 100%; text-align: center; padding: 1rem;}
+      
+      .ho-sym-card { padding: 1rem; }
+
+      .ho-modal { padding: 1rem !important; }
+      .ho-modal-box { padding: 2rem 1.5rem !important; max-width: 95% !important; border-radius: 24px !important; }
+    }
+  </style>
 </head>
 <body>
 
-<div class="ambient"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+<!-- Universal Ambient Background -->
+<%- include('../partials/ambient') %>
 
-<div class="shell">
-  <!-- UNIVERSAL SIDEBAR -->
+<div class="ho-app-layout">
+  
+  <!-- UNIVERSAL SIDEBAR IMPORT -->
   <%- include('../partials/sidebar') %>
 
-  <main class="main">
-    <header class="topbar">
+  <!-- SCOPED MAIN CONTENT -->
+  <main class="ho-main-content">
+    
+    <header class="ho-topbar">
       <div>
-        <h1>Medicines & Symptoms</h1>
-        <div class="sub">Active prescriptions, symptom journal, and AI side-effect correlation.</div>
+        <h1>
+          <span class="ho-brand-text">Health<span style="color:var(--ho-coral);">Orbit</span></span> 
+        </h1>
+        <p style="font-size: 1.2rem; font-weight: 800; color: var(--ho-teal-900); margin-bottom: 0.3rem;">Medicines & Symptoms</p>
+        <p>Manage your active prescriptions, daily schedule, and track recent health symptoms.</p>
       </div>
-      <div class="actions">
-        <button class="btn primary">+ Add Medication</button>
+      <div class="ho-topbar-actions">
+        <button class="ho-btn-ghost" onclick="openModal('symptomModal')">🤒 Log Symptom</button>
+        <button class="ho-btn-primary" onclick="openModal('medicineModal')">💊 Add Medicine</button>
       </div>
     </header>
 
-    <div class="bento-wrapper">
-      <div class="bento">
+    <div class="ho-workspace-grid">
+      
+      <!-- 1. ACTIVE MEDICATIONS -->
+      <section class="ho-panel ho-med-panel ho-delay-1">
+        <div class="ho-panel-header">
+          <h2>Active Prescriptions</h2>
+          <span class="ho-badge">3 Ongoing</span>
+        </div>
 
-        <!-- 1. SMART PILLBOX (Spans 8 Cols) -->
-        <div class="card c-meds">
-          <div class="card-head">
-            <h3>Active Regimen</h3>
-            <span style="font-size: 0.75rem; background: var(--sage-soft); color: var(--sage); padding: 4px 10px; border-radius: 999px; font-weight: 700;">2 Remaining Today</span>
+        <div class="ho-med-grid">
+          <!-- Medicine Card 1 -->
+          <div class="ho-med-card">
+            <div class="ho-mc-top">
+              <div class="ho-mc-info">
+                <strong>Levothyroxine</strong>
+                <span>50 mcg • Oral Tablet</span>
+              </div>
+              <div class="ho-mc-icon">💊</div>
+            </div>
+            <div class="ho-mc-bot">
+              <span class="ho-mc-freq">1x Daily • 60 Days</span>
+              <span class="ho-mc-pill">Morning</span>
+            </div>
           </div>
 
-          <div class="med-timeline">
-            <!-- Morning -->
-            <div class="time-block">
-              <div class="time-header">🌅 Morning (08:00 AM)</div>
-              
-              <div class="pill-card taken">
-                <div class="pill-icon">💊</div>
-                <div class="pill-info">
-                  <strong>Vitamin D3 (Cholecalciferol)</strong>
-                  <span>60,000 IU • After breakfast</span>
-                </div>
-                <div class="status-tick">✓</div>
+          <!-- Medicine Card 2 -->
+          <div class="ho-med-card">
+            <div class="ho-mc-top">
+              <div class="ho-mc-info">
+                <strong>Vitamin D3</strong>
+                <span>60,000 IU • Softgel</span>
               </div>
+              <div class="ho-mc-icon">☀️</div>
+            </div>
+            <div class="ho-mc-bot">
+              <span class="ho-mc-freq">1x Weekly • 8 Weeks</span>
+              <span class="ho-mc-pill">Afternoon</span>
+            </div>
+          </div>
 
-              <div class="pill-card taken">
-                <div class="pill-icon" style="background: rgba(133, 193, 233, 0.2); color: #2980b9;">💧</div>
-                <div class="pill-info">
-                  <strong>Levothyroxine</strong>
-                  <span>50 mcg • Empty stomach</span>
-                </div>
-                <div class="status-tick">✓</div>
+          <!-- Medicine Card 3 (As needed) -->
+          <div class="ho-med-card as-needed">
+            <div class="ho-mc-top">
+              <div class="ho-mc-info">
+                <strong>Paracetamol</strong>
+                <span>500 mg • Tablet</span>
+              </div>
+              <div class="ho-mc-icon" style="background: rgba(52, 152, 219, 0.1);">🌡️</div>
+            </div>
+            <div class="ho-mc-bot">
+              <span class="ho-mc-freq">As Needed • For Fever</span>
+              <span class="ho-mc-pill" style="background: rgba(52, 152, 219, 0.1); color: var(--ho-blue);">PRN</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. QUICK SYMPTOM LOG -->
+      <section class="ho-panel ho-symptom-quick ho-delay-1">
+        <div class="ho-panel-header">
+          <h2>Quick Log</h2>
+        </div>
+        <p class="ho-sq-desc">Tap a common symptom to record it in your health timeline instantly.</p>
+        
+        <div class="ho-sq-grid">
+          <div class="ho-sq-btn" onclick="quickLogSymptom('Headache')">
+            <span class="ho-sq-icon">🤕</span>
+            <span class="ho-sq-label">Headache</span>
+          </div>
+          <div class="ho-sq-btn" onclick="quickLogSymptom('Fever')">
+            <span class="ho-sq-icon">🌡️</span>
+            <span class="ho-sq-label">Fever</span>
+          </div>
+          <div class="ho-sq-btn" onclick="quickLogSymptom('Cough')">
+            <span class="ho-sq-icon">🗣️</span>
+            <span class="ho-sq-label">Cough</span>
+          </div>
+          <div class="ho-sq-btn" onclick="quickLogSymptom('Fatigue')">
+            <span class="ho-sq-icon">🥱</span>
+            <span class="ho-sq-label">Fatigue</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. TODAY'S SCHEDULE TIMELINE -->
+      <section class="ho-panel ho-schedule-panel ho-delay-2">
+        <div class="ho-panel-header">
+          <h2>Today's Schedule</h2>
+        </div>
+
+        <div class="ho-timeline">
+          <!-- Timeline Item 1 (Completed) -->
+          <div class="ho-tl-item completed" id="tl-item-1">
+            <div class="ho-tl-dot"></div>
+            <span class="ho-tl-time">08:00 AM — Morning Dose</span>
+            <div class="ho-tl-card">
+              <div class="ho-tl-info">
+                <strong>Levothyroxine (50 mcg)</strong>
+                <span>Take empty stomach, 30 mins before food.</span>
+              </div>
+              <div class="ho-tl-action" id="tl-action-1">
+                <span class="ho-taken-badge">✓ Taken</span>
               </div>
             </div>
+          </div>
 
-            <!-- Afternoon -->
-            <div class="time-block">
-              <div class="time-header">☀️ Afternoon (02:00 PM)</div>
-              
-              <div class="pill-card">
-                <div class="pill-icon" style="background: var(--coral-soft); color: var(--coral);">💊</div>
-                <div class="pill-info">
-                  <strong>Ibuprofen</strong>
-                  <span>400 mg • As needed (Pain)</span>
-                </div>
-                <div class="status-tick"></div>
+          <!-- Timeline Item 2 (Upcoming) -->
+          <div class="ho-tl-item upcoming" id="tl-item-2">
+            <div class="ho-tl-dot"></div>
+            <span class="ho-tl-time">02:00 PM — Afternoon Dose</span>
+            <div class="ho-tl-card">
+              <div class="ho-tl-info">
+                <strong>Vitamin D3 (60,000 IU)</strong>
+                <span>Take with a fat-containing meal.</span>
               </div>
-            </div>
-
-            <!-- Evening -->
-            <div class="time-block">
-              <div class="time-header">🌙 Evening (09:00 PM)</div>
-              <div class="pill-card">
-                <div class="pill-icon" style="background: rgba(155, 89, 182, 0.2); color: #8e44ad;">💊</div>
-                <div class="pill-info">
-                  <strong>Magnesium Glycinate</strong>
-                  <span>200 mg • Before sleep</span>
-                </div>
-                <div class="status-tick"></div>
+              <div class="ho-tl-action" id="tl-action-2">
+                <button class="ho-btn-action" onclick="markTaken(2)">Mark as Taken</button>
               </div>
             </div>
           </div>
         </div>
+      </section>
 
-        <!-- 2. SYMPTOM QUICK LOG (Spans 4 Cols) -->
-        <div class="card c-log">
-          <div class="card-head">
-            <h3>Log a Symptom</h3>
+      <!-- 4. RECENT SYMPTOMS LOG -->
+      <section class="ho-panel ho-history-panel ho-delay-2">
+        <div class="ho-panel-header">
+          <h2>Recent Symptoms</h2>
+        </div>
+        
+        <div class="ho-symptom-list">
+          <div class="ho-sym-card">
+            <div class="ho-sym-left">
+              <div class="ho-sym-icon">🤕</div>
+              <div class="ho-sym-text">
+                <strong>Headache</strong>
+                <span>Yesterday, 04:30 PM</span>
+              </div>
+            </div>
+            <span class="ho-sym-severity mild">Mild</span>
           </div>
-          
-          <div class="symptom-form">
-            <div>
-              <label style="font-size: 0.75rem; font-weight: 700; color: #a4c9c3; text-transform: uppercase; margin-bottom: 0.5rem; display: block;">Quick Select</label>
-              <div class="symptom-tags">
-                <span class="s-tag" onclick="this.classList.toggle('selected')">Headache</span>
-                <span class="s-tag" onclick="this.classList.toggle('selected')">Nausea</span>
-                <span class="s-tag selected" onclick="this.classList.toggle('selected')">Fatigue</span>
-                <span class="s-tag" onclick="this.classList.toggle('selected')">Dizziness</span>
-                <span class="s-tag" onclick="this.classList.toggle('selected')">Joint Pain</span>
-                <span class="s-tag" onclick="this.classList.toggle('selected')">Insomnia</span>
+
+          <div class="ho-sym-card">
+            <div class="ho-sym-left">
+              <div class="ho-sym-icon">🥱</div>
+              <div class="ho-sym-text">
+                <strong>Fatigue</strong>
+                <span>Aug 18, 2026</span>
               </div>
             </div>
+            <span class="ho-sym-severity mild">Mild</span>
+          </div>
 
-            <div>
-              <label style="font-size: 0.75rem; font-weight: 700; color: #a4c9c3; text-transform: uppercase; display: block;">Severity (1-10)</label>
-              <input type="range" min="1" max="10" value="4" class="severity-slider">
-              <div class="severity-labels">
-                <span>Mild</span>
-                <span>Severe</span>
+          <div class="ho-sym-card">
+            <div class="ho-sym-left">
+              <div class="ho-sym-icon">🌡️</div>
+              <div class="ho-sym-text">
+                <strong>Fever (101°F)</strong>
+                <span>Aug 12, 2026</span>
               </div>
             </div>
-
-            <textarea placeholder="Any additional notes? (e.g., Started after lunch...)" style="width: 100%; min-height: 60px; border-radius: 10px; border: none; padding: 10px; font-family: inherit; font-size: 0.85rem; background: rgba(0,0,0,0.15); color: #fff; outline: none;"></textarea>
-
-            <button class="log-btn">Save to Journal</button>
+            <span class="ho-sym-severity high">High</span>
           </div>
         </div>
+      </section>
 
-        <!-- 3. SYMPTOM TIMELINE (Spans 7 Cols) -->
-        <div class="card c-history">
-          <div class="card-head">
-            <h3>Symptom History</h3>
-          </div>
-          
-          <div class="history-feed">
-            <div class="history-item">
-              <div class="history-date">
-                <span class="h-day">21</span>
-                <span class="h-month">Aug</span>
-              </div>
-              <div class="history-content">
-                <h4>Fatigue & Mild Headache</h4>
-                <span class="severity-badge moderate">Severity: 4/10</span>
-                <p>Started feeling sluggish around 3 PM. Took an Ibuprofen.</p>
-              </div>
-            </div>
-
-            <div class="history-item">
-              <div class="history-date">
-                <span class="h-day">14</span>
-                <span class="h-month">Aug</span>
-              </div>
-              <div class="history-content" style="border-color: var(--sage);">
-                <h4>Joint Pain (Left Knee)</h4>
-                <span class="severity-badge mild">Severity: 2/10</span>
-                <p>Noticed slight stiffness after morning run. Resolved by evening.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 4. AI CONTRAINDICATION & ANALYSIS (Spans 5 Cols) -->
-        <div class="card c-ai">
-          <div class="card-head">
-            <h3>✨ AI Interaction Engine</h3>
-          </div>
-          
-          <div class="ai-insight-box">
-            <div class="ai-header">
-              <div class="ai-icon">💡</div>
-              <strong>Possible Correlation Detected</strong>
-            </div>
-            <p>You logged "Fatigue" and "Mild Headache" today. I noticed you recently started taking <strong>Levothyroxine</strong> (50mcg) on an empty stomach.</p>
-            
-            <div class="ai-rx-check">
-              > Checking Rx Database...<br>
-              > Levothyroxine Side Effects: Headache, fatigue, sleep changes.<br>
-              > Assessment: Common adjustment symptom.
-            </div>
-            
-            <p style="margin-top: 1rem; font-size: 0.8rem;"><em>Recommendation: Monitor for 3 more days. If severity exceeds 6/10, contact your endocrinologist.</em></p>
-          </div>
-        </div>
-
-      </div>
     </div>
+
+    <!-- UNIVERSAL FOOTER -->
+    <%- include('../partials/footer') %>
+
   </main>
 </div>
 
+<!-- ==========================================
+     INTERACTIVE MODALS & TOASTS
+========================================== -->
+
+<!-- Toast Notification -->
+<div class="ho-toast" id="hoToast">Action completed successfully.</div>
+
+<!-- ADD MEDICINE MODAL -->
+<div class="ho-modal" id="medicineModal" onclick="closeModal('medicineModal', event)">
+  <div class="ho-modal-box" onclick="event.stopPropagation()">
+    <div class="ho-modal-head">
+      <h3>Add New Medicine</h3>
+      <button class="ho-modal-close" type="button" onclick="closeModal('medicineModal')">×</button>
+    </div>
+    <form onsubmit="event.preventDefault(); submitMedicine();">
+      <div class="ho-form-group">
+        <label>Medicine Name</label>
+        <input type="text" class="ho-input" placeholder="e.g. Paracetamol" required>
+      </div>
+      <div class="ho-form-group">
+        <label>Dosage</label>
+        <input type="text" class="ho-input" placeholder="e.g. 500 mg" required>
+      </div>
+      <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+        <div class="ho-form-group" style="flex: 1; min-width: 150px;">
+          <label>Frequency</label>
+          <select class="ho-input">
+            <option>1x Daily</option>
+            <option>2x Daily</option>
+            <option>Weekly</option>
+            <option>As Needed (PRN)</option>
+          </select>
+        </div>
+        <div class="ho-form-group" style="flex: 1; min-width: 150px;">
+          <label>Duration</label>
+          <input type="text" class="ho-input" placeholder="e.g. 7 Days">
+        </div>
+      </div>
+      <button type="submit" class="ho-btn-primary" style="width: 100%; margin-top: 1rem; padding: 1.2rem; font-size: 1.05rem; border-radius: 16px;">Save Medicine</button>
+    </form>
+  </div>
+</div>
+
+<!-- LOG SYMPTOM MODAL -->
+<div class="ho-modal" id="symptomModal" onclick="closeModal('symptomModal', event)">
+  <div class="ho-modal-box" onclick="event.stopPropagation()">
+    <div class="ho-modal-head">
+      <h3>Log Symptom</h3>
+      <button class="ho-modal-close" type="button" onclick="closeModal('symptomModal')">×</button>
+    </div>
+    <form onsubmit="event.preventDefault(); submitSymptom();">
+      <div class="ho-form-group">
+        <label>Symptom Type</label>
+        <select class="ho-input">
+          <option>Fever</option>
+          <option>Headache</option>
+          <option>Cough</option>
+          <option>Pain</option>
+          <option>Fatigue</option>
+          <option>Other...</option>
+        </select>
+      </div>
+      <div class="ho-form-group">
+        <label>Severity</label>
+        <select class="ho-input">
+          <option>Mild</option>
+          <option>Moderate</option>
+          <option>Severe</option>
+        </select>
+      </div>
+      <div class="ho-form-group">
+        <label>Additional Notes</label>
+        <textarea class="ho-input" rows="3" placeholder="When did it start? What does it feel like?" style="resize: vertical; line-height: 1.5;"></textarea>
+      </div>
+      <button type="submit" class="ho-btn-primary" style="width: 100%; margin-top: 1rem; padding: 1.2rem; font-size: 1.05rem; border-radius: 16px;">Save to Timeline</button>
+    </form>
+  </div>
+</div>
+
 <script>
-  // Add simple toggle logic for pill cards to simulate "taking" a med
-  document.querySelectorAll('.pill-card').forEach(card => {
-    card.addEventListener('click', () => {
-      card.classList.toggle('taken');
-      const tick = card.querySelector('.status-tick');
-      if(card.classList.contains('taken')) {
-        tick.innerHTML = '✓';
-      } else {
-        tick.innerHTML = '';
-      }
-    });
-  });
+  // Advanced Toast Notification Engine
+  function showToast(message) {
+    const toast = document.getElementById('hoToast');
+    toast.innerText = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+  }
+
+  // Smooth Modal Functions
+  function openModal(id) { 
+    const modal = document.getElementById(id);
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('active'), 10);
+  }
+  function closeModal(id, e) {
+    if (!e || e.target === document.getElementById(id) || e.target.classList.contains('ho-modal-close')) {
+      const modal = document.getElementById(id);
+      modal.classList.remove('active');
+      setTimeout(() => modal.style.display = 'none', 300);
+    }
+  }
+
+  // Frontend Interaction Handlers
+  function quickLogSymptom(name) {
+    showToast(`✅ ${name} logged to your health timeline.`);
+  }
+
+  function submitMedicine() {
+    closeModal('medicineModal');
+    showToast('💊 Medicine schedule saved successfully!');
+  }
+
+  function submitSymptom() {
+    closeModal('symptomModal');
+    showToast('🤒 Symptom logged to your health timeline!');
+  }
+
+  // Interactive Timeline Logic
+  function markTaken(itemId) {
+    const tlItem = document.getElementById(`tl-item-${itemId}`);
+    const actionContainer = document.getElementById(`tl-action-${itemId}`);
+    
+    // Change classes for animation & styling
+    tlItem.classList.remove('upcoming');
+    tlItem.classList.add('completed');
+    
+    // Replace button with animated checkmark
+    actionContainer.innerHTML = `<span class="ho-taken-badge">✓ Taken</span>`;
+    showToast('✅ Dose marked as taken. Good job!');
+  }
 </script>
+
 </body>
 </html>

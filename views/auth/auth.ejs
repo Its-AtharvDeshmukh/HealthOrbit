@@ -7,6 +7,225 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/auth-portal.css">
+<link rel="icon" href="/images/Logo.png">
+
+<style>
+/* 
+==================================================================
+  BULLETPROOF MOBILE UX OVERRIDES (MAX-WIDTH: 768px)
+  This block uses aggressive '!important' rules to completely 
+  override any desktop spacing, gaps, or flex behaviors that 
+  were causing the components to separate on mobile screens.
+================================================================== 
+*/
+@media screen and (max-width: 768px) {
+  /* 1. Reset Body to Natural Scroll */
+  body, html {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    background: #edf6f4 !important; /* Solid clean background */
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Kill the orbs on mobile to improve performance and stop ghost-spacing */
+  .ambient-canvas { display: none !important; }
+
+  /* 2. Main Viewport Container - Strict Top-Down Stacking */
+  .auth-viewport {
+    display: flex !important; 
+    flex-direction: column !important;
+    justify-content: flex-start !important; /* Pushes everything to the top */
+    align-items: center !important; /* Centers everything perfectly */
+    height: auto !important;
+    min-height: 100vh !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 0 !important; /* Kills any inherited gaps */
+    background: transparent !important;
+  }
+
+  /* 3. Brand Panel - Compact & Centered */
+  .brand-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    flex: none !important; /* Stops it from growing and taking up space */
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 2rem 1rem 0.5rem !important; /* CRITICAL: 0.5rem bottom padding leaves almost 0 space before the form */
+  }
+  
+  /* Kill any desktop pseudo-elements causing green boxes */
+  .brand-panel::before, .brand-panel::after { display: none !important; }
+
+  .brand-header {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    margin-bottom: 1.2rem !important;
+  }
+
+  .logo-orbit-container { width: 30px !important; height: 30px !important; flex-shrink: 0 !important; }
+
+  .nav-logo {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 1.5rem !important;
+    color: #0b5e55 !important;
+    white-space: nowrap !important;
+  }
+  .brand-highlight { color: #e07a68 !important; }
+
+  .hero-content {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .hero-content h1 {
+    font-size: 1.7rem !important;
+    line-height: 1.2 !important;
+    margin: 0 0 0.4rem 0 !important;
+    color: #0b5e55 !important;
+  }
+  
+  .hero-content p {
+    font-size: 0.9rem !important;
+    margin: 0 auto !important;
+    max-width: 90% !important;
+    color: #4e6b63 !important;
+    line-height: 1.4 !important;
+  }
+
+  /* Hide massive desktop features list */
+  .telemetry-marquee, .brand-footer-note { display: none !important; }
+
+  /* 4. Form Panel - Pull it up tight to the text */
+  .form-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    flex: none !important;
+    background: transparent !important;
+    margin: 0 !important;
+    padding: 0.5rem 1.2rem 3rem !important; /* CRITICAL: 0.5rem top padding to touch the brand-panel */
+  }
+
+  /* Compact, clean, mobile-optimized white card */
+  .liquid-card {
+    display: block !important;
+    width: 100% !important;
+    max-width: 450px !important;
+    margin: 0 auto !important;
+    padding: 1.8rem 1.5rem !important;
+    border-radius: 20px !important;
+    background: #ffffff !important;
+    box-shadow: 0 8px 30px rgba(13, 122, 110, 0.08) !important;
+    border: 1px solid rgba(13, 122, 110, 0.05) !important;
+  }
+
+  /* 5. Inputs & Touch Targets */
+  .glass-tabs {
+    display: flex !important;
+    background: #f0f7f6 !important;
+    border-radius: 999px !important;
+    padding: 4px !important;
+    margin-bottom: 1.5rem !important;
+    border: 1px solid rgba(13, 122, 110, 0.05) !important;
+  }
+  .glass-tabs button {
+    flex: 1 !important;
+    padding: 0.8rem 0 !important;
+    font-size: 0.9rem !important;
+    border-radius: 999px !important;
+    font-weight: 700 !important;
+    color: #4e6b63 !important;
+    border: none !important;
+    background: transparent !important;
+  }
+  .glass-tabs button.active {
+    background: #ffffff !important;
+    color: #0b5e55 !important;
+    box-shadow: 0 2px 8px rgba(13, 122, 110, 0.08) !important;
+  }
+
+  .form-title-group { text-align: center !important; margin-bottom: 1.5rem !important; }
+  .form-title-group h2 { font-size: 1.4rem !important; margin-bottom: 0.2rem !important; color: #0b5e55 !important; }
+  .form-title-group p { font-size: 0.85rem !important; color: #4e6b63 !important; margin: 0 !important;}
+
+  .input-group { margin-bottom: 1.2rem !important; text-align: left !important; }
+  .input-group label { display: block !important; font-size: 0.8rem !important; margin-bottom: 0.4rem !important; font-weight: 700 !important; color: #0b5e55 !important; }
+  
+  /* 16px completely disables iOS Safari auto-zoom */
+  .input-wrapper input {
+    width: 100% !important;
+    height: 50px !important;
+    padding: 0 1.2rem !important;
+    font-size: 16px !important; 
+    border-radius: 12px !important;
+    background: #f8fbfb !important;
+    border: 1px solid #e2ecea !important;
+    color: #0f1c1a !important;
+  }
+
+  .form-options {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-size: 0.85rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .liquid-submit-btn {
+    width: 100% !important;
+    height: 50px !important;
+    border-radius: 12px !important;
+    font-size: 1rem !important;
+    font-weight: 800 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .auth-divider { margin: 1.5rem 0 !important; text-align: center !important; font-size: 0.85rem !important; color: #4e6b63 !important; }
+
+  .google-auth-btn {
+    width: 100% !important;
+    height: 50px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.6rem !important;
+    background: #ffffff !important;
+    border: 1px solid #e2ecea !important;
+    color: #0b5e55 !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+  }
+  .google-icon { width: 20px !important; height: 20px !important; }
+
+  .switch-prompt { text-align: center !important; font-size: 0.9rem !important; margin-top: 1.5rem !important; }
+  .legal-disclaimer { text-align: center !important; font-size: 0.75rem !important; margin-top: 1.5rem !important; color: #4e6b63 !important; }
+}
+</style>
 </head>
 <body>
 
@@ -35,10 +254,10 @@
         <p>Unified medical records, wearable telemetry, and autonomous AI insights secured in one dashboard.</p>
       </div>
 
-      <!-- LIVE SCROLLING FEATURES MARQUEE -->
+      <!-- LIVE SCROLLING FEATURES MARQUEE (Hidden on Mobile) -->
       <div class="telemetry-marquee">
         <div class="telemetry-inner">
-          <!-- Features Loop (We duplicate the list so the scroll is seamless) -->
+          <!-- Features Loop -->
           <div class="feat-item"><div class="feat-icon">⚡</div><div><strong>User Profile & Auth</strong><span>Secure, permission-based access.</span></div></div>
           <div class="feat-item"><div class="feat-icon">📄</div><div><strong>Report Management</strong><span>OCR-powered data extraction.</span></div></div>
           <div class="feat-item"><div class="feat-icon">🤖</div><div><strong>AI Report Analysis</strong><span>Simple explanations, no jargon.</span></div></div>
@@ -49,10 +268,6 @@
           <div class="feat-item"><div class="feat-icon">🛡️</div><div><strong>Insurance & Emergency</strong><span>Critical info at your fingertips.</span></div></div>
           <div class="feat-item"><div class="feat-icon">🧠</div><div><strong>AI Health Assistant</strong><span>Your 24/7 insight engine.</span></div></div>
           <div class="feat-item"><div class="feat-icon">🍎</div><div><strong>Nutrition & Lifestyle</strong><span>Wellness goal tracking.</span></div></div>
-          
-          <!-- Duplicated for seamless loop -->
-          <div class="feat-item"><div class="feat-icon">⚡</div><div><strong>User Profile & Auth</strong><span>Secure, permission-based access.</span></div></div>
-          <div class="feat-item"><div class="feat-icon">📄</div><div><strong>Report Management</strong><span>OCR-powered data extraction.</span></div></div>
         </div>
       </div>
 
@@ -61,10 +276,6 @@
         <span>End-to-End Encrypted Health Vault Node</span>
       </div>
     </section>
-
-
-
-
 
     <!-- RIGHT: Apple Liquid Glass Form Panel -->
     <section class="form-panel">
@@ -117,15 +328,15 @@
 
           <div class="auth-divider"><span>or</span></div>
 
-         <a href="/auth/google" class="google-auth-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">
-    <svg class="google-icon" viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-    </svg>
-    <span>Continue with Google</span>
-</a>
+         <a href="/auth/google" class="google-auth-btn" style="text-decoration: none;">
+            <svg class="google-icon" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Continue with Google</span>
+          </a>
 
           <div class="switch-prompt">
             New to the ecosystem? <button type="button" onclick="switchTab('signup')">Create account</button>
@@ -136,7 +347,7 @@
         <form id="signupForm" class="auth-form" action="/signup" method="POST" novalidate>
           <div class="form-title-group">
             <h2>Create Health ID</h2>
-            <p>Bring reports, vitals, and analytics into a single view[cite: 1].</p>
+            <p>Bring reports, vitals, and analytics into a single view.</p>
           </div>
 
          <div class="server-error-banner <%= locals.signupError ? 'show' : '' %>" id="signupServerMsg"><%= locals.signupError || 'An account with this email already exists.' %></div>
@@ -197,7 +408,7 @@
         </form>
 
         <div class="legal-disclaimer">
-          HealthOrbit provides clinical decision support[cite: 1]. Not a replacement for professional medical diagnosis[cite: 1].
+          HealthOrbit provides clinical decision support. Not a replacement for professional medical diagnosis.
         </div>
       </div>
     </section>
