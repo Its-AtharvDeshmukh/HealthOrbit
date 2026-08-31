@@ -219,6 +219,18 @@
   .ho-timeline-workspace { padding: 1rem; }
   .ho-filter-bar { width: 100%; overflow-x: auto; scrollbar-width: none; }
 }
+
+
+
+
+
+@media (max-width: 1024px) {
+    /* Using 'body .ho-main-content' makes this rule stronger than the original */
+    body .ho-main-content {
+       margin-top: 5.5rem;
+        padding: 0 !important; 
+    }
+}
 </style>
 </head>
 <body>
@@ -397,6 +409,7 @@
       </div>
 
     </div>
+      <%- include('../partials/footer') %>
   </main>
 </div>
 
