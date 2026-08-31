@@ -311,10 +311,161 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
     padding: 1rem !important;
   }
   .ho-action-pill .ho-pill-icon { margin-bottom: 0.4rem !important; }
+<<<<<<< HEAD
+=======
+}
+/* ==================================================================
+   HEALTHORBIT PWA SPLASH SCREEN ANIMATION
+================================================================== */
+.ho-pwa-splash-container {
+  position: fixed;
+  inset: 0;
+  z-index: 999999; /* Stays above absolutely everything */
+  background-color: var(--ho-bg-airy, #edf6f4); /* Must match manifest.json background_color */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
+}
+
+/* Hide class applied by JS when app is ready */
+.ho-pwa-splash-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Logo Animation Stage */
+.ho-pwa-logo-stage {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Central Core (Matches sidebar) */
+.ho-pwa-core {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--ho-teal-900, #0b5e55);
+  box-shadow: 0 0 15px rgba(11, 94, 85, 0.2);
+  z-index: 5;
+}
+
+/* Concentric Orbiting Rings */
+.ho-pwa-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px dashed var(--ho-teal-600, #109485);
+  opacity: 0.6;
+}
+
+.ho-pwa-ring-outer {
+  width: 90px;
+  height: 90px;
+  animation: hoPwaSpin 4s linear infinite;
+}
+
+.ho-pwa-ring-inner {
+  width: 56px;
+  height: 56px;
+  animation: hoPwaSpinReverse 3s linear infinite;
+}
+
+/* The Orbiting Planets */
+.ho-pwa-planet {
+  position: absolute;
+  top: -4px; /* Sits exactly on the ring edge */
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+}
+
+.ho-pwa-planet-coral {
+  width: 8px;
+  height: 8px;
+  background: var(--ho-coral, #e07a68);
+  box-shadow: 0 0 6px var(--ho-coral, #e07a68);
+}
+
+.ho-pwa-planet-mint {
+  width: 6px;
+  height: 6px;
+  background: var(--ho-mint-400, #42b89d);
+  box-shadow: 0 0 6px var(--ho-mint-400, #42b89d);
+}
+
+/* Brand Text */
+.ho-pwa-brand {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--ho-teal-900, #0b5e55);
+  letter-spacing: -0.5px;
+}
+.ho-pwa-brand span {
+  color: var(--ho-coral, #e07a68);
+}
+
+/* Smooth Hardware-Accelerated Animations */
+@keyframes hoPwaSpin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes hoPwaSpinReverse {
+  from { transform: translate(-50%, -50%) rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotate(0deg); }
+}
+
+/* ACCESSIBILITY: Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .ho-pwa-ring-outer,
+  .ho-pwa-ring-inner {
+    animation: none; /* Stops the spinning */
+  }
+  .ho-pwa-core {
+    animation: hoPwaFadePulse 2s ease-in-out infinite alternate;
+  }
+  @keyframes hoPwaFadePulse {
+    from { opacity: 0.7; }
+    to { opacity: 1; }
+  }
+>>>>>>> 52e8dab3d686f2cb449fec2ec0757881c1e37ef1
 }
 </style>
 </head>
 <body>
+
+
+  <!-- PWA Animated Splash Screen Overlay -->
+<div id="ho-pwa-splash" class="ho-pwa-splash-container" role="alert" aria-busy="true" aria-label="Loading HealthOrbit">
+  <div class="ho-pwa-logo-stage">
+    
+    <!-- Outer Orbit Ring & Planet -->
+    <div class="ho-pwa-ring ho-pwa-ring-outer">
+      <div class="ho-pwa-planet ho-pwa-planet-coral"></div>
+    </div>
+    
+    <!-- Inner Orbit Ring & Planet -->
+    <div class="ho-pwa-ring ho-pwa-ring-inner">
+      <div class="ho-pwa-planet ho-pwa-planet-mint"></div>
+    </div>
+    
+    <!-- Central Core -->
+    <div class="ho-pwa-core"></div>
+    
+  </div>
+  <div class="ho-pwa-brand">Health<span>Orbit</span></div>
+</div>
+
 
 <div class="ho-ambient-canvas">
   <div class="ho-glow-orb ho-orb-1"></div>
@@ -528,6 +679,27 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 
   </main>
 </div>
-
+<script>
+  // Wait for the entire window (HTML, CSS, Images, APIs) to fully load
+  window.addEventListener('load', function() {
+    const splashScreen = document.getElementById('ho-pwa-splash');
+    
+    if (splashScreen) {
+      // Optional: Add a tiny 300ms minimum delay so the user actually 
+      // perceives the smooth animation before it disappears, 
+      // preventing a jarring "flash" on very fast networks.
+      setTimeout(() => {
+        // Trigger the CSS fade-out transition
+        splashScreen.classList.add('ho-pwa-splash-hidden');
+        
+        // Remove the element from the DOM entirely after the 600ms CSS fade completes
+        // This ensures it doesn't block clicks or consume memory
+        setTimeout(() => {
+          splashScreen.remove();
+        }, 600);
+      }, 300); 
+    }
+  });
+</script>
 </body>
 </html>
