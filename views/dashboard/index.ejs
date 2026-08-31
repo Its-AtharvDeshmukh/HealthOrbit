@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HealthOrbit — Omni-Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
-<!-- Universal Sidebar CSS -->
-<link rel="stylesheet" href="/css/sidebar.css">
+<%- include('../partials/header', { title: 'HealthOrbit — Executive Summary Dashboard' }) %>
+<link rel="icon" href="/images/Logo.png">
+ 
+
 <style>
 /* 
 ==================================================================
@@ -25,34 +22,58 @@
   --ho-text-main: #0f1c1a;
   --ho-text-muted: #4e6b63;
   --ho-danger: #d94b4b;
+  --ho-green: #27ae60;
   
-  --ho-glass-clear: rgba(255, 255, 255, 0.45);
-  --ho-glass-solid: rgba(255, 255, 255, 0.85);
+  --ho-glass-clear: rgba(255, 255, 255, 0.48);
+  --ho-glass-solid: rgba(255, 255, 255, 0.88);
   --ho-glass-border: rgba(255, 255, 255, 0.95);
+  --ho-glass-border-subtle: rgba(13, 122, 110, 0.12);
   
   --ho-radius-xl: 32px;
   --ho-radius-lg: 20px;
   --ho-radius-md: 12px;
-  
   --ho-shadow-glass: 0 20px 50px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
+  
+  --hc-blue: #4285F4;
+  --hc-green: #34A853;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: var(--ho-bg-airy); color: var(--ho-text-main); overflow: hidden; -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: var(--ho-bg-airy); color: var(--ho-text-main); overflow-x: hidden; -webkit-font-smoothing: antialiased; display: flex; }
 
-/* ---------- AMBIENT ORBS ---------- */
-.ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+/* ---------- AMBIENT ORBS & ANIMATIONS ---------- */
+/* .ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
 .ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
 .ho-orb-1 { width: 600px; height: 600px; background: #76d7c4; top: -150px; left: -100px; }
 .ho-orb-2 { width: 700px; height: 700px; background: #a9dfbf; bottom: -200px; right: -150px; animation-delay: -5s; }
-.ho-orb-3 { width: 500px; height: 500px; background: #fbe4de; top: 20%; left: 30%; opacity: 0.4; animation-delay: -10s; }
-@keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(60px, 70px) scale(1.15); } }
+@keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(60px, 70px) scale(1.15); } } */
 
+@keyframes hoSlideUp { 
+  from { opacity: 0; transform: translateY(35px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
+
+@keyframes hoPulseGlow {
+  0%, 100% { box-shadow: 0 0 15px rgba(66, 184, 157, 0.4); }
+  50% { box-shadow: 0 0 30px rgba(66, 184, 157, 0.8); }
+}
+
+@keyframes hoBreathText {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; text-shadow: 0 0 8px rgba(66, 184, 157, 0.4); }
+}
+
+/* ---------- MAIN WORKSPACE LAYOUT & GAP FIX ---------- */
 .ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
-.ho-main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; scrollbar-width: none;}
+.ho-main-content { 
+  flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; 
+  overflow-y: auto; scrollbar-width: none; 
+  margin-left: 0 !important; 
+  padding-left: 0 !important;
+}
 .ho-main-content::-webkit-scrollbar { display: none; }
 
-/* ---------- TOP NAVBAR ---------- */
+/* TOP NAVBAR (DESKTOP) */
 .ho-topbar {
   display: flex; justify-content: space-between; align-items: center;
   padding: 2.5rem 3rem 1.5rem; flex-shrink: 0; background: transparent;
@@ -60,413 +81,622 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   mask-image: linear-gradient(to bottom, black 80%, transparent);
 }
-.ho-topbar-text h1 { font-family: 'Fraunces', serif; font-weight: 800; font-size: 2.2rem; color: var(--ho-teal-900); margin-bottom: 0.3rem; letter-spacing: -1px;}
+.ho-topbar-text h1 { font-family: 'Fraunces', serif; font-weight: 800; font-size: 2.2rem; color: var(--ho-teal-900); margin-bottom: 0.3rem; letter-spacing: -1px; transition: 0.3s;}
 .ho-topbar-text p { font-size: 0.95rem; color: var(--ho-text-muted); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;}
 .ho-pulse-dot { width: 8px; height: 8px; background: var(--ho-mint-400); border-radius: 50%; box-shadow: 0 0 10px var(--ho-mint-400); animation: hoPulse 2s infinite; }
 @keyframes hoPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.5); } }
+
 .ho-topbar-actions { display: flex; gap: 1rem; align-items: center; }
-
 .ho-btn-ghost { padding: 0.85rem 1.8rem; background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border); border-radius: 999px; color: var(--ho-teal-900); font-weight: 700; font-size: 0.95rem; cursor: pointer; text-decoration: none; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: inline-block; }
-.ho-btn-ghost:hover { background: #fff; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.1); }
+.ho-btn-ghost:hover { background: #fff; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.1); transform: translateY(-2px); }
+.ho-btn-ghost:active { transform: scale(0.96); }
 
-/* ---------- OMNI-DASHBOARD MOSAIC GRID ---------- */
+/* ---------- MOSAIC GRID ---------- */
 .ho-mosaic-grid {
-  display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: minmax(140px, auto); gap: 1.5rem;
-  padding: 0.5rem 3rem 4rem; flex: 1;
+  display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem;
+  padding: 0.5rem 3rem 2rem; flex: 1;
 }
 
-/* Base Panel */
 .ho-panel {
   background: var(--ho-glass-clear);
   backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
   border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
   padding: 1.8rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass);
-  position: relative; overflow: hidden; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative; overflow: hidden; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-@keyframes hoSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+.ho-panel:nth-child(1) { animation-delay: 0.05s; } .ho-panel:nth-child(2) { animation-delay: 0.1s; }
+.ho-panel:nth-child(3) { animation-delay: 0.15s; } .ho-panel:nth-child(4) { animation-delay: 0.2s; }
+.ho-panel:nth-child(5) { animation-delay: 0.25s; } .ho-panel:nth-child(6) { animation-delay: 0.3s; }
 
-/* Staggered Animations */
-.ho-panel:nth-child(1) { animation-delay: 0.1s; } .ho-panel:nth-child(2) { animation-delay: 0.15s; }
-.ho-panel:nth-child(3) { animation-delay: 0.2s; } .ho-panel:nth-child(4) { animation-delay: 0.25s; }
-.ho-panel:nth-child(5) { animation-delay: 0.3s; } .ho-panel:nth-child(6) { animation-delay: 0.35s; }
-.ho-panel:nth-child(7) { animation-delay: 0.4s; } .ho-panel:nth-child(8) { animation-delay: 0.45s; }
-
-/* Light Hover Effect */
-.ho-panel:not(.ho-dark-panel):hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(13, 122, 110, 0.1); border-color: var(--ho-teal-600); background: rgba(255,255,255,0.7);}
-
-/* Mirror Shine */
-.ho-panel::after {
-  content: ""; position: absolute; top: 0; left: -150%; width: 50%; height: 100%;
-  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.6) 45%, transparent 90%);
-  transform: skewX(-20deg); transition: left 0.7s ease; pointer-events: none; z-index: 10;
+.ho-panel:not(.ho-dark-panel):hover { 
+  transform: translateY(-4px) scale(1.005); 
+  box-shadow: 0 25px 50px rgba(13, 122, 110, 0.14); 
+  border-color: var(--ho-teal-600); 
+  /* background: rgba(255,255,255,0.78);  */
 }
-.ho-panel:hover::after { left: 150%; }
+.ho-panel:active { transform: scale(0.98); }
 
-.ho-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; z-index: 2;}
-.ho-panel-head h3 { font-family: 'Fraunces', serif; font-size: 1.15rem; font-weight: 700; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem;}
+.ho-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; z-index: 2; }
+.ho-panel-head h3 { font-family: 'Fraunces', serif; font-size: 1.15rem; font-weight: 700; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem; }
+.ho-badge { background: rgba(13, 122, 110, 0.1); color: var(--ho-teal-700); padding: 4px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
 
-/* --- 1. HERO: ACCESS & IDENTITY (Spans 8, Row 1) --- */
-.ho-hero { grid-column: span 8; background: linear-gradient(135deg, var(--ho-teal-900), var(--ho-teal-700)); color: #fff; flex-direction: row; align-items: center; justify-content: space-between; padding: 2.5rem;}
-.ho-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at right, rgba(255,255,255,0.1), transparent); pointer-events: none;}
+/* --- 1. EXECUTIVE SUMMARY HERO (Spans 8) --- */
+.ho-hero { 
+  grid-column: span 8; background: linear-gradient(135deg, var(--ho-teal-900), var(--ho-teal-700)); 
+  color: #fff; flex-direction: row; align-items: center; justify-content: space-between; 
+  padding: 2.5rem; border: none; transition: all 0.4s ease;
+}
+.ho-hero:hover { background: linear-gradient(135deg, #094f47, var(--ho-teal-900)); }
+
 .ho-hero-text { flex: 1; z-index: 2;}
-.ho-hero-text h2 { font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 500; line-height: 1.1; margin-bottom: 1rem;}
-.ho-hero-text p { font-size: 0.95rem; color: rgba(255,255,255,0.85); line-height: 1.5; margin-bottom: 1.5rem; max-width: 90%;}
 
-.ho-access-group { display: flex; align-items: center; gap: 1rem; background: rgba(0,0,0,0.2); padding: 0.6rem 1rem; border-radius: 999px; width: fit-content; border: 1px solid rgba(255,255,255,0.1);}
-.ho-access-group span { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ho-mint-400);}
-.ho-avatar-stack { display: flex; margin-left: 0.5rem;}
-.ho-avatar-mini { width: 32px; height: 32px; border-radius: 50%; background: var(--ho-coral); border: 2px solid var(--ho-teal-900); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; margin-left: -10px; color: #fff;}
-.ho-avatar-mini:first-child { margin-left: 0; background: var(--ho-mist); }
+.ho-hero-status-label {
+  font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; 
+  color: var(--ho-mint-400) !important; font-weight: 800; display: block; 
+  margin-bottom: 0.6rem; animation: hoBreathText 3s infinite ease-in-out;
+}
 
-/* Holographic Core Animation */
-.ho-ai-core { width: 140px; height: 140px; position: relative; display: flex; align-items: center; justify-content: center; z-index: 2;}
-.ho-core-nucleus { width: 70px; height: 70px; background: radial-gradient(circle, #fff, var(--ho-mint-400)); border-radius: 50%; box-shadow: 0 0 30px var(--ho-mint-400); animation: hoBreath 4s infinite alternate; }
-.ho-core-ring { position: absolute; inset: 0; border: 1.5px dashed rgba(255,255,255,0.4); border-radius: 50%; animation: hoSpin 20s linear infinite; }
-.ho-core-ring-2 { position: absolute; inset: -15px; border: 1px solid rgba(255,255,255,0.15); border-radius: 50%; animation: hoSpin 30s linear infinite reverse; border-top-color: var(--ho-coral);}
-@keyframes hoBreath { 0% { transform: scale(0.95); box-shadow: 0 0 15px var(--ho-mint-400); } 100% { transform: scale(1.05); box-shadow: 0 0 40px rgba(255,255,255,0.9); } }
-@keyframes hoSpin { 100% { transform: rotate(360deg); } }
+.ho-hero-text h2 { font-family: 'Fraunces', serif; font-size: 2.1rem; font-weight: 600; line-height: 1.15; margin-bottom: 0.6rem;}
+.ho-hero-text p { font-size: 0.95rem; color: rgba(255,255,255,0.85); line-height: 1.5; margin-bottom: 1.4rem; max-width: 90%;}
 
-/* --- 2. OCR SCANNER QUICKZONE (Spans 4, Row 1) --- */
-.ho-ocr-zone { grid-column: span 4; background: rgba(255,255,255,0.6); align-items: center; justify-content: center; text-align: center; border: 2px dashed var(--ho-teal-600); cursor: pointer;}
-.ho-ocr-zone:hover { background: #fff; border-color: var(--ho-teal-900); transform: scale(1.02); }
-.ho-ocr-icon { font-size: 3rem; margin-bottom: 0.5rem; display: block; animation: hoFloat 3s ease-in-out infinite alternate;}
-@keyframes hoFloat { 0% { transform: translateY(0); } 100% { transform: translateY(-8px); } }
-.ho-ocr-zone h3 { font-family: 'Fraunces', serif; color: var(--ho-teal-900); font-size: 1.4rem; margin-bottom: 0.5rem;}
-.ho-ocr-zone p { font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 500;}
+.ho-hero-status-row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+.ho-hs-badge { 
+  font-size: 0.75rem; font-weight: 700; 
+  background: rgba(255,255,255,0.15); color: #fff; 
+  padding: 6px 14px; border-radius: 999px; 
+  border: 1px solid rgba(255,255,255,0.25); 
+  transition: 0.3s;
+}
+.ho-hs-badge.optimal { 
+  color: var(--ho-mint-400) !important; 
+  background: rgba(66, 184, 157, 0.15); 
+  border-color: rgba(66, 184, 157, 0.4); 
+}
 
-/* --- 3. MICRO VITALS (4 Cards, Span 3 Each, Row 2) --- */
-.ho-micro-vital { grid-column: span 3; justify-content: space-between; padding: 1.5rem; }
-.ho-mv-label { font-size: 0.75rem; font-weight: 800; color: var(--ho-text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: flex; justify-content: space-between; align-items: center;}
-.ho-mv-val { font-family: 'JetBrains Mono', monospace; font-size: 2.2rem; font-weight: 800; color: var(--ho-teal-900); display: flex; align-items: baseline; gap: 0.2rem; letter-spacing: -1px; margin-top: 0.5rem;}
-.ho-mv-val small { font-size: 0.85rem; color: var(--ho-text-muted); font-family: 'Inter', sans-serif; font-weight: 600; letter-spacing: 0;}
+/* Composite Health Score Circle */
+.ho-score-box { width: 130px; height: 130px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 2;}
+.ho-score-svg { transform: rotate(-90deg); width: 100%; height: 100%; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2)); }
+.ho-score-bg { fill: none; stroke: rgba(255,255,255,0.15); stroke-width: 10; }
+.ho-score-fill { fill: none; stroke: var(--ho-mint-400); stroke-width: 10; stroke-linecap: round; stroke-dasharray: 377; stroke-dashoffset: 45; animation: hoPulseGlow 3s infinite, hoDrawScore 2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes hoDrawScore { from { stroke-dashoffset: 377; } }
+.ho-score-inner { position: absolute; text-align: center; }
+.ho-score-inner strong { display: block; font-family: 'JetBrains Mono', monospace; font-size: 1.9rem; color: #fff; line-height: 1; }
+.ho-score-inner span { font-size: 0.65rem; color: #a4c9c3; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; }
 
-/* TRUE EKG SVG Animation */
-.ho-ekg-wrapper { width: 100%; height: 35px; margin-top: 0.8rem;}
-.ho-ekg-svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 0 6px rgba(224, 122, 104, 0.4));}
-.ho-ekg-path { fill: none; stroke: var(--ho-coral); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 100; animation: hoDrawEkg 2.5s linear infinite; }
-@keyframes hoDrawEkg { 0% { stroke-dashoffset: 100; } 100% { stroke-dashoffset: -100; } }
+/* --- 2. HEALTH CONNECT STATUS (Spans 4) --- */
+.ho-sync-panel { grid-column: span 4; background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(238, 246, 255, 0.9)); justify-content: space-between;}
+.ho-sync-box { display: flex; align-items: center; gap: 1rem; background: #fff; padding: 1.1rem; border-radius: 14px; border: 1px solid var(--ho-glass-border-subtle); margin-top: 0.5rem; transition: 0.3s;}
+.ho-sync-box:hover { border-color: var(--hc-blue); box-shadow: 0 6px 20px rgba(66, 133, 244, 0.15); transform: scale(1.02); }
+.ho-sync-icon { font-size: 1.6rem; width: 42px; height: 42px; background: rgba(66, 133, 244, 0.1); color: var(--hc-blue); border-radius: 10px; display: flex; align-items: center; justify-content: center;}
+.ho-sync-meta strong { display: block; font-size: 0.92rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.15rem;}
+.ho-sync-meta span { font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600; font-family: 'JetBrains Mono', monospace;}
 
-/* Fluid Water Animation */
-.ho-fluid-mini { width: 100%; height: 8px; background: rgba(66, 184, 157, 0.2); border-radius: 999px; margin-top: 1.5rem; position: relative; overflow: hidden;}
-.ho-fluid-mini::after { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 98%; background: #3498db; border-radius: 999px; animation: hoFluidSweep 2s ease-in-out infinite alternate;}
-@keyframes hoFluidSweep { 0% { width: 95%; } 100% { width: 99%; } }
+/* --- 3. ANIMATED COMMAND DOCK (Quick Actions) (Spans 12) --- */
+.ho-quick-actions { grid-column: span 12; }
+.ho-command-dock { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-top: 0.5rem; }
+.ho-action-pill {
+  background: rgba(255, 255, 255, 0.8); border: 1.5px solid var(--ho-glass-border);
+  border-radius: var(--ho-radius-lg); padding: 1.1rem 1.3rem; text-decoration: none;
+  display: flex; align-items: center; gap: 0.9rem; transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02); cursor: pointer;
+}
+.ho-action-pill:hover {
+  background: #fff; border-color: var(--ho-teal-600);
+  transform: translateY(-4px) scale(1.02); box-shadow: 0 15px 35px rgba(13, 122, 110, 0.15);
+}
+.ho-action-pill:active { transform: scale(0.96); }
+.ho-pill-icon {
+  width: 42px; height: 42px; border-radius: 12px; background: var(--ho-bg-airy);
+  display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;
+  border: 1px solid var(--ho-glass-border-subtle); transition: 0.3s;
+}
+.ho-action-pill:hover .ho-pill-icon { transform: rotate(8deg) scale(1.1); background: var(--ho-teal-50, #e8f8f5); }
+.ho-pill-text { min-width: 0; }
+.ho-pill-text strong { display: block; font-size: 0.88rem; color: var(--ho-teal-900); font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.1rem;}
+.ho-pill-text span { font-size: 0.7rem; color: var(--ho-text-muted); font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 
-/* --- 4. TRAINING / WEARABLES (Spans 5, Row 3) --- */
-.ho-training { grid-column: span 5; }
-.ho-activity-block { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 0.5rem;}
+.ho-action-pill.primary-pill { background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); border: none; }
+.ho-action-pill.primary-pill:hover { background: linear-gradient(135deg, var(--ho-teal-600), var(--ho-teal-700)); }
+.ho-action-pill.primary-pill .ho-pill-icon { background: rgba(255,255,255,0.2); color: #fff; border: none; }
+.ho-action-pill.primary-pill:hover .ho-pill-icon { background: rgba(255,255,255,0.3); }
+.ho-action-pill.primary-pill .ho-pill-text strong { color: #fff; }
+.ho-action-pill.primary-pill .ho-pill-text span { color: var(--ho-mint-400); }
 
-/* Animated SVG Rings */
-.ho-ring-wrapper { width: 130px; height: 130px; position: relative; }
-.ho-ring-svg { transform: rotate(-90deg); width: 100%; height: 100%; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); overflow: visible;}
-.ho-ring-bg { fill: none; stroke: rgba(13, 122, 110, 0.1); stroke-width: 9; stroke-linecap: round;}
-.ho-ring-path { fill: none; stroke-linecap: round; stroke-width: 9; animation: hoDrawRing 2s ease-out forwards; }
-@keyframes hoDrawRing { 0% { stroke-dasharray: 0, 1000; } }
+/* --- 4. CORE VITALS STRIP (4 Cards, Span 3 Each = 12) --- */
+.ho-vital-card { grid-column: span 3; justify-content: space-between; padding: 1.5rem; cursor: pointer; }
+.ho-vital-card:hover .ho-vc-val { transform: scale(1.05); color: var(--ho-teal-600); }
+.ho-vc-label { font-size: 0.75rem; font-weight: 800; color: var(--ho-text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: flex; justify-content: space-between; align-items: center;}
+.ho-vc-val { font-family: 'JetBrains Mono', monospace; font-size: 1.8rem; font-weight: 800; color: var(--ho-teal-900); display: flex; align-items: baseline; gap: 0.2rem; margin-top: 0.4rem; transition: 0.3s ease;}
+.ho-vc-val small { font-size: 0.8rem; color: var(--ho-text-muted); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;}
 
-.ho-activity-stats { flex: 1; display: flex; flex-direction: column; gap: 0.8rem; }
-.ho-a-stat { display: flex; flex-direction: column; gap: 0.2rem;}
-.ho-a-stat-head { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--ho-text-muted);}
-.ho-a-stat-bar { width: 100%; height: 6px; background: rgba(13,122,110,0.1); border-radius: 999px; overflow: hidden;}
-.ho-a-stat-fill { height: 100%; border-radius: 999px; animation: hoFillBar 1.5s ease-out forwards;}
-@keyframes hoFillBar { from { transform: scaleX(0); transform-origin: left;} to { transform: scaleX(1); transform-origin: left;} }
+/* --- 5. RECENT HEALTH ACTIVITY FEED (Spans 7) --- */
+.ho-activity-feed-panel { grid-column: span 7; }
+.ho-act-list { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; }
+.ho-act-item { 
+  display: flex; align-items: center; justify-content: space-between; 
+  padding: 1rem 1.2rem; background: rgba(255,255,255,0.7); 
+  border: 1px solid var(--ho-glass-border-subtle); border-radius: 14px; 
+  transition: all 0.3s ease; cursor: pointer;
+}
+.ho-act-item:hover { background: #fff; border-color: var(--ho-teal-600); transform: translateX(6px) scale(1.01); box-shadow: 0 8px 25px rgba(13, 122, 110, 0.08); }
+.ho-act-item:active { transform: translateX(2px) scale(0.98); }
+.ho-act-left { display: flex; align-items: center; gap: 0.9rem; }
+.ho-act-icon { font-size: 1.2rem; width: 36px; height: 36px; border-radius: 10px; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: 0.3s;}
+.ho-act-item:hover .ho-act-icon { transform: scale(1.15); background: var(--ho-teal-50); }
+.ho-act-text strong { display: block; font-size: 0.92rem; color: var(--ho-teal-900); font-weight: 700; margin-bottom: 0.15rem;}
+.ho-act-text span { font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600;}
+.ho-act-time { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--ho-text-muted); font-weight: 700; }
 
-/* --- 5. NUTRITION MACROS (Spans 3, Row 3) --- */
-.ho-nutrition { grid-column: span 3; }
-.ho-macro-wrapper { display: flex; flex-direction: column; justify-content: center; flex: 1; gap: 1.2rem;}
-.ho-macro-row { display: flex; justify-content: space-between; align-items: center;}
-.ho-macro-text strong { display: block; font-size: 1rem; color: var(--ho-teal-900); font-family: 'JetBrains Mono', monospace;}
-.ho-macro-text span { font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 700; text-transform: uppercase;}
-.ho-macro-pct { font-size: 1.1rem; font-weight: 800;}
+/* --- 6. ACTIVE MEDICATION REMINDER WIDGET (Spans 5) --- */
+.ho-med-reminder-panel { grid-column: span 5; background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(251, 228, 222, 0.55)); border-color: rgba(239, 111, 91, 0.3); }
+.ho-med-rem-card { background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; padding: 1.2rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 15px rgba(0,0,0,0.02); margin-top: 0.5rem; transition: 0.3s;}
+.ho-med-rem-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(239, 111, 91, 0.12); border-color: var(--ho-coral); }
+.ho-mrem-left { display: flex; align-items: center; gap: 1rem; }
+.ho-mrem-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--ho-coral-soft); color: var(--ho-coral); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; animation: hoPulseGlow 3s infinite ease-in-out;}
+.ho-mrem-text strong { display: block; font-size: 0.98rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.2rem;}
+.ho-mrem-text span { font-size: 0.78rem; color: var(--ho-text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 600;}
 
-/* --- 6. MEDICINE PILLBOX (Spans 4, Row 3) --- */
-.ho-medicine { grid-column: span 4; background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(223, 241, 236, 0.6));}
-.ho-pill-card { background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; padding: 1rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.02); margin-bottom: 0.5rem; transition: 0.2s;}
-.ho-pill-card:hover { border-color: var(--ho-teal-600); transform: translateX(4px);}
-.ho-pill-info strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 700;}
-.ho-pill-info span { font-size: 0.75rem; color: var(--ho-text-muted); font-family: 'JetBrains Mono', monospace;}
-.ho-pill-check { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--ho-glass-border-subtle); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;}
-.ho-pill-check:hover { border-color: var(--ho-teal-600); }
+.ho-mrem-btn { background: var(--ho-teal-900); color: #fff; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 700; font-size: 0.82rem; cursor: pointer; transition: 0.25s;}
+.ho-mrem-btn:hover { background: var(--ho-teal-700); transform: scale(1.08); box-shadow: 0 4px 12px rgba(11,94,85,0.3); }
+.ho-mrem-btn:active { transform: scale(0.95); }
 
-/* --- 7. DIGITAL WALLET [FIXED HOVER] (Spans 4, Row 4) --- */
-.ho-dark-panel { grid-column: span 4; background: linear-gradient(135deg, var(--ho-teal-900), #062b26); color: #fff; border-color: rgba(255,255,255,0.1);}
-/* Isolate hover for dark panel to prevent white washout */
-.ho-dark-panel:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(13, 122, 110, 0.3); border-color: var(--ho-mint-400); background: linear-gradient(135deg, #062b26, var(--ho-teal-900));}
-.ho-dark-panel h3 { color: #fff; }
-.ho-id-snippet { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 1.5rem; position: relative; overflow: hidden; flex: 1; display: flex; flex-direction: column; justify-content: center;}
-.ho-id-snippet::after { content: '💳'; position: absolute; right: -15px; bottom: -15px; font-size: 5rem; opacity: 0.08;}
-.ho-id-snippet span { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ho-mint-400); font-weight: 700; margin-bottom: 0.2rem;}
-.ho-id-snippet strong { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; letter-spacing: 1px;}
-.ho-policy-status { display: inline-block; margin-top: auto; font-size: 0.75rem; font-weight: 700; background: var(--ho-sage); padding: 4px 12px; border-radius: 999px; width: fit-content;}
-
-/* --- 8. AI INTELLIGENCE FEED (Spans 8, Row 4) --- */
-.ho-intelligence { grid-column: span 8; }
-.ho-ai-feed { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; overflow-y: auto;}
-.ho-feed-item { display: flex; gap: 1rem; align-items: flex-start; padding: 1.2rem; background: rgba(255,255,255,0.6); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; transition: 0.2s;}
-.ho-feed-item:hover { background: #fff; border-color: var(--ho-teal-600); transform: translateX(4px); box-shadow: 0 6px 15px rgba(13, 122, 110, 0.06);}
-.ho-feed-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; background: var(--ho-coral-soft); color: var(--ho-coral);}
-.ho-feed-text strong { display: block; font-size: 1rem; color: var(--ho-teal-900); margin-bottom: 0.3rem; font-weight: 700;}
-.ho-feed-text p { font-size: 0.85rem; color: var(--ho-text-muted); line-height: 1.5; margin-bottom: 0.5rem;}
-.ho-feed-module { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; color: var(--ho-mint-400); text-transform: uppercase;}
-
-/* ---------- RESPONSIVE ---------- */
+/* ---------- RESPONSIVE MOBILE FIXES ---------- */
 @media (max-width: 1400px) {
-  .ho-hero, .ho-training, .ho-intelligence { grid-column: span 8; }
-  .ho-ocr-zone, .ho-medicine, .ho-dark-panel { grid-column: span 4; }
-  .ho-nutrition { grid-column: span 12; }
+  .ho-hero { grid-column: span 8; }
+  .ho-sync-panel { grid-column: span 4; }
+  .ho-vital-card { grid-column: span 6; }
+  .ho-activity-feed-panel, .ho-med-reminder-panel { grid-column: span 6; }
+  .ho-command-dock { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 1024px) {
   .ho-mosaic-grid { grid-template-columns: repeat(6, 1fr); }
-  .ho-hero, .ho-ocr-zone, .ho-training, .ho-nutrition, .ho-medicine, .ho-dark-panel, .ho-intelligence { grid-column: span 6; }
-  .ho-micro-vital { grid-column: span 3; }
+  .ho-hero, .ho-sync-panel { grid-column: span 6; }
+  .ho-vital-card { grid-column: span 3; }
+  .ho-activity-feed-panel, .ho-med-reminder-panel { grid-column: span 6; }
+  .ho-command-dock { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* SMART PHONES EXCLUSIVE RULES */
 @media (max-width: 768px) {
-  .ho-topbar { flex-direction: column; align-items: flex-start; padding: 1.5rem; gap: 1rem;}
-  .ho-mosaic-grid { display: flex; flex-direction: column; padding: 1rem; gap: 1rem;}
-  .ho-hero { flex-direction: column; text-align: left; align-items: flex-start; }
-  .ho-ai-core { display: none; }
-  .ho-micro-vital { padding: 1.2rem; }
+  .ho-main-content {
+    padding-top: 5.4rem !important; /* Clears floating navbar perfectly */
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  .ho-topbar { 
+    flex-direction: column; 
+    align-items: flex-start; 
+    padding: 0 0 1rem 0 !important; 
+    position: static !important;
+    backdrop-filter: none !important; 
+    background: transparent !important;
+    mask-image: none !important;
+  }
+  .ho-topbar-actions { display: none !important; }
+  .ho-topbar-text h1 { font-size: 1.55rem !important; line-height: 1.2; }
+  .ho-topbar-text p { font-size: 0.85rem !important; margin-top: 0.2rem; }
+  
+  .ho-mosaic-grid { 
+    display: flex !important; 
+    flex-direction: column !important; 
+    padding: 0.5rem 0 2rem 0 !important; 
+    gap: 1.2rem !important;
+  }
+  
+  .ho-panel { padding: 1.3rem !important; border-radius: 20px !important; }
+  .ho-hero { flex-direction: column !important; text-align: left !important; align-items: flex-start !important; padding: 1.6rem 1.3rem !important; }
+  .ho-hero-text h2 { font-size: 1.6rem !important; }
+  .ho-score-box { display: none !important; }
+  
+  .ho-command-dock { 
+    display: flex !important; 
+    overflow-x: auto !important; 
+    scroll-snap-type: x mandatory !important; 
+    scrollbar-width: none !important; 
+    gap: 0.85rem !important; 
+    padding-bottom: 0.4rem !important;
+    margin-right: -1rem !important;
+    padding-right: 1rem !important;
+  }
+  .ho-command-dock::-webkit-scrollbar { display: none !important; }
+  .ho-action-pill { 
+    min-width: 140px !important; 
+    scroll-snap-align: start !important; 
+    flex-shrink: 0 !important; 
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    padding: 1rem !important;
+  }
+  .ho-action-pill .ho-pill-icon { margin-bottom: 0.4rem !important; }
+}
+/* ==================================================================
+   HEALTHORBIT PWA SPLASH SCREEN ANIMATION
+================================================================== */
+.ho-pwa-splash-container {
+  position: fixed;
+  inset: 0;
+  z-index: 999999; /* Stays above absolutely everything */
+  background-color: var(--ho-bg-airy, #edf6f4); /* Must match manifest.json background_color */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
+}
+
+/* Hide class applied by JS when app is ready */
+.ho-pwa-splash-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Logo Animation Stage */
+.ho-pwa-logo-stage {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Central Core (Matches sidebar) */
+.ho-pwa-core {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--ho-teal-900, #0b5e55);
+  box-shadow: 0 0 15px rgba(11, 94, 85, 0.2);
+  z-index: 5;
+}
+
+/* Concentric Orbiting Rings */
+.ho-pwa-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px dashed var(--ho-teal-600, #109485);
+  opacity: 0.6;
+}
+
+.ho-pwa-ring-outer {
+  width: 90px;
+  height: 90px;
+  animation: hoPwaSpin 4s linear infinite;
+}
+
+.ho-pwa-ring-inner {
+  width: 56px;
+  height: 56px;
+  animation: hoPwaSpinReverse 3s linear infinite;
+}
+
+/* The Orbiting Planets */
+.ho-pwa-planet {
+  position: absolute;
+  top: -4px; /* Sits exactly on the ring edge */
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+}
+
+.ho-pwa-planet-coral {
+  width: 8px;
+  height: 8px;
+  background: var(--ho-coral, #e07a68);
+  box-shadow: 0 0 6px var(--ho-coral, #e07a68);
+}
+
+.ho-pwa-planet-mint {
+  width: 6px;
+  height: 6px;
+  background: var(--ho-mint-400, #42b89d);
+  box-shadow: 0 0 6px var(--ho-mint-400, #42b89d);
+}
+
+/* Brand Text */
+.ho-pwa-brand {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--ho-teal-900, #0b5e55);
+  letter-spacing: -0.5px;
+}
+.ho-pwa-brand span {
+  color: var(--ho-coral, #e07a68);
+}
+
+/* Smooth Hardware-Accelerated Animations */
+@keyframes hoPwaSpin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes hoPwaSpinReverse {
+  from { transform: translate(-50%, -50%) rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotate(0deg); }
+}
+
+/* ACCESSIBILITY: Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .ho-pwa-ring-outer,
+  .ho-pwa-ring-inner {
+    animation: none; /* Stops the spinning */
+  }
+  .ho-pwa-core {
+    animation: hoPwaFadePulse 2s ease-in-out infinite alternate;
+  }
+  @keyframes hoPwaFadePulse {
+    from { opacity: 0.7; }
+    to { opacity: 1; }
+  }
 }
 </style>
 </head>
 <body>
 
+
+  <!-- PWA Animated Splash Screen Overlay -->
+<div id="ho-pwa-splash" class="ho-pwa-splash-container" role="alert" aria-busy="true" aria-label="Loading HealthOrbit">
+  <div class="ho-pwa-logo-stage">
+    
+    <!-- Outer Orbit Ring & Planet -->
+    <div class="ho-pwa-ring ho-pwa-ring-outer">
+      <div class="ho-pwa-planet ho-pwa-planet-coral"></div>
+    </div>
+    
+    <!-- Inner Orbit Ring & Planet -->
+    <div class="ho-pwa-ring ho-pwa-ring-inner">
+      <div class="ho-pwa-planet ho-pwa-planet-mint"></div>
+    </div>
+    
+    <!-- Central Core -->
+    <div class="ho-pwa-core"></div>
+    
+  </div>
+  <div class="ho-pwa-brand">Health<span>Orbit</span></div>
+</div>
+
+
 <div class="ho-ambient-canvas">
   <div class="ho-glow-orb ho-orb-1"></div>
   <div class="ho-glow-orb ho-orb-2"></div>
-  <div class="ho-glow-orb ho-orb-3"></div>
 </div>
 
 <div class="ho-app-layout">
   
-  <!-- UNIVERSAL SIDEBAR IMPORT -->
+  <!-- UNIVERSAL SIDEBAR IMPORT (Handles Mobile Top Header) -->
   <%- include('../partials/sidebar') %>
 
   <!-- SCOPED MAIN CONTENT -->
   <main class="ho-main-content">
     
-    <header class="ho-topbar">
-      <div class="ho-topbar-text">
-        <h1>HealthOrbit Omni-Dashboard</h1>
-        <p><span class="ho-pulse-dot"></span> All Modules Synced • Telemetry Live</p>
-      </div>
-      <div class="ho-topbar-actions">
-        <a href="/ai-assistant" class="ho-btn-ghost">Ask AI Assistant</a>
-      </div>
-    </header>
+<header class="ho-topbar">
+  <div class="ho-topbar-text">
+    <h1>Health<span style="color: var(--ho-coral);">Orbit</span> Executive Summary</h1>
+    <p><span class="ho-pulse-dot"></span> All Modules Synced • Telemetry Live</p>
+  </div>
+  <div class="ho-topbar-actions">
+    <a href="/ai-assistant" class="ho-btn-ghost">Ask AI Assistant</a>
+  </div>
+</header>
 
     <div class="ho-mosaic-grid">
       
-      <!-- 1. HERO: PROFILE & ACCESS (Span 8) -->
-    <!-- 1. HERO: PROFILE & ACCESS (Span 8) -->
-      <div class="ho-panel ho-hero" onclick="window.location.href='/profile'" style="cursor:pointer; background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(223, 241, 236, 0.85)); border: 1.5px solid var(--ho-glass-border);">
-        <div class="ho-hero-text" style="color: var(--ho-text-main);">
-          <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ho-teal-700); font-weight: 800; display: block; margin-bottom: 0.6rem;">HealthOrbit Engine Active</span>
-          <h2 style="color: var(--ho-teal-900); font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 600; line-height: 1.1; margin-bottom: 0.8rem;">Welcome back, <%= locals.userName ? userName.split(' ')[0] : 'Explorer' %>.</h2>
-          <p style="color: var(--ho-text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem; max-width: 90%;">Your unified medical profile is active. HealthKit telemetry and OCR data streams are currently flowing into your dashboard.</p>
+      <!-- 1. SUMMARY HERO (Span 8) -->
+      <div class="ho-panel ho-hero" onclick="window.location.href='/profile'" style="cursor:pointer;">
+        <div class="ho-hero-text">
+          <span class="ho-hero-status-label">Status: Optimal Baseline</span>
+          <h2>What is happening with your health right now?</h2>
+          <p>Your unified profile is stable. Restorative sleep and recent vitamin protocols are actively bridging the gap from last week's recorded biometric shift.</p>
           
-          <div class="ho-access-group" style="background: rgba(13, 122, 110, 0.08); border: 1px solid rgba(13, 122, 110, 0.15);">
-            <span style="color: var(--ho-teal-700);">Authorized Network</span>
-            <div class="ho-avatar-stack">
-              <div class="ho-avatar-mini" style="z-index: 3;">AD</div>
-              <div class="ho-avatar-mini" style="z-index: 2; background: var(--ho-sage);">M</div>
-              <div class="ho-avatar-mini" style="z-index: 1; background: var(--ho-teal-600);">F</div>
-            </div>
+          <div class="ho-hero-status-row">
+            <span class="ho-hs-badge">Authorized Network Active</span>
+            <span class="ho-hs-badge optimal">All Vitals Stable</span>
           </div>
         </div>
-        <div class="ho-ai-core">
-          <div class="ho-core-ring"></div>
-          <div class="ho-core-ring-2"></div>
-          <div class="ho-core-nucleus"></div>
-        </div>
-      </div>
-      
-      <!-- 2. OCR SCANNER QUICKZONE (Span 4) -->
-      <div class="ho-panel ho-ocr-zone" onclick="window.location.href='/xyz'">
-        <span class="ho-ocr-icon">📄</span>
-        <h3>Document Engine</h3>
-        <p><%= locals.reportCount || 0 %> Reports Vaulted</p>
-      </div>
 
-      <!-- 3. MICRO VITALS (Span 3 each x 4 = 12) -->
-      <!-- Heart Rate with True SVG EKG -->
-      <div class="ho-panel ho-micro-vital">
-        <div class="ho-mv-label">Heart Rate <span style="font-size:1.2rem; color:#e74c3c; animation:hoPulse 1.5s infinite;">❤️</span></div>
-        <div>
-          <div class="ho-mv-val">72<small>bpm</small></div>
-          <div class="ho-ekg-wrapper">
-            <svg class="ho-ekg-svg" viewBox="0 0 100 30" preserveAspectRatio="none">
-              <!-- Using pathLength="100" makes the CSS stroke-dash array perfectly mapped 0-100 -->
-              <path class="ho-ekg-path" pathLength="100" d="M0,15 L20,15 L25,5 L30,28 L35,15 L100,15" />
-            </svg>
+        <div class="ho-score-box">
+          <svg class="ho-score-svg" viewBox="0 0 140 140">
+            <circle class="ho-score-bg" cx="70" cy="70" r="60"></circle>
+            <circle class="ho-score-fill" cx="70" cy="70" r="60"></circle>
+          </svg>
+          <div class="ho-score-inner">
+            <strong>88</strong>
+            <span>Health Score</span>
           </div>
         </div>
       </div>
 
-      <!-- SpO2 -->
-      <div class="ho-panel ho-micro-vital">
-        <div class="ho-mv-label">Blood Oxygen <span style="font-size:1.2rem; color:#3498db;">💧</span></div>
-        <div>
-          <div class="ho-mv-val">98<small>%</small></div>
-          <div class="ho-fluid-mini"></div>
-        </div>
-      </div>
-
-      <!-- Sleep -->
-      <div class="ho-panel ho-micro-vital">
-        <div class="ho-mv-label">Deep Sleep <span style="font-size:1.2rem; color:#9b59b6;">🌙</span></div>
-        <div>
-          <div class="ho-mv-val">2<small>h</small> 15<small>m</small></div>
-          <div style="margin-top: 1rem; font-size: 0.75rem; font-weight: 700; color: var(--ho-teal-700); background: rgba(13,122,110,0.1); padding: 4px 8px; border-radius: 6px; width: fit-content;">Optimal</div>
-        </div>
-      </div>
-
-      <!-- Stress -->
-      <div class="ho-panel ho-micro-vital">
-        <div class="ho-mv-label">Stress Level <span style="font-size:1.2rem;">🧠</span></div>
-        <div>
-          <div class="ho-mv-val">34<small>/100</small></div>
-          <div style="margin-top: 1rem; font-size: 0.75rem; font-weight: 700; color: #2980b9; background: rgba(133, 193, 233, 0.2); padding: 4px 8px; border-radius: 6px; width: fit-content;">Relaxed State</div>
-        </div>
-      </div>
-
-      <!-- 4. TRAINING & WEARABLES (Span 5) -->
-      <div class="ho-panel ho-training" onclick="window.location.href='/wearables'" style="cursor:pointer;">
+      <!-- 2. DATA CONNECTION STATUS (Span 4) -->
+      <div class="ho-panel ho-sync-panel">
         <div class="ho-panel-head">
-          <h3><span>⌚</span> Telemetry</h3>
+          <h3><span>📡</span> Health Connect API</h3>
+          <span class="ho-badge" style="background: rgba(52, 152, 219, 0.15); color: var(--hc-blue);">Secure Bridge</span>
         </div>
-        <div class="ho-activity-block">
-          <div class="ho-ring-wrapper">
-            <svg class="ho-ring-svg" viewBox="0 0 100 100">
-              <!-- Backgrounds -->
-              <circle class="ho-ring-bg" cx="50" cy="50" r="40"></circle>
-              <circle class="ho-ring-bg" cx="50" cy="50" r="26"></circle>
-              <circle class="ho-ring-bg" cx="50" cy="50" r="12"></circle>
-              <!-- Fills (Dash calculations based on radius) -->
-              <circle class="ho-ring-path" cx="50" cy="50" r="40" stroke="var(--ho-coral)" stroke-dasharray="251" style="stroke-dashoffset: 60; animation-delay: 0.3s;"></circle>
-              <circle class="ho-ring-path" cx="50" cy="50" r="26" stroke="var(--ho-mint-400)" stroke-dasharray="163" style="stroke-dashoffset: 40; animation-delay: 0.4s;"></circle>
-              <circle class="ho-ring-path" cx="50" cy="50" r="12" stroke="var(--ho-teal-700)" stroke-dasharray="75" style="stroke-dashoffset: 10; animation-delay: 0.5s;"></circle>
-            </svg>
+        
+        <div class="ho-sync-box">
+          <div class="ho-sync-icon">🔗</div>
+          <div class="ho-sync-meta">
+            <strong>Health Connect: Connected</strong>
+            <span>Last sync: 10:42 PM</span>
           </div>
-          <div class="ho-activity-stats">
-            <div class="ho-a-stat">
-              <div class="ho-a-stat-head"><span style="color: var(--ho-coral);">Move</span> <strong>420/500</strong></div>
-              <div class="ho-a-stat-bar"><div class="ho-a-stat-fill" style="width: 84%; background: var(--ho-coral); animation-delay: 0.3s;"></div></div>
+        </div>
+        <p style="font-size: 0.78rem; color: var(--ho-text-muted); margin-top: 0.8rem; font-weight: 600;">Continuous background telemetry active across paired wearable nodes.</p>
+      </div>
+
+      <!-- 3. ANIMATED COMMAND DOCK (Quick Actions) (Span 12) -->
+      <div class="ho-panel ho-quick-actions">
+        <div class="ho-panel-head">
+          <h3><span>⚡</span> Quick Command Center</h3>
+        </div>
+
+        <div class="ho-command-dock">
+          <a href="/xyz" class="ho-action-pill">
+            <span class="ho-pill-icon">📄</span>
+            <div class="ho-pill-text">
+              <strong>Upload Report</strong>
+              <span>OCR Extraction</span>
             </div>
-            <div class="ho-a-stat">
-              <div class="ho-a-stat-head"><span style="color: var(--ho-mint-400);">Exercise</span> <strong>34/45</strong></div>
-              <div class="ho-a-stat-bar"><div class="ho-a-stat-fill" style="width: 75%; background: var(--ho-mint-400); animation-delay: 0.4s;"></div></div>
+          </a>
+
+          <a href="/wearables" class="ho-action-pill">
+            <span class="ho-pill-icon">⌚</span>
+            <div class="ho-pill-text">
+              <strong>Connect Device</strong>
+              <span>Health Connect</span>
             </div>
+          </a>
+
+          <a href="/medicines" class="ho-action-pill">
+            <span class="ho-pill-icon">💊</span>
+            <div class="ho-pill-text">
+              <strong>Add Medicine</strong>
+              <span>Schedule Rx</span>
+            </div>
+          </a>
+
+          <a href="/medicines" class="ho-action-pill">
+            <span class="ho-pill-icon">📝</span>
+            <div class="ho-pill-text">
+              <strong>Log Symptom</strong>
+              <span>Journal Entry</span>
+            </div>
+          </a>
+
+          <a href="/ai-assistant" class="ho-action-pill primary-pill">
+            <span class="ho-pill-icon">🤖</span>
+            <div class="ho-pill-text">
+              <strong>Ask AI Assistant</strong>
+              <span>RAG Intelligence</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- 4. CORE VITALS STRIP (Span 3 each = 12 total) -->
+      <div class="ho-panel ho-vital-card" onclick="window.location.href='/wearables'">
+        <div class="ho-vc-label"><span>Heart Rate</span> <span style="color:#e74c3c; animation:hoPulseGlow 1.5s infinite alternate; border-radius:50%;">❤️</span></div>
+        <div class="ho-vc-val">72 <small>bpm</small></div>
+        <div style="font-size: 0.72rem; color: var(--ho-teal-700); font-weight: 700; margin-top: 0.5rem;">Normal Resting Range</div>
+      </div>
+
+      <div class="ho-panel ho-vital-card" onclick="window.location.href='/wearables'">
+        <div class="ho-vc-label"><span>Blood Oxygen</span> <span style="color:#3498db;">💧</span></div>
+        <div class="ho-vc-val">98 <small>%</small></div>
+        <div style="font-size: 0.72rem; color: var(--ho-teal-700); font-weight: 700; margin-top: 0.5rem;">Optimal Saturation</div>
+      </div>
+
+      <div class="ho-panel ho-vital-card" onclick="window.location.href='/wearables'">
+        <div class="ho-vc-label"><span>Deep Sleep</span> <span style="color:#9b59b6;">🌙</span></div>
+        <div class="ho-vc-val">2<small>h</small> 15<small>m</small></div>
+        <div style="font-size: 0.72rem; color: var(--ho-teal-700); font-weight: 700; margin-top: 0.5rem;">Restorative Phase</div>
+      </div>
+
+      <div class="ho-panel ho-vital-card" onclick="window.location.href='/trends'">
+        <div class="ho-vc-label"><span>Stress Index</span> <span style="color:var(--ho-teal-600);">🧠</span></div>
+        <div class="ho-vc-val">34 <small>/100</small></div>
+        <div style="font-size: 0.72rem; color: #2980b9; font-weight: 700; margin-top: 0.5rem;">Relaxed State</div>
+      </div>
+
+      <!-- 5. RECENT HEALTH ACTIVITY FEED (Span 7) -->
+      <div class="ho-panel ho-activity-feed-panel">
+        <div class="ho-panel-head">
+          <h3><span>⏱️</span> Recent Health Activity</h3>
+          <span style="font-size: 0.78rem; color: var(--ho-teal-700); font-weight: 700; cursor: pointer;" onclick="window.location.href='/timeline'">View Timeline →</span>
+        </div>
+
+        <div class="ho-act-list">
+          <div class="ho-act-item" onclick="window.location.href='/xyz'">
+            <div class="ho-act-left">
+              <div class="ho-act-icon">📄</div>
+              <div class="ho-act-text">
+                <strong>CBC Report Uploaded</strong>
+                <span>OCR Engine extracted 4 parameters successfully</span>
+              </div>
+            </div>
+            <div class="ho-act-time">2 hours ago</div>
+          </div>
+
+          <div class="ho-act-item" onclick="window.location.href='/wearables'">
+            <div class="ho-act-left">
+              <div class="ho-act-icon">❤️</div>
+              <div class="ho-act-text">
+                <strong>Heart Rate Synced</strong>
+                <span>Resting average stable at 72 BPM</span>
+              </div>
+            </div>
+            <div class="ho-act-time">10 mins ago</div>
+          </div>
+
+          <div class="ho-act-item" onclick="window.location.href='/medicines'">
+            <div class="ho-act-left">
+              <div class="ho-act-icon">💊</div>
+              <div class="ho-act-text">
+                <strong>Medicine Taken: Vitamin D3</strong>
+                <span>60,000 IU logged after breakfast protocol</span>
+              </div>
+            </div>
+            <div class="ho-act-time">8:00 PM</div>
           </div>
         </div>
       </div>
 
-      <!-- 5. NUTRITION MACROS (Span 3) -->
-      <div class="ho-panel ho-nutrition" onclick="window.location.href='/nutrition'" style="cursor:pointer;">
+      <!-- 6. ACTIVE MEDICATION REMINDER WIDGET (Span 5) -->
+      <div class="ho-panel ho-med-reminder-panel">
         <div class="ho-panel-head">
-          <h3><span>🥗</span> Nutrition</h3>
+          <h3><span>⏰</span> Next Due Medication</h3>
+          <span class="ho-badge" style="background: var(--ho-coral-soft); color: var(--ho-coral);">Pending Dose</span>
         </div>
-        <div class="ho-macro-wrapper">
-          <div class="ho-macro-row">
-            <div class="ho-macro-text"><span>Carbs</span><strong>180g</strong></div>
-            <div class="ho-macro-pct" style="color: var(--ho-mint-400);">72%</div>
-          </div>
-          <div class="ho-macro-row">
-            <div class="ho-macro-text"><span>Protein</span><strong>115g</strong></div>
-            <div class="ho-macro-pct" style="color: var(--ho-coral);">82%</div>
-          </div>
-          <div class="ho-macro-row">
-            <div class="ho-macro-text"><span>Fats</span><strong>45g</strong></div>
-            <div class="ho-macro-pct" style="color: #f1c40f;">69%</div>
-          </div>
-        </div>
-      </div>
 
-      <!-- 6. MEDICINE PILLBOX (Span 4) -->
-      <div class="ho-panel ho-medicine" onclick="window.location.href='/medicines'" style="cursor:pointer;">
-        <div class="ho-panel-head">
-          <h3><span>💊</span> Up Next</h3>
-        </div>
-        <div style="flex:1;">
-          <div class="ho-pill-card">
-            <div class="ho-pill-info">
-              <strong>Vitamin D3</strong>
-              <span>60,000 IU • After breakfast</span>
-            </div>
-            <div class="ho-pill-check">✓</div>
-          </div>
-          <div class="ho-pill-card">
-            <div class="ho-pill-info">
+        <p style="font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 500;">Your next scheduled prescription protocol:</p>
+
+        <div class="ho-med-rem-card">
+          <div class="ho-mrem-left">
+            <div class="ho-mrem-icon">💊</div>
+            <div class="ho-mrem-text">
               <strong>Levothyroxine</strong>
-              <span>50 mcg • Empty stomach</span>
-            </div>
-            <div class="ho-pill-check" style="background: var(--ho-teal-700); border-color: var(--ho-teal-700); color: #fff;">✓</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 7. INSURANCE & ID (Span 4) -->
-      <div class="ho-panel ho-dark-panel" onclick="window.location.href='/insurance'" style="cursor:pointer;">
-        <div class="ho-panel-head">
-          <h3 style="color: #fff;"><span>🪪</span> Digital Wallet</h3>
-        </div>
-        <div class="ho-id-snippet">
-          <span>Primary Member</span>
-          <strong><%= locals.userName ? userName.toUpperCase() : 'ATHARV D.' %></strong>
-          <span style="margin-top: 1rem;">Policy ID</span>
-          <strong>2831-9982-HD</strong>
-        </div>
-        <div class="ho-policy-status">Coverage Active</div>
-      </div>
-
-      <!-- 8. INTELLIGENCE & TRENDS (Span 8) -->
-      <div class="ho-panel ho-intelligence" onclick="window.location.href='/trends'" style="cursor:pointer;">
-        <div class="ho-panel-head">
-          <h3><span>🧠</span> Intelligence & Trends</h3>
-        </div>
-        <div class="ho-ai-feed">
-          
-          <div class="ho-feed-item">
-            <div class="ho-feed-icon">⚠️</div>
-            <div class="ho-feed-text">
-              <strong>Elevated Resting Heart Rate</strong>
-              <p>Resting BPM shifted from baseline (70 BPM) to 82 BPM over 14 days.</p>
-              <span class="ho-feed-module">Module: Trend Anomaly</span>
+              <span>50 mcg • Empty Stomach (08:00 AM)</span>
             </div>
           </div>
-
-          <div class="ho-feed-item" style="border-color: var(--ho-teal-600);">
-            <div class="ho-feed-icon" style="background: var(--ho-sage-soft); color: var(--ho-sage);">💡</div>
-            <div class="ho-feed-text">
-              <strong>Vitamin D Diet Recommended</strong>
-              <p>Based on your recent CBC OCR upload, added Salmon and Egg Yolks to diet plan.</p>
-              <span class="ho-feed-module" style="color: var(--ho-sage);">Module: Nutrition AI</span>
-            </div>
-          </div>
-
+          <button class="ho-mrem-btn" onclick="alert('Dose marked as taken!')">Mark Taken</button>
         </div>
       </div>
 
     </div>
+
+    <!-- UNIVERSAL FOOTER IMPORT -->
+    <%- include('../partials/footer') %>
+
   </main>
 </div>
-
 <script>
-  // Quick interactive toggle for the pillbox checkmark
-  document.querySelectorAll('.ho-pill-check').forEach(check => {
-    check.addEventListener('click', (e) => {
-      e.stopPropagation(); // Prevent navigating to the medicine page when checking a pill
-      if(check.style.background === 'var(--ho-teal-700)') {
-        check.style.background = 'transparent';
-        check.style.color = 'transparent';
-        check.style.borderColor = 'var(--ho-glass-border-subtle)';
-      } else {
-        check.style.background = 'var(--ho-teal-700)';
-        check.style.color = '#fff';
-        check.style.borderColor = 'var(--ho-teal-700)';
-      }
-    });
+  // Wait for the entire window (HTML, CSS, Images, APIs) to fully load
+  window.addEventListener('load', function() {
+    const splashScreen = document.getElementById('ho-pwa-splash');
+    
+    if (splashScreen) {
+      // Optional: Add a tiny 300ms minimum delay so the user actually 
+      // perceives the smooth animation before it disappears, 
+      // preventing a jarring "flash" on very fast networks.
+      setTimeout(() => {
+        // Trigger the CSS fade-out transition
+        splashScreen.classList.add('ho-pwa-splash-hidden');
+        
+        // Remove the element from the DOM entirely after the 600ms CSS fade completes
+        // This ensures it doesn't block clicks or consume memory
+        setTimeout(() => {
+          splashScreen.remove();
+        }, 600);
+      }, 300); 
+    }
   });
 </script>
-
 </body>
 </html>

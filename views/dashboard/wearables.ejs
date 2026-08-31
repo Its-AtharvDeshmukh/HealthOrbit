@@ -4,409 +4,684 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HealthOrbit — Wearable Telemetry</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<!-- Universal Floating Island Sidebar CSS -->
+<link rel="stylesheet" href="/css/sidebar.css">
+<link rel="icon" href="/images/Logo.png">
 <style>
+/* 
+==================================================================
+  STRICTLY SCOPED CSS (PREFIXED WITH 'ho-') FOR WEARABLES
+================================================================== 
+*/
 :root {
-  /* Official HealthOrbit Palette */
-  --void: #084039;       
-  --void-soft: #0d7a6e;  
-  --paper: #f2f8f6;      
-  --card: #ffffff;
-  --ink: #0f1c1a; 
-  --ink-soft: #5e736f;
-  --coral: #ef6f5b;      
-  --coral-soft: #fbe4de;
-  --sage: #109485;       
-  --sage-soft: #dff1ec;
-  --mist: #42b89d;       
-  --line: rgba(13, 122, 110, 0.15); 
-  --radius: 24px;
+  --ho-bg-airy: #edf6f4;
+  --ho-teal-900: #0b5e55;
+  --ho-teal-700: #0d7a6e;
+  --ho-teal-600: #109485;
+  --ho-mint-400: #42b89d;
+  --ho-coral: #e07a68;
+  --ho-text-main: #0f1c1a;
+  --ho-text-muted: #4e6b63;
+  
+  --ho-glass-clear: rgba(255, 255, 255, 0.45);
+  --ho-glass-solid: rgba(255, 255, 255, 0.85);
+  --ho-glass-border: rgba(255, 255, 255, 0.95);
+  --ho-glass-border-subtle: rgba(255, 255, 255, 0.5);
+  
+  --ho-radius-xl: 32px;
+  --ho-radius-lg: 20px;
+  --ho-radius-md: 12px;
+  
+  --ho-shadow-glass: 0 20px 50px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
+  
+  /* Health Connect Specific Accents */
+  --hc-blue: #4285F4;
+  --hc-green: #34A853;
+  --hc-yellow: #FBBC05;
+  --hc-red: #EA4335;
+  --hc-purple: #9b59b6;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--paper);
-  color: var(--ink);
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-
-.mono { font-family: 'JetBrains Mono', monospace; }
-.display { font-family: 'Fraunces', serif; }
+body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: var(--ho-bg-airy); color: var(--ho-text-main); overflow: hidden; -webkit-font-smoothing: antialiased; display: flex; }
 
 /* ---------- AMBIENT ORBS ---------- */
-.ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-.orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.35; animation: float 22s infinite alternate; }
-.orb1 { width: 420px; height: 420px; background: #a3e4d7; top: -120px; left: -100px; }
-.orb2 { width: 460px; height: 460px; background: #fcefc9; bottom: -140px; right: -100px; animation-delay: -6s; }
-@keyframes float { 100% { transform: translate(40px, 40px) scale(1.1); } }
+.ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
+.ho-orb-1 { width: 600px; height: 600px; background: #76d7c4; top: -150px; left: -100px; }
+.ho-orb-2 { width: 700px; height: 700px; background: #a9dfbf; bottom: -200px; right: -150px; animation-delay: -5s; }
+@keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(60px, 70px) scale(1.15); } }
 
-/* ---------- APP LAYOUT ---------- */
-.shell { display: flex; width: 100vw; min-height: 100vh; position: relative; z-index: 1; }
+/* ---------- MAIN WORKSPACE LAYOUT ---------- */
+.ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
+.ho-main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; scrollbar-width: none; margin-left: 82px; transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);}
+.ho-main-content::-webkit-scrollbar { display: none; }
 
-/* ---------- TRANSPARENT SLIM SIDEBAR ---------- */
-.nav {
-  width: 260px; position: sticky; top: 0; height: 100vh;
-  background: transparent; display: flex; flex-direction: column;
-  border-right: 1px solid var(--line);
-  transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-  overflow: hidden; z-index: 20; flex-shrink: 0;
+/* TOP NAVBAR */
+.ho-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 2.5rem 3rem 1.5rem; flex-shrink: 0; background: transparent;
+  z-index: 20; position: sticky; top: 0;
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  mask-image: linear-gradient(to bottom, black 80%, transparent);
 }
-.nav.collapsed { width: 78px; }
-.nav.collapsed .brand-text, .nav.collapsed .link-text, .nav.collapsed .profile-info { opacity: 0; visibility: hidden; display: none; }
-.nav.collapsed .navlinks a { justify-content: center; padding: 0.85rem 0; }
-.nav.collapsed .profile { justify-content: center; padding: 1.5rem 0; }
-.nav.collapsed .nav-header { padding: 1.8rem 0; flex-direction: column; gap: 1.5rem; justify-content: center;}
-.nav.collapsed .sidebar-toggle { margin: 0 auto; }
+.ho-topbar-text h1 { font-family: 'Fraunces', serif; font-weight: 800; font-size: 2.2rem; color: var(--ho-teal-900); margin-bottom: 0.3rem; letter-spacing: -1px;}
+.ho-topbar-text p { font-size: 0.95rem; color: var(--ho-text-muted); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;}
+.ho-pulse-dot { width: 8px; height: 8px; background: var(--hc-blue); border-radius: 50%; box-shadow: 0 0 10px var(--hc-blue); animation: hoPulse 2s infinite; }
+@keyframes hoPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.5); } }
 
-.nav-header { display: flex; justify-content: space-between; align-items: center; padding: 1.8rem 1.4rem; }
-.brand { display: flex; align-items: center; gap: 0.8rem; font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.4rem; white-space: nowrap; }
+.ho-btn-ghost { padding: 0.85rem 1.8rem; background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border); border-radius: 999px; color: var(--ho-teal-900); font-weight: 700; font-size: 0.95rem; cursor: pointer; text-decoration: none; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: inline-block; }
+.ho-btn-ghost:hover { background: #fff; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.1); }
 
-.orbit-mark { position: relative; width: 28px; height: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;}
-.orbit-mark .ring { position: absolute; inset: 0; border-radius: 50%; border: 2px dashed var(--void-soft); animation: spin 10s linear infinite; }
-.orbit-mark .ring2 { inset: 4px; border-color: var(--coral); animation: spin 8s linear infinite reverse; }
-.orbit-mark .ring3 { width: 8px; height: 8px; border-radius: 50%; background: var(--void); box-shadow: 0 0 8px var(--mist); }
-@keyframes spin { to { transform: rotate(360deg); } }
-.txt-h { color: var(--void); } .txt-o { color: var(--coral); }
-
-.sidebar-toggle { background: none; border: none; color: var(--ink-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-.sidebar-toggle:hover { color: var(--void); transform: scale(1.1); }
-
-.navlinks { 
-    display: flex; flex-direction: column; gap: 0.2rem; 
-    padding: 0 0.8rem 1rem; flex: 1; margin-top: 1rem;
-    overflow-y: auto; overflow-x: hidden;
-    scrollbar-width: none; -ms-overflow-style: none;
+/* ---------- MOSAIC GRID ---------- */
+.ho-mosaic-grid {
+  display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: minmax(140px, auto); gap: 1.5rem;
+  padding: 0.5rem 3rem 4rem; flex: 1;
 }
-.navlinks::-webkit-scrollbar { width: 0px; background: transparent; }
 
-.navlinks a { 
-    text-decoration: none; color: var(--ink-soft); font-size: 0.9rem; font-weight: 600; 
-    padding: 0.7rem 1rem; border-radius: 12px; display: flex; align-items: center; gap: 0.8rem; 
-    transition: 0.2s; white-space: nowrap; 
+/* Base Panel */
+.ho-panel {
+  background: var(--ho-glass-clear);
+  backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
+  padding: 1.8rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass);
+  position: relative; overflow: hidden; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-.navlinks a .icon { font-size: 1.2rem; flex-shrink: 0; }
-.navlinks a.active { background: var(--void-soft); color: #fff; box-shadow: 0 4px 12px rgba(13, 122, 110, 0.2);}
-.navlinks a:hover:not(.active) { background: rgba(255,255,255,0.5); color: var(--void-soft); transform: translateX(4px);}
+@keyframes hoSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.ho-panel:nth-child(1) { animation-delay: 0.05s; } .ho-panel:nth-child(2) { animation-delay: 0.1s; }
+.ho-panel:nth-child(3) { animation-delay: 0.15s; } .ho-panel:nth-child(4) { animation-delay: 0.2s; }
+.ho-panel:nth-child(5) { animation-delay: 0.25s; }
 
-.sidebar-footer { margin-top: auto; background: transparent; }
-.profile { display: flex; align-items: center; gap: 0.8rem; padding: 1.2rem 1rem; border-top: 1px solid var(--line); white-space: nowrap; }
-.profile .av { width: 38px; height: 38px; border-radius: 50%; background: var(--void); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 600; font-size: 0.9rem; flex-shrink: 0; }
-.profile-info strong { display: block; font-size: 0.9rem; color: var(--void); }
-.profile-info span { font-size: 0.75rem; color: var(--ink-soft); }
+.ho-panel:not(.ho-dark-panel):hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(13, 122, 110, 0.1); border-color: var(--ho-teal-600); background: rgba(255,255,255,0.7);}
+.ho-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; z-index: 2;}
+.ho-panel-head h3 { font-family: 'Fraunces', serif; font-size: 1.15rem; font-weight: 700; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem;}
 
-/* ---------- MAIN CONTENT AREA ---------- */
-.main { flex: 1; min-width: 0; padding: 0; display: flex; flex-direction: column; transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+/* --- 1. HEALTH CONNECT HERO (Spans 8) --- */
+.ho-hero { grid-column: span 8; background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(238, 246, 255, 0.9)); border: 1.5px solid var(--ho-glass-border); flex-direction: row; align-items: center; justify-content: space-between; padding: 2.5rem;}
+.ho-hero-text { flex: 1; z-index: 2;}
+.ho-hero-text h2 { font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 600; line-height: 1.1; margin-bottom: 0.8rem; color: var(--ho-teal-900);}
+.ho-hero-text p { font-size: 0.95rem; color: var(--ho-text-muted); line-height: 1.5; margin-bottom: 1.5rem; max-width: 90%;}
 
-.topbar { 
-    display: flex; justify-content: space-between; align-items: center; 
-    padding: 2.5rem 3.5rem 1rem; background: transparent; border-bottom: none; z-index: 10; 
+.ho-hc-metrics { display: flex; gap: 2rem; margin-top: 1rem; }
+.ho-hc-stat { display: flex; flex-direction: column; gap: 0.2rem; }
+.ho-hc-stat span { font-size: 0.75rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: var(--ho-text-muted);}
+.ho-hc-stat strong { font-family: 'JetBrains Mono', monospace; font-size: 1.8rem; font-weight: 800; color: var(--ho-teal-900);}
+.ho-hc-stat strong small { font-size: 0.9rem; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--ho-text-muted);}
+
+/* Google Fit Style Rings */
+.ho-ring-container { width: 160px; height: 160px; position: relative; display: flex; align-items: center; justify-content: center;}
+.ho-svg-rings { transform: rotate(-90deg); width: 100%; height: 100%; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1)); overflow: visible;}
+.ho-ring-bg { fill: none; stroke: rgba(13, 122, 110, 0.1); stroke-width: 12; stroke-linecap: round;}
+.ho-ring-fill { fill: none; stroke-linecap: round; stroke-width: 12; animation: hoDrawRing 2s ease-out forwards; }
+@keyframes hoDrawRing { 0% { stroke-dasharray: 0, 1000; } }
+
+/* --- 2. MULTI-DEVICE SYNC HUB (Spans 4) --- */
+.ho-sync-hub { grid-column: span 4; display: flex; flex-direction: column; }
+.ho-device-list { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; overflow-y: auto;}
+.ho-device-card { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.2rem; background: rgba(255,255,255,0.7); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; transition: 0.2s;}
+.ho-device-card:hover { background: #fff; border-color: var(--hc-blue); transform: translateX(4px); box-shadow: 0 4px 15px rgba(66, 133, 244, 0.1);}
+.ho-device-left { display: flex; align-items: center; gap: 1rem; }
+.ho-device-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
+.ho-device-info strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 700; margin-bottom: 0.2rem;}
+.ho-device-info span { font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600;}
+.ho-sync-status { width: 10px; height: 10px; border-radius: 50%; background: var(--hc-green); box-shadow: 0 0 8px var(--hc-green);}
+
+/* --- 3. HIGH-DENSITY DEEP VITALS MATRIX (Spans 8) --- */
+.ho-vitals-matrix { grid-column: span 8; }
+.ho-matrix-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.ho-matrix-card { background: rgba(255,255,255,0.6); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s; cursor: pointer;}
+.ho-matrix-card:hover { background: #fff; border-color: var(--ho-teal-600); box-shadow: 0 6px 20px rgba(13, 122, 110, 0.06); transform: translateY(-2px);}
+
+.ho-mc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;}
+.ho-mc-label { font-size: 0.75rem; font-weight: 800; color: var(--ho-text-muted); text-transform: uppercase; letter-spacing: 0.05em;}
+.ho-mc-val { font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; font-weight: 800; color: var(--ho-teal-900); display: flex; align-items: baseline; gap: 0.2rem; letter-spacing: -1px;}
+.ho-mc-val small { font-size: 0.8rem; color: var(--ho-text-muted); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; letter-spacing: 0;}
+
+/* Mini Sparkline SVGs */
+.ho-sparkline { width: 100%; height: 30px; margin-top: 0.8rem; overflow: visible;}
+.ho-spark-path { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: hoDrawSpark 2s ease forwards;}
+@keyframes hoDrawSpark { to { stroke-dashoffset: 0; } }
+
+/* --- 4. RECENT WORKOUTS & SESSIONS (Spans 4) --- */
+.ho-workouts { grid-column: span 4; }
+.ho-workout-feed { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; overflow-y: auto;}
+.ho-workout-item { display: flex; align-items: flex-start; justify-content: space-between; padding: 1rem; background: rgba(255,255,255,0.7); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; transition: 0.2s;}
+.ho-workout-item:hover { background: #fff; border-color: var(--ho-teal-600); transform: translateX(4px); box-shadow: 0 4px 15px rgba(13, 122, 110, 0.05);}
+.ho-wo-left { display: flex; align-items: center; gap: 0.8rem; }
+.ho-wo-icon { font-size: 1.4rem; width: 38px; height: 38px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);}
+.ho-wo-details strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 700; margin-bottom: 0.2rem;}
+.ho-wo-details span { display: block; font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600; margin-bottom: 0.2rem;}
+.ho-wo-source { font-size: 0.65rem; color: var(--hc-blue); font-weight: 800; text-transform: uppercase;}
+.ho-wo-metrics { text-align: right; }
+.ho-wo-metrics strong { display: block; font-family: 'JetBrains Mono', monospace; font-size: 1rem; color: var(--ho-teal-900); font-weight: 700;}
+.ho-wo-metrics span { font-size: 0.7rem; color: var(--ho-text-muted); font-weight: 600;}
+
+/* ==========================================================
+   DYNAMIC POPUP MODAL (Google Health Connect Style)
+   ========================================================== */
+.ho-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(11, 94, 85, 0.4);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2000; opacity: 0; visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
-.topbar h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.8rem; color: var(--void);}
-.topbar .sub { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.4rem; font-weight: 500;}
-.actions { display: flex; align-items: center; gap: 0.8rem; }
+.ho-modal-overlay.active { opacity: 1; visibility: visible; }
 
-.sync-badge { display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.6); padding: 0.5rem 1rem; border-radius: 999px; border: 1px solid var(--line); font-size: 0.8rem; font-weight: 700; color: var(--void);}
-.pulse-dot { width: 8px; height: 8px; background: var(--mist); border-radius: 50%; box-shadow: 0 0 10px var(--mist); animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.4); } }
-
-.btn { border: none; border-radius: 999px; padding: 0.75rem 1.4rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.2s; font-family: inherit; }
-.btn.primary { background: var(--coral); color: #fff; box-shadow: 0 4px 15px rgba(239, 111, 91, 0.2);}
-.btn.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239, 111, 91, 0.35); background: #d95a46;}
-
-/* ---------- BENTO GRID ---------- */
-.bento-wrapper { padding: 1rem 3.5rem 4rem; flex: 1;}
-.bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; }
-
-.card {
-  background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(25px) saturate(180%);
-  -webkit-backdrop-filter: blur(25px) saturate(180%);
-  border: 1px solid rgba(255,255,255,1); border-radius: var(--radius); padding: 2rem;
-  overflow: hidden; position: relative; box-shadow: 0 10px 30px rgba(8, 64, 57, 0.05);
-  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s;
-  display: flex; flex-direction: column;
+.ho-modal-panel {
+  width: 100%; max-width: 500px;
+  background: #fff;
+  border-radius: var(--ho-radius-xl);
+  padding: 2.5rem;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+  transform: translateY(40px) scale(0.95);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex; flex-direction: column; gap: 1.5rem;
 }
-.card::before {
-  content: ""; position: absolute; top: 0; left: -150%; width: 60%; height: 100%;
-  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.7) 45%, transparent 90%);
-  transform: skewX(-18deg); transition: left 0.7s ease; pointer-events: none; z-index: 20;
+.ho-modal-overlay.active .ho-modal-panel { transform: translateY(0) scale(1); }
+
+.ho-modal-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.ho-modal-title-group { display: flex; align-items: center; gap: 1rem; }
+.ho-modal-icon { width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+.ho-modal-title { font-size: 1.4rem; font-family: 'Fraunces', serif; font-weight: 800; color: var(--ho-teal-900); }
+.ho-modal-date { font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 600; margin-top: 0.2rem; display: block;}
+.ho-modal-close { background: rgba(13, 122, 110, 0.08); border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; color: var(--ho-teal-900); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;}
+.ho-modal-close:hover { background: rgba(13, 122, 110, 0.15); transform: scale(1.05); }
+
+.ho-modal-val-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.ho-modal-value-large { font-family: 'JetBrains Mono', monospace; font-size: 3.5rem; font-weight: 800; color: var(--ho-text-main); display: flex; align-items: baseline; gap: 0.5rem; line-height: 1;}
+.ho-modal-value-large small { font-size: 1.2rem; font-weight: 600; color: var(--ho-text-muted); font-family: 'Plus Jakarta Sans', sans-serif;}
+
+/* Reference Range Badge */
+.ho-modal-range { 
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 6px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; width: fit-content;
 }
-.card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(8, 64, 57, 0.1); border-color: var(--sage-soft);}
-.card:hover::before { left: 150%; }
+.range-optimal { background: rgba(46, 204, 113, 0.15); color: #27ae60; }
+.range-warning { background: rgba(243, 156, 18, 0.15); color: #d35400; }
 
-.card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; z-index: 2;}
-.card h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.2rem; color: var(--void);}
+/* Modal Chart Area */
+.ho-modal-chart-area { height: 140px; width: 100%; position: relative; border-bottom: 1px solid var(--ho-glass-border-subtle); padding-bottom: 1rem;}
+.ho-mc-svg { width: 100%; height: 100%; overflow: visible; }
+.ho-mc-path { fill: none; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.15)); stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+.ho-modal-overlay.active .ho-mc-path { animation: hoDrawModalChart 1.5s ease-out forwards; animation-delay: 0.2s;}
+@keyframes hoDrawModalChart { to { stroke-dashoffset: 0; } }
 
-/* --- 1. HERO: ACTIVITY RINGS (Spans 8 Cols) --- */
-.c-hero { grid-column: span 8; background: linear-gradient(135deg, var(--void), var(--void-soft)); color: #fff; border: none; padding: 2.5rem; flex-direction: row; align-items: center; justify-content: space-between;}
-.c-hero::before { background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.1) 45%, transparent 90%); }
-.hero-text { flex: 1; position: relative; z-index: 2;}
-.c-hero .eyebrow { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist); font-weight: 700; margin-bottom: 1rem; display: block;}
-.c-hero h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 2.4rem; line-height: 1.15; letter-spacing: -1px; margin-bottom: 1.2rem;}
-.c-hero p { color: #dcebe8; font-size: 0.95rem; line-height: 1.6; max-width: 85%; margin-bottom: 1.5rem;}
-
-.activity-metrics { display: flex; gap: 1.5rem; }
-.metric-col { display: flex; flex-direction: column; gap: 0.2rem; }
-.metric-col span { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: #a4c9c3; }
-.metric-col strong { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; color: #fff; }
-
-.rings-container { position: relative; width: 200px; height: 200px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; z-index: 2;}
-.ring-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
-.ring-bg { fill: none; stroke-width: 14; stroke-linecap: round; }
-.ring-fill { fill: none; stroke-width: 14; stroke-linecap: round; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); animation: fillRing 1.5s ease-out forwards; }
-@keyframes fillRing { 0% { stroke-dashoffset: var(--total-length); } }
-
-/* --- 2. CONNECTED DEVICES (Spans 4 Cols) --- */
-.c-devices { grid-column: span 4; }
-.device-list { display: flex; flex-direction: column; gap: 1rem; }
-.device-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(255,255,255,0.5); border: 1px solid var(--line); border-radius: 16px; transition: 0.2s;}
-.device-item:hover { background: #fff; border-color: var(--void-soft); transform: translateX(4px); }
-.device-icon { width: 44px; height: 44px; background: var(--sage-soft); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
-.device-info { flex: 1; }
-.device-info strong { display: block; font-size: 0.95rem; color: var(--void); margin-bottom: 0.2rem;}
-.device-info span { font-size: 0.75rem; color: var(--ink-soft); }
-.device-status { width: 10px; height: 10px; background: var(--mist); border-radius: 50%; box-shadow: 0 0 8px var(--mist); }
-
-/* --- 3. LIVE VITALS (4 Cards, Span 3 Cols Each) --- */
-.c-vital { grid-column: span 3; padding: 1.5rem;}
-.vital-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-.vital-header span { font-size: 0.75rem; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.05em; }
-.vital-value { font-family: 'JetBrains Mono', monospace; font-size: 2.2rem; font-weight: 800; color: var(--void); display: flex; align-items: baseline; gap: 0.3rem; letter-spacing: -1px;}
-.vital-value small { font-size: 0.9rem; color: var(--ink-soft); font-weight: 600; font-family: 'Inter', sans-serif; letter-spacing: 0;}
-
-/* Live ECG Animation */
-.ecg-container { width: 100%; height: 40px; margin-top: 1rem; overflow: hidden; position: relative;}
-.ecg-line { position: absolute; left: 0; width: 200%; height: 100%; background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 30" xmlns="http://www.w3.org/2000/svg"><path d="M0,15 L20,15 L25,5 L30,25 L35,15 L100,15" fill="none" stroke="%23ef6f5b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>') repeat-x; animation: ecgSweep 2s linear infinite; }
-@keyframes ecgSweep { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-
-/* Simple Progress Bar for Steps */
-.progress-track { width: 100%; height: 8px; background: var(--sage-soft); border-radius: 999px; margin-top: 1.5rem; overflow: hidden;}
-.progress-fill { height: 100%; background: var(--mist); border-radius: 999px; width: 75%; }
-
-/* --- 4. DATA NORMALIZATION PIPELINE (Spans 7 Cols) --- */
-.c-pipeline { grid-column: span 7; }
-.pipeline-flow { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding: 2rem; background: var(--sage-soft); border-radius: 16px; border: 1px dashed var(--mist);}
-.pipeline-node { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center;}
-.pipeline-node .node-icon { width: 50px; height: 50px; background: #fff; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05); z-index: 2;}
-.pipeline-node strong { font-size: 0.85rem; color: var(--void); }
-.pipeline-node span { font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: var(--ink-soft); }
-.pipeline-arrow { flex: 1; height: 2px; background: var(--mist); position: relative; margin: 0 1rem; top: -15px;}
-.pipeline-arrow::after { content: '▶'; position: absolute; right: -5px; top: -11px; color: var(--mist); font-size: 1.2rem;}
-
-/* --- 5. AI WEARABLE INSIGHTS (Spans 5 Cols) --- */
-.c-insights { grid-column: span 5; display: flex; flex-direction: column; justify-content: center;}
-.insight-box { background: var(--void); color: #fff; border-radius: 16px; padding: 1.8rem; position: relative; overflow: hidden; box-shadow: 0 10px 25px rgba(8, 64, 57, 0.2);}
-.insight-box::before { content: ''; position: absolute; left: 0; top: 0; width: 6px; height: 100%; background: var(--coral); }
-.insight-box h4 { font-family: 'Fraunces', serif; font-size: 1.1rem; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;}
-.insight-box p { font-size: 0.9rem; color: #dcebe8; line-height: 1.6; margin-bottom: 1rem;}
-.insight-box .source-tag { display: inline-block; font-size: 0.7rem; font-weight: 700; background: rgba(255,255,255,0.1); padding: 0.3rem 0.8rem; border-radius: 999px;}
+/* Modal Detail List */
+.ho-modal-details { display: flex; flex-direction: column; gap: 0.8rem; }
+.ho-detail-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--ho-bg-airy); border-radius: 12px; }
+.ho-dr-label { font-size: 0.9rem; font-weight: 700; color: var(--ho-text-muted); }
+.ho-dr-val { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 800; color: var(--ho-teal-900); }
 
 /* ---------- RESPONSIVE ---------- */
-@media (max-width: 1200px) {
-  .bento { grid-template-columns: repeat(6, 1fr); }
-  .c-hero { grid-column: span 6; flex-direction: column; align-items: flex-start; gap: 2rem;}
-  .c-devices { grid-column: span 6; }
-  .c-pipeline, .c-insights { grid-column: span 6; }
+@media (max-width: 1400px) {
+  .ho-hero, .ho-vitals-matrix { grid-column: span 8; }
+  .ho-sync-hub, .ho-workouts { grid-column: span 4; }
+  .ho-matrix-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 1024px) {
+  .ho-mosaic-grid { grid-template-columns: repeat(6, 1fr); }
+  .ho-hero, .ho-sync-hub, .ho-vitals-matrix, .ho-workouts { grid-column: span 6; }
 }
 @media (max-width: 768px) {
-  .shell { flex-direction: column; width: 100%; overflow-x: hidden; }
-  .nav { position: relative; height: auto; width: 100%; border-right: none; border-bottom: 1px solid var(--line); padding: 1rem; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px);}
-  .nav.collapsed { width: 100%; } 
-  .navlinks, .sidebar-footer { display: none; }
-  .nav-header { padding: 0.5rem; }
-  .topbar { padding: 1.2rem 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; background: rgba(255,255,255,0.85); }
-  .bento-wrapper { padding: 1.5rem; }
-  
-  .c-vital { grid-column: span 6; }
-  .pipeline-flow { flex-direction: column; gap: 2rem; }
-  .pipeline-arrow { width: 2px; height: 30px; margin: 0; top: 0; }
-  .pipeline-arrow::after { content: '▼'; right: -6px; top: auto; bottom: -15px; }
+  .ho-topbar { flex-direction: column; align-items: flex-start; padding: 1.5rem; gap: 1rem;}
+  .ho-mosaic-grid { display: flex; flex-direction: column; padding: 1rem; gap: 1rem;}
+  .ho-hero { flex-direction: column; text-align: left; align-items: flex-start; }
+  .ho-ring-container { margin-top: 2rem; align-self: center; }
+  .ho-hc-metrics { flex-direction: column; gap: 1rem; }
+  .ho-matrix-grid { grid-template-columns: 1fr; }
+  .ho-modal-panel { position: absolute; bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; transform: translateY(100%); padding: 2rem 1.5rem; max-width: 100%;}
+}
+
+.ho-main-content { 
+  flex: 1; min-width: 0; display: flex; flex-direction: column; 
+  height: 100vh; overflow-y: auto;
+  /* CRITICAL FIX: Removes the gap next to the sticky sidebar */
+  margin-left: 0 !important; 
+  padding-left: 0 !important;
 }
 </style>
 </head>
 <body>
 
-<!-- Ambient Orbs -->
-<div class="ambient"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+<div class="ho-ambient-canvas">
+  <div class="ho-glow-orb ho-orb-1"></div>
+  <div class="ho-glow-orb ho-orb-2"></div>
+</div>
 
-<div class="shell">
+<div class="ho-app-layout">
   
-  <!-- TRANSPARENT SLIM NAVBAR -->
-  <nav class="nav" id="sidebar">
- <%- include('../partials/sidebar') %>
-  </nav>
+  <!-- UNIVERSAL SIDEBAR IMPORT -->
+  <%- include('../partials/sidebar') %>
 
-  <!-- MAIN CONTENT -->
-  <main class="main">
+  <!-- SCOPED MAIN CONTENT -->
+  <main class="ho-main-content">
     
-    <div class="topbar">
-      <div>
-        <h1>Wearable Intelligence</h1>
-        <div class="sub">Continuous telemetry syncing with your authorized devices.</div>
+    <header class="ho-topbar">
+      <div class="ho-topbar-text">
+        <h1><b style="color: #e07a68;">Health Connect</b> Telemetry</h1>
+        <p><span class="ho-pulse-dot"></span> Real-time data pipeline from all your connected wearables.</p>
       </div>
-      <div class="actions">
-        <div class="sync-badge">
-          <span class="pulse-dot"></span> Live Sync Active
-        </div>
-        <button class="btn primary">Add Device</button>
+      <div class="ho-topbar-actions">
+        <a href="#" class="ho-btn-ghost">Manage Devices</a>
       </div>
-    </div>
+    </header>
 
-    <div class="bento-wrapper">
-      <div class="bento">
-
-        <!-- 1. HERO ACTIVITY RINGS (Spans 8 Cols) -->
-        <div class="card c-hero shine-effect">
-          <div class="hero-text">
-            <span class="eyebrow">Daily Activity Matrix</span>
-            <h2>You're closing in on your daily targets.</h2>
-            <p>Your HealthOrbit engine is actively pulling data from Apple HealthKit and Fitbit APIs, merging your activity, sleep, and heart rate into a single timeline[cite: 1].</p>
-            
-            <div class="activity-metrics">
-              <div class="metric-col">
-                <span style="color: var(--coral);">Move</span>
-                <strong>420 <small>kcal</small></strong>
-              </div>
-              <div class="metric-col">
-                <span style="color: var(--mist);">Exercise</span>
-                <strong>34 <small>min</small></strong>
-              </div>
-              <div class="metric-col">
-                <span style="color: var(--sage);">Stand</span>
-                <strong>8 <small>hrs</small></strong>
-              </div>
+    <div class="ho-mosaic-grid">
+      
+      <!-- 1. HEALTH CONNECT HERO (Span 8) -->
+      <div class="ho-panel ho-hero">
+        <div class="ho-hero-text">
+          <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--hc-blue); font-weight: 800; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Health Connect Unified
+          </span>
+          <h2>You're crushing your daily targets.</h2>
+          <p>HealthOrbit is actively merging telemetry from Google Fit, Samsung Health, and Garmin into your centralized profile. Your heart points and active energy are optimal.</p>
+          
+          <div class="ho-hc-metrics">
+            <div class="ho-hc-stat" style="cursor: pointer;" onclick="openMetricModal('heartPoints')">
+              <span>Heart Points</span>
+              <strong style="color: var(--hc-blue);">45 <small>pts</small></strong>
+            </div>
+            <div class="ho-hc-stat" style="cursor: pointer;" onclick="openMetricModal('steps')">
+              <span>Steps</span>
+              <strong style="color: var(--hc-green);">8,420 <small>steps</small></strong>
+            </div>
+            <div class="ho-hc-stat" style="cursor: pointer;" onclick="openMetricModal('energy')">
+              <span>Active Energy</span>
+              <strong style="color: var(--ho-coral);">580 <small>kcal</small></strong>
             </div>
           </div>
+        </div>
 
-          <!-- 3D SVG Activity Rings -->
-          <div class="rings-container">
-            <svg class="ring-svg" viewBox="0 0 200 200">
-              <!-- Outer Ring (Move - Coral) -->
-              <circle class="ring-bg" cx="100" cy="100" r="85" stroke="rgba(239, 111, 91, 0.2)"></circle>
-              <circle class="ring-fill" cx="100" cy="100" r="85" stroke="var(--coral)" stroke-dasharray="534" style="--total-length: 534; stroke-dashoffset: 133;"></circle>
-              
-              <!-- Middle Ring (Exercise - Mist) -->
-              <circle class="ring-bg" cx="100" cy="100" r="60" stroke="rgba(66, 184, 157, 0.2)"></circle>
-              <circle class="ring-fill" cx="100" cy="100" r="60" stroke="var(--mist)" stroke-dasharray="377" style="--total-length: 377; stroke-dashoffset: 150;"></circle>
-              
-              <!-- Inner Ring (Stand - Sage) -->
-              <circle class="ring-bg" cx="100" cy="100" r="35" stroke="rgba(13, 122, 110, 0.2)"></circle>
-              <circle class="ring-fill" cx="100" cy="100" r="35" stroke="var(--sage)" stroke-dasharray="220" style="--total-length: 220; stroke-dashoffset: 70;"></circle>
+        <div class="ho-ring-container">
+          <svg class="ho-svg-rings" viewBox="0 0 160 160">
+            <!-- Background Rings -->
+            <circle class="ho-ring-bg" cx="80" cy="80" r="65"></circle>
+            <circle class="ho-ring-bg" cx="80" cy="80" r="48"></circle>
+            <!-- Foreground Fills (Google Fit Colors) -->
+            <circle class="ho-ring-fill" cx="80" cy="80" r="65" stroke="var(--hc-green)" stroke-dasharray="408" style="stroke-dashoffset: 80;"></circle>
+            <circle class="ho-ring-fill" cx="80" cy="80" r="48" stroke="var(--hc-blue)" stroke-dasharray="301" style="stroke-dashoffset: 120; animation-delay: 0.2s;"></circle>
+          </svg>
+        </div>
+      </div>
+
+      <!-- 2. DATA SOURCES HUB (Span 4) -->
+      <div class="ho-panel ho-sync-hub">
+        <div class="ho-panel-head">
+          <h3><span>📡</span> Connected Sources</h3>
+        </div>
+        
+        <div class="ho-device-list">
+          <div class="ho-device-card">
+            <div class="ho-device-left">
+              <div class="ho-device-icon">📱</div>
+              <div class="ho-device-info">
+                <strong>Google Fit</strong>
+                <span>Syncing: Steps, Heart Points</span>
+              </div>
+            </div>
+            <div class="ho-sync-status status-active"></div>
+          </div>
+
+          <div class="ho-device-card">
+            <div class="ho-device-left">
+              <div class="ho-device-icon">⌚</div>
+              <div class="ho-device-info">
+                <strong>Samsung Health</strong>
+                <span>Syncing: Sleep, SpO₂, HR</span>
+              </div>
+            </div>
+            <div class="ho-sync-status status-active"></div>
+          </div>
+
+          <div class="ho-device-card">
+            <div class="ho-device-left">
+              <div class="ho-device-icon">🏃</div>
+              <div class="ho-device-info">
+                <strong>Garmin Connect</strong>
+                <span>Syncing: Workouts, GPS</span>
+              </div>
+            </div>
+            <div class="ho-sync-status status-active"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. DEEP VITALS MATRIX (Span 8) -->
+      <div class="ho-panel ho-vitals-matrix">
+        <div class="ho-panel-head">
+          <h3><span>🔬</span> Deep Biometric Matrix</h3>
+        </div>
+        
+        <div class="ho-matrix-grid">
+          
+          <!-- Blood Pressure -->
+          <div class="ho-matrix-card" onclick="openMetricModal('bloodPressure')">
+            <div>
+              <div class="ho-mc-top">
+                <span class="ho-mc-label">Blood Pressure</span>
+                <span style="color: var(--ho-coral);">❤️</span>
+              </div>
+              <div class="ho-mc-val">118/76<small>mmHg</small></div>
+            </div>
+            <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+              <path class="ho-spark-path" stroke="var(--ho-coral)" d="M 0,20 C 20,22 40,5 50,15 C 60,25 80,10 100,15" />
             </svg>
           </div>
-        </div>
 
-        <!-- 2. CONNECTED DEVICES (Spans 4 Cols) -->
-        <div class="card c-devices shine-effect">
-          <div class="card-head">
-            <h3>Authorized Sources</h3>
-          </div>
-          <div class="device-list">
-            <div class="device-item">
-              <div class="device-icon">⌚</div>
-              <div class="device-info">
-                <strong>Apple HealthKit</strong>
-                <span>Last synced: Just now</span>
+          <!-- Respiratory Rate -->
+          <div class="ho-matrix-card" onclick="openMetricModal('respRate')">
+            <div>
+              <div class="ho-mc-top">
+                <span class="ho-mc-label">Respiratory Rate</span>
+                <span style="color: var(--hc-blue);">🫁</span>
               </div>
-              <div class="device-status"></div>
+              <div class="ho-mc-val">14.2<small>rpm</small></div>
             </div>
-            <div class="device-item">
-              <div class="device-icon">🏃</div>
-              <div class="device-info">
-                <strong>Fitbit OS API</strong>
-                <span>Last synced: 15m ago</span>
+            <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+              <path class="ho-spark-path" stroke="var(--hc-blue)" d="M 0,15 C 20,10 30,25 50,15 C 70,5 80,20 100,15" style="animation-delay: 0.1s;" />
+            </svg>
+          </div>
+
+          <!-- Body Temperature -->
+          <div class="ho-matrix-card" onclick="openMetricModal('bodyTemp')">
+            <div>
+              <div class="ho-mc-top">
+                <span class="ho-mc-label">Body Temp</span>
+                <span style="color: var(--hc-yellow);">🌡️</span>
               </div>
-              <div class="device-status" style="background: var(--sage); box-shadow: none;"></div>
+              <div class="ho-mc-val">36.6<small>°C</small></div>
+            </div>
+            <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+              <path class="ho-spark-path" stroke="var(--hc-yellow)" d="M 0,15 L 20,14 L 40,16 L 60,15 L 80,15 L 100,16" style="animation-delay: 0.2s;" />
+            </svg>
+          </div>
+
+          <!-- SpO2 -->
+          <div class="ho-matrix-card" onclick="openMetricModal('spo2')">
+            <div>
+              <div class="ho-mc-top">
+                <span class="ho-mc-label">Blood Oxygen</span>
+                <span style="color: var(--hc-blue);">💧</span>
+              </div>
+              <div class="ho-mc-val">98<small>%</small></div>
+            </div>
+            <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+              <path class="ho-spark-path" stroke="var(--hc-blue)" d="M 0,10 C 30,12 60,8 100,10" style="animation-delay: 0.3s;" />
+            </svg>
+          </div>
+
+          <!-- Deep Sleep -->
+          <div class="ho-matrix-card" onclick="openMetricModal('deepSleep')">
+            <div>
+              <div class="ho-mc-top">
+                <span class="ho-mc-label">Deep Sleep</span>
+                <span style="color: var(--hc-purple);">🌙</span>
+              </div>
+              <div class="ho-mc-val">2<small>h</small> 15<small>m</small></div>
+            </div>
+            <div style="margin-top: 1rem; width: 100%; height: 6px; background: rgba(155, 89, 182, 0.15); border-radius: 10px;">
+              <div style="width: 80%; height: 100%; background: var(--hc-purple); border-radius: 10px;"></div>
             </div>
           </div>
-        </div>
 
-        <!-- 3. LIVE VITALS (4 Cards, 3 Cols Each) -->
-        <div class="card c-vital shine-effect">
-          <div class="vital-header">
-            <span>Heart Rate</span>
-            <span style="font-size: 1.2rem;">❤️</span>
-          </div>
-          <div class="vital-value">72<small>BPM</small></div>
-          <div class="ecg-container"><div class="ecg-line"></div></div>
-        </div>
-
-        <div class="card c-vital shine-effect">
-          <div class="vital-header">
-            <span>Blood Oxygen</span>
-            <span style="font-size: 1.2rem; animation: float 3s infinite;">💧</span>
-          </div>
-          <div class="vital-value">98<small>%</small></div>
-          <div style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--ink-soft); font-weight: 600;">Healthy Range (95-100%)</div>
-        </div>
-
-        <div class="card c-vital shine-effect">
-          <div class="vital-header">
-            <span>Daily Steps</span>
-            <span style="font-size: 1.2rem;">👟</span>
-          </div>
-          <div class="vital-value">7,500<small>/10k</small></div>
-          <div class="progress-track"><div class="progress-fill"></div></div>
-        </div>
-
-        <div class="card c-vital shine-effect">
-          <div class="vital-header">
-            <span>Sleep Phase</span>
-            <span style="font-size: 1.2rem;">🌙</span>
-          </div>
-          <div class="vital-value">7<small>h</small> 15<small>m</small></div>
-          <div style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--mist); font-weight: 700;">Deep Sleep Optimal</div>
-        </div>
-
-        <!-- 4. DATA NORMALIZATION (Spans 7 Cols) -->
-        <div class="card c-pipeline shine-effect">
-          <div class="card-head">
-            <h3>HealthOrbit Data Normalization</h3>
-            <span style="font-size: 0.75rem; color: var(--ink-soft); font-weight: 600;">Module 4 Architecture</span>
-          </div>
-          <p style="font-size: 0.85rem; color: var(--ink-soft); line-height: 1.5;">Different devices send different data formats (e.g., <code style="background:var(--paper); padding:2px 4px; border-radius:4px;">heartRate=78</code> vs <code style="background:var(--paper); padding:2px 4px; border-radius:4px;">hr=78</code>). HealthOrbit's backend connector normalizes this into a single, unified database schema[cite: 1].</p>
-          
-          <div class="pipeline-flow">
-            <div class="pipeline-node">
-              <div class="node-icon">⌚</div>
-              <strong>Raw APIs</strong>
-              <span>Apple / Fitbit</span>
+          <!-- Stress Score -->
+          <div class="ho-matrix-card" onclick="openMetricModal('stress')">
+            <div>
+              <div class="ho-mc-top">
+                <span class="ho-mc-label">Stress Index</span>
+                <span style="color: var(--ho-teal-600);">🧠</span>
+              </div>
+              <div class="ho-mc-val">34<small>/100</small></div>
             </div>
-            <div class="pipeline-arrow"></div>
-            <div class="pipeline-node">
-              <div class="node-icon" style="background: var(--void); color: white;">⚙️</div>
-              <strong>Node.js Connector</strong>
-              <span>Standardization</span>
-            </div>
-            <div class="pipeline-arrow"></div>
-            <div class="pipeline-node">
-              <div class="node-icon">🍃</div>
-              <strong>MongoDB</strong>
-              <span>Unified Profile</span>
-            </div>
+            <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+              <path class="ho-spark-path" stroke="var(--ho-teal-600)" d="M 0,25 C 20,20 40,30 60,15 C 80,0 90,10 100,20" style="animation-delay: 0.4s;" />
+            </svg>
           </div>
-        </div>
 
-        <!-- 5. AI INSIGHTS (Spans 5 Cols) -->
-        <div class="card c-insights shine-effect">
-          <div class="insight-box">
-            <h4>✨ Wearable Intelligence</h4>
-            <p>Your biometric sensors indicate a highly restful sleep state last night, contributing to a lower average resting BPM today. Your SpO2 levels remain perfectly saturated.</p>
-            <span class="source-tag">Source: Multi-Device Fusion</span>
-          </div>
         </div>
-
       </div>
+
+      <!-- 4. RECENT WORKOUTS (Span 4) -->
+      <div class="ho-panel ho-workouts">
+        <div class="ho-panel-head">
+          <h3><span>🏃</span> Activity Logs</h3>
+        </div>
+        
+        <div class="ho-workout-feed">
+          <div class="ho-workout-item">
+            <div class="ho-wo-left">
+              <div class="ho-wo-icon">🚴</div>
+              <div class="ho-wo-details">
+                <strong>Morning Cycling</strong>
+                <span>Today • 07:15 AM</span>
+                <div class="ho-wo-source">Samsung Health</div>
+              </div>
+            </div>
+            <div class="ho-wo-metrics">
+              <strong>420 kcal</strong>
+              <span>45 min</span>
+            </div>
+          </div>
+
+          <div class="ho-workout-item">
+            <div class="ho-wo-left">
+              <div class="ho-wo-icon">🚶</div>
+              <div class="ho-wo-details">
+                <strong>Evening Walk</strong>
+                <span>Yesterday • 06:30 PM</span>
+                <div class="ho-wo-source">Google Fit</div>
+              </div>
+            </div>
+            <div class="ho-wo-metrics">
+              <strong>180 kcal</strong>
+              <span>30 min</span>
+            </div>
+          </div>
+
+          <div class="ho-workout-item">
+            <div class="ho-wo-left">
+              <div class="ho-wo-icon">🧘</div>
+              <div class="ho-wo-details">
+                <strong>Yoga Session</strong>
+                <span>Mon • 08:00 AM</span>
+                <div class="ho-wo-source">Garmin Connect</div>
+              </div>
+            </div>
+            <div class="ho-wo-metrics">
+              <strong>95 kcal</strong>
+              <span>20 min</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
 </div>
 
+<!-- ==========================================
+     DYNAMIC METRIC MODAL WITH REFERENCE RANGES
+     ========================================== -->
+<div class="ho-modal-overlay" id="metricModal" onclick="closeMetricModal(event)">
+  <div class="ho-modal-panel" onclick="event.stopPropagation()">
+    
+    <div class="ho-modal-header">
+      <div class="ho-modal-title-group">
+        <div class="ho-modal-icon" id="modalIcon">❤️</div>
+        <div>
+          <h3 class="ho-modal-title" id="modalTitle">Metric</h3>
+          <span class="ho-modal-date">Today, 10:45 AM</span>
+        </div>
+      </div>
+      <button class="ho-modal-close" onclick="closeMetricModal()">✕</button>
+    </div>
+
+    <div class="ho-modal-val-group">
+      <div class="ho-modal-value-large">
+        <span id="modalValue">0</span><small id="modalUnit">unit</small>
+      </div>
+      <!-- Enhanced Reference Range Badge -->
+      <div class="ho-modal-range range-optimal" id="modalRangeBadge">
+        <span id="modalRangeText">Normal Range: 60 - 100</span>
+      </div>
+    </div>
+
+    <!-- SVG Chart Injection Area -->
+    <div class="ho-modal-chart-area">
+      <svg class="ho-mc-svg" viewBox="0 0 400 120" preserveAspectRatio="none">
+        <path id="modalChartPath" class="ho-mc-path" stroke="var(--hc-red)" d="M 0,60 C 50,70 100,20 150,40 C 200,60 250,-10 300,30 C 350,70 380,50 400,60" />
+      </svg>
+    </div>
+
+    <div class="ho-modal-details" id="modalDetailsList">
+      <!-- Injected via JS -->
+    </div>
+
+  </div>
+</div>
+
 <script>
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('collapsed');
+  // Comprehensive Data Dictionary with Clinical Reference Ranges
+  const metricData = {
+    heartPoints: {
+      title: "Heart Points", icon: "💙", value: "45", unit: "pts", color: "var(--hc-blue)", bgColor: "rgba(66, 133, 244, 0.1)",
+      range: "Goal: 150 pts/week", rangeClass: "range-optimal",
+      chartPath: "M 0,100 C 40,85 80,40 120,60 C 160,80 200,20 240,40 C 280,60 320,10 360,50 C 380,70 400,20 400,20",
+      details: [
+        { label: "Weekly Total", val: "112 pts" },
+        { label: "AHA Recommendation", val: "On Track" }
+      ]
+    },
+    steps: {
+      title: "Daily Steps", icon: "👟", value: "8,420", unit: "steps", color: "var(--hc-green)", bgColor: "rgba(52, 168, 83, 0.1)",
+      range: "Goal: 10,000 steps/day", rangeClass: "range-optimal",
+      chartPath: "M 0,110 C 50,110 80,80 120,80 C 160,80 180,50 220,50 C 260,50 300,20 340,20 C 380,20 400,10 400,10",
+      details: [
+        { label: "Distance", val: "5.8 km" },
+        { label: "Flights Climbed", val: "12 floors" }
+      ]
+    },
+    energy: {
+      title: "Active Energy", icon: "🔥", value: "580", unit: "kcal", color: "var(--ho-coral)", bgColor: "rgba(234, 67, 53, 0.1)",
+      range: "Goal: 650 kcal/day", rangeClass: "range-optimal",
+      chartPath: "M 0,120 L 50,110 L 100,90 L 150,95 L 200,70 L 250,50 L 300,40 L 350,20 L 400,10",
+      details: [
+        { label: "Resting Energy", val: "1,450 kcal" },
+        { label: "Total Burn", val: "2,030 kcal" }
+      ]
+    },
+    bloodPressure: {
+      title: "Blood Pressure", icon: "❤️", value: "118/76", unit: "mmHg", color: "var(--ho-coral)", bgColor: "rgba(234, 67, 53, 0.1)",
+      range: "Normal: 90/60 - 120/80 mmHg", rangeClass: "range-optimal",
+      chartPath: "M 0,60 C 50,70 100,20 150,40 C 200,60 250,-10 300,30 C 350,70 380,50 400,60",
+      details: [
+        { label: "Systolic Average", val: "115 mmHg" },
+        { label: "Diastolic Average", val: "75 mmHg" },
+        { label: "Status", val: "Healthy" }
+      ]
+    },
+    respRate: {
+      title: "Respiratory Rate", icon: "🫁", value: "14.2", unit: "rpm", color: "var(--hc-blue)", bgColor: "rgba(66, 133, 244, 0.1)",
+      range: "Normal: 12.0 - 20.0 rpm", rangeClass: "range-optimal",
+      chartPath: "M 0,50 C 40,30 80,70 120,40 C 160,20 200,80 240,50 C 280,30 320,60 360,40 C 380,30 400,50 400,50",
+      details: [
+        { label: "Sleeping Average", val: "13.5 rpm" },
+        { label: "Awake Average", val: "15.1 rpm" }
+      ]
+    },
+    bodyTemp: {
+      title: "Body Temperature", icon: "🌡️", value: "36.6", unit: "°C", color: "var(--hc-yellow)", bgColor: "rgba(251, 188, 5, 0.1)",
+      range: "Normal: 36.1 - 37.2 °C", rangeClass: "range-optimal",
+      chartPath: "M 0,50 L 80,45 L 160,55 L 240,48 L 320,52 L 400,50",
+      details: [
+        { label: "Wrist Temp Deviation", val: "-0.2 °C" },
+        { label: "Measurement Context", val: "During Sleep" }
+      ]
+    },
+    spo2: {
+      title: "Blood Oxygen (SpO₂)", icon: "💧", value: "98", unit: "%", color: "var(--hc-blue)", bgColor: "rgba(66, 133, 244, 0.1)",
+      range: "Normal: 95% - 100%", rangeClass: "range-optimal",
+      chartPath: "M 0,20 C 100,25 200,15 300,20 C 350,22 400,18 400,20",
+      details: [
+        { label: "Daily Average", val: "97.5%" },
+        { label: "Lowest Point", val: "95%" }
+      ]
+    },
+    deepSleep: {
+      title: "Deep Sleep Phase", icon: "🌙", value: "2h 15m", unit: "", color: "var(--hc-purple)", bgColor: "rgba(155, 89, 182, 0.1)",
+      range: "Normal: 1.5 - 2.5 hours", rangeClass: "range-optimal",
+      chartPath: "M 0,100 L 50,100 L 80,20 L 150,20 L 180,80 L 250,80 L 280,40 L 350,40 L 380,100 L 400,100",
+      details: [
+        { label: "Percentage of Total", val: "22% (Optimal)" },
+        { label: "REM Sleep", val: "1h 45m" }
+      ]
+    },
+    stress: {
+      title: "Stress Index", icon: "🧠", value: "34", unit: "/100", color: "var(--ho-teal-600)", bgColor: "rgba(16, 148, 133, 0.1)",
+      range: "Normal: 0 - 50 (Low Stress)", rangeClass: "range-optimal",
+      chartPath: "M 0,80 C 40,60 80,100 120,50 C 160,10 200,40 240,80 C 280,110 320,70 360,90 C 380,100 400,80 400,80",
+      details: [
+        { label: "Peak Stress Time", val: "11:30 AM" },
+        { label: "HRV Correlation", val: "High" }
+      ]
     }
+  };
+
+  const modal = document.getElementById('metricModal');
+  
+  function openMetricModal(key) {
+    const data = metricData[key];
+    if(!data) return;
+
+    // Populate Modal Header
+    const iconEl = document.getElementById('modalIcon');
+    iconEl.innerHTML = data.icon;
+    iconEl.style.background = data.bgColor;
+    iconEl.style.color = data.color;
+
+    document.getElementById('modalTitle').innerText = data.title;
+    document.getElementById('modalValue').innerText = data.value;
+    document.getElementById('modalUnit').innerText = data.unit;
+
+    // Populate Reference Range Badge
+    const rangeBadge = document.getElementById('modalRangeBadge');
+    document.getElementById('modalRangeText').innerText = data.range;
+    rangeBadge.className = `ho-modal-range ${data.rangeClass}`;
+
+    // Update Chart Path and Color
+    const pathEl = document.getElementById('modalChartPath');
+    pathEl.setAttribute('d', data.chartPath);
+    pathEl.style.stroke = data.color;
+
+    // Populate Details List
+    const detailsContainer = document.getElementById('modalDetailsList');
+    detailsContainer.innerHTML = ''; 
+    data.details.forEach(detail => {
+      detailsContainer.innerHTML += `
+        <div class="ho-detail-row">
+          <span class="ho-dr-label">${detail.label}</span>
+          <span class="ho-dr-val">${detail.val}</span>
+        </div>
+      `;
+    });
+
+    // Show Modal
+    modal.classList.add('active');
+  }
+
+  function closeMetricModal(e) {
+    if (!e || e.target === modal) {
+      modal.classList.remove('active');
+    }
+  }
 </script>
+
 </body>
 </html>

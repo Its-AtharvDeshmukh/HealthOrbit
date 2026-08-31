@@ -3,344 +3,668 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HealthOrbit — Nutrition & Life</title>
+<title>HealthOrbit — Nutrition & Lifestyle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/sidebar.css">
+<link rel="icon" href="/images/Logo.png">
 <style>
 :root {
-  --void: #084039; --void-soft: #0d7a6e;
-  --paper: #f2f8f6; --card: #ffffff;
-  --ink: #0f1c1a; --ink-soft: #5e736f;
-  --coral: #ef6f5b; --coral-soft: #fbe4de;
-  --sage: #109485; --sage-soft: #dff1ec;
-  --mist: #42b89d; --line: rgba(13, 122, 110, 0.15);
-  --radius: 24px;
-  --glass-bg: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.95);
-  --shadow-glass: 0 10px 30px rgba(8, 64, 57, 0.05);
+  --ho-bg-airy: #edf6f4;
+  --ho-teal-900: #0b5e55;
+  --ho-teal-700: #0d7a6e;
+  --ho-teal-600: #109485;
+  --ho-mint-400: #42b89d;
+  --ho-coral: #e07a68;
+  --ho-coral-soft: #fbe4de;
+  --ho-text-main: #0f1c1a;
+  --ho-text-muted: #4e6b63;
+  --ho-danger: #d94b4b;
+  --ho-warning: #f39c12;
+  --ho-blue: #3498db;
+
+  --ho-glass-clear: rgba(255, 255, 255, 0.55);
+  --ho-glass-solid: rgba(255, 255, 255, 0.85);
+  --ho-glass-border: rgba(255, 255, 255, 0.95);
+  --ho-glass-border-subtle: rgba(255, 255, 255, 0.5);
+
+  --ho-radius-xl: 32px;
+  --ho-radius-lg: 20px;
+  --ho-radius-md: 12px;
+
+  --ho-shadow-glass: 0 30px 60px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background: var(--paper); color: var(--ink); overflow-x: hidden; }
-.mono { font-family: 'JetBrains Mono', monospace; }
 
-/* Ambient Orbs */
-.ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.35; animation: float 22s infinite alternate; }
-.orb1 { width: 420px; height: 420px; background: #a3e4d7; top: -120px; left: -100px; }
-.orb2 { width: 460px; height: 460px; background: #fcefc9; bottom: -140px; right: -100px; animation-delay: -6s; }
-@keyframes float { 100% { transform: translate(40px, 40px) scale(1.1); } }
-
-/* App Layout */
-.shell { display: flex; width: 100vw; min-height: 100vh; position: relative; z-index: 1; }
-.main { flex: 1; min-width: 0; display: flex; flex-direction: column; transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
-
-/* Topbar */
-.topbar { display: flex; justify-content: space-between; align-items: center; padding: 2.5rem 3.5rem 1rem; background: transparent; z-index: 10; }
-.topbar h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.8rem; color: var(--void); }
-.topbar .sub { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.4rem; font-weight: 500; }
-.actions { display: flex; gap: 0.8rem; align-items: center; }
-
-.btn { border: none; border-radius: 999px; padding: 0.75rem 1.4rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.2s; font-family: inherit; display: inline-flex; align-items: center; gap: 0.4rem; }
-.btn.primary { background: var(--coral); color: #fff; box-shadow: 0 4px 15px rgba(239, 111, 91, 0.2); }
-.btn.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239, 111, 91, 0.35); background: #d95a46; }
-
-/* Bento Grid */
-.bento-wrapper { padding: 1rem 3.5rem 4rem; flex: 1; }
-.bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; }
-
-.card {
-  background: var(--glass-bg); backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
-  border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 2rem;
-  overflow: hidden; position: relative; box-shadow: var(--shadow-glass);
-  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s; display: flex; flex-direction: column;
+body {
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  background-color: var(--ho-bg-airy);
+  color: var(--ho-text-main);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
-.card::before {
-  content: ""; position: absolute; top: 0; left: -150%; width: 60%; height: 100%;
-  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.7) 45%, transparent 90%);
-  transform: skewX(-18deg); transition: left 0.7s ease; pointer-events: none; z-index: 20;
+
+.ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
+.ho-orb-1 { width: 550px; height: 550px; background: #76d7c4; top: -100px; left: -100px; }
+.ho-orb-2 { width: 600px; height: 600px; background: #fadbd8; bottom: -150px; right: -100px; animation-delay: -5s; }
+.ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 35%; left: 35%; opacity: 0.3; animation-delay: -10s; }
+@keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 60px) scale(1.15); } }
+
+.ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
+
+.ho-main-content {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh;
+  overflow-y: auto; scrollbar-width: none;
 }
-.card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(8, 64, 57, 0.1); border-color: var(--sage-soft); }
-.card:hover::before { left: 150%; }
-.card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; z-index: 2;}
-.card h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.3rem; color: var(--void); }
+.ho-main-content::-webkit-scrollbar { display: none; }
 
-/* 1. MACROS HERO (Spans 8 Cols) */
-.c-macros { grid-column: span 8; background: linear-gradient(135deg, var(--void), var(--void-soft)); color: #fff; border: none;}
-.c-macros::before { background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.15) 45%, transparent 90%); }
-.macro-layout { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 2; gap: 2rem;}
-.macro-text { flex: 1; }
-.macro-text h2 { font-family: 'Fraunces', serif; font-size: 2.2rem; margin-bottom: 0.5rem; line-height: 1.1;}
-.macro-text p { font-size: 0.95rem; color: #dcebe8; margin-bottom: 1.5rem;}
-.macro-stats { display: flex; gap: 1.5rem; }
-.m-stat { display: flex; flex-direction: column; gap: 0.2rem;}
-.m-stat span { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; color: rgba(255,255,255,0.7);}
-.m-stat strong { font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; color: #fff;}
+.ho-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 2.2rem 3rem 1.2rem; flex-shrink: 0; background: transparent; z-index: 20;
+}
+.ho-topbar h1 {
+  font-weight: 800; font-size: 1.8rem; color: var(--ho-teal-900);
+  margin-bottom: 0.3rem; letter-spacing: -0.5px;
+  display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+}
+.ho-brand-text { display: inline-flex; align-items: center; white-space: nowrap; }
+.ho-topbar p { font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 500; display: flex; align-items: center; gap: 0.5rem; max-width: 700px; line-height: 1.5;}
+.ho-topbar-actions { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; }
 
-.macro-chart { width: 180px; height: 180px; position: relative; display: flex; align-items: center; justify-content: center;}
-.macro-chart svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.m-circle-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 16; }
-.m-circle { fill: none; stroke-width: 16; stroke-linecap: round; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
-.macro-center { position: absolute; text-align: center; }
-.macro-center strong { display: block; font-family: 'JetBrains Mono', monospace; font-size: 1.8rem; line-height: 1;}
-.macro-center span { font-size: 0.7rem; color: rgba(255,255,255,0.7); text-transform: uppercase; font-weight: 700;}
+.ho-btn-primary {
+  background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); color: #fff;
+  border: none; border-radius: 999px; padding: 0.75rem 1.5rem; font-weight: 700; font-size: 0.88rem;
+  cursor: pointer; box-shadow: 0 10px 25px rgba(13, 122, 110, 0.25); transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; white-space: nowrap; text-decoration: none;
+}
+.ho-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(13, 122, 110, 0.35); }
+.ho-btn-primary:active { transform: scale(0.96); }
 
-/* 2. HYDRATION (Spans 4 Cols) */
-.c-water { grid-column: span 4; background: linear-gradient(135deg, #e0f2fe, #bae6fd); border-color: rgba(56, 189, 248, 0.3);}
-.water-content { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%; gap: 1rem;}
-.water-glass { width: 80px; height: 100px; border: 4px solid var(--void); border-radius: 4px 4px 12px 12px; position: relative; overflow: hidden; background: rgba(255,255,255,0.5);}
-.water-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; background: #0ea5e9; animation: waves 3s ease-in-out infinite alternate; border-top-left-radius: 5px; border-top-right-radius: 5px;}
-@keyframes waves { 0% { transform: scaleY(0.95); } 100% { transform: scaleY(1.05); } }
-.water-text strong { display: block; font-size: 1.8rem; font-family: 'JetBrains Mono', monospace; color: var(--void);}
-.water-text span { font-size: 0.85rem; color: var(--ink-soft); font-weight: 600;}
+.ho-btn-ghost {
+  padding: 0.75rem 1.5rem; background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border);
+  border-radius: 999px; color: var(--ho-teal-900); font-weight: 700; font-size: 0.88rem;
+  cursor: pointer; text-decoration: none; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; white-space: nowrap;
+}
+.ho-btn-ghost:hover { background: #fff; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.1); border-color: var(--ho-teal-600);}
+.ho-btn-ghost:active { transform: scale(0.96); }
 
-/* 3. AI DIETITIAN (Spans 6 Cols) */
-.c-dietitian { grid-column: span 6; }
-.diet-box { background: rgba(255,255,255,0.7); border: 1px solid var(--mist); border-radius: 16px; padding: 1.5rem; position: relative;}
-.diet-box::before { content: ''; position: absolute; left: 0; top: 0; width: 5px; height: 100%; background: var(--mist); border-top-left-radius: 16px; border-bottom-left-radius: 16px;}
-.diet-head { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem;}
-.diet-icon { width: 36px; height: 36px; background: var(--void); color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(8, 64, 57, 0.2);}
-.diet-head h4 { font-family: 'Fraunces', serif; font-size: 1.1rem; color: var(--void);}
-.diet-box p { font-size: 0.9rem; color: var(--ink-soft); line-height: 1.6; margin-bottom: 1rem;}
-.food-recs { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.food-chip { background: var(--sage-soft); color: var(--sage); font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(13, 122, 110, 0.2);}
+.ho-workspace-grid {
+  display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem;
+  padding: 0.5rem 3rem 2.5rem; flex: 1 0 auto; min-height: 0;
+}
 
-/* 4. RECENT MEALS LOG (Spans 6 Cols) */
-.c-meals { grid-column: span 6; }
-.meal-feed { display: flex; flex-direction: column; gap: 0.8rem; }
-.meal-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,0.5); transition: 0.2s;}
-.meal-item:hover { background: #fff; border-color: var(--sage-soft); transform: translateX(4px);}
-.meal-info { display: flex; align-items: center; gap: 1rem; }
-.m-icon { font-size: 1.5rem; }
-.m-details strong { display: block; font-size: 0.95rem; color: var(--void); margin-bottom: 0.2rem;}
-.m-details span { font-size: 0.75rem; color: var(--ink-soft); }
-.m-calories { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--void);}
+.ho-panel {
+  background: var(--ho-glass-clear);
+  backdrop-filter: blur(50px) saturate(200%); -webkit-backdrop-filter: blur(50px) saturate(200%);
+  border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
+  padding: 1.8rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass);
+  height: auto; min-height: 0;
+  animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+.ho-panel:hover { transform: translateY(-3px); box-shadow: 0 30px 60px rgba(13, 122, 110, 0.1); background: rgba(255, 255, 255, 0.7); }
+@keyframes hoSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.ho-delay-1 { animation-delay: 0.05s; } .ho-delay-2 { animation-delay: 0.1s; }
+.ho-delay-3 { animation-delay: 0.15s; } .ho-delay-4 { animation-delay: 0.2s; }
 
-/* 5. WELLNESS & HABITS (Spans 12 Cols) */
-.c-habits { grid-column: span 12; }
-.habit-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
-.habit-card { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem; background: rgba(255,255,255,0.6); border: 1px solid var(--line); border-radius: 16px; cursor: pointer; transition: 0.2s;}
-.habit-card:hover { background: #fff; border-color: var(--mist); box-shadow: 0 4px 15px rgba(66, 184, 157, 0.1);}
-.h-info { display: flex; align-items: center; gap: 0.8rem; }
-.h-info strong { font-size: 0.9rem; color: var(--void);}
-.checkbox { width: 22px; height: 22px; border: 2px solid var(--ink-soft); border-radius: 6px; transition: 0.2s; display: flex; align-items: center; justify-content: center; color: transparent; font-weight: 800; font-size: 0.8rem;}
-.habit-card.done .checkbox { background: var(--mist); border-color: var(--mist); color: #fff; }
+.ho-panel-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; flex-shrink: 0; flex-wrap: wrap; gap: 0.8rem;}
+.ho-panel-header h2 { font-weight: 800; font-size: 1.15rem; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem; margin:0;}
+.ho-badge { background: #fff; border: 1px solid var(--ho-glass-border); padding: 0.3rem 0.8rem; border-radius: 999px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ho-teal-700); box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
 
+/* --- 1. AI OVERVIEW --- */
+.ho-ai-overview {
+  grid-column: span 12; background: linear-gradient(135deg, var(--ho-teal-900), var(--ho-teal-700));
+  border: 1px solid var(--ho-mint-400); color: #fff; padding: 0; border-radius: var(--ho-radius-xl);
+  display: flex; flex-direction: row; box-shadow: 0 15px 40px rgba(11, 94, 85, 0.2);
+  position: relative; overflow: hidden;
+}
+.ho-ai-overview:hover { background: linear-gradient(135deg, var(--ho-teal-900), var(--ho-teal-700)); }
+
+.ho-ai-left-col { flex: 0 0 50%; padding: 2.4rem; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 2; }
+.ho-ai-left-col::after { content: '✨'; position: absolute; left: -10px; top: -20px; font-size: 12rem; opacity: 0.03; pointer-events: none;}
+
+.ho-ai-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem;}
+.ho-ai-icon { font-size: 2rem; animation: hoPulse 3s infinite alternate; }
+@keyframes hoPulse { 0% { transform: scale(1); opacity: 0.8;} 100% { transform: scale(1.1); opacity: 1;} }
+
+.ho-ai-left-col h3 { font-family: 'Fraunces', serif; font-size: 1.5rem; margin-bottom: 0.6rem; color: #fff; line-height: 1.2;}
+.ho-ai-left-col > p { font-size: 0.92rem; color: rgba(255,255,255,0.85); font-weight: 500; line-height: 1.6; margin-bottom: 1.3rem;}
+
+.ho-ai-observations { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+.ho-obs-card { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 0.9rem 1rem; border-radius: 12px; backdrop-filter: blur(10px);}
+.ho-obs-card strong { display: block; font-size: 0.78rem; color: var(--ho-mint-400); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem;}
+.ho-obs-card p { font-size: 0.85rem; line-height: 1.5; margin: 0; font-weight: 500;}
+
+/* ========================================================
+   ✨ UPDATED NEON GRAPH & INFORMATIVE LEGEND CARDS ✨
+======================================================== */
+.ho-ai-right-col { 
+  flex: 1; padding: 2.4rem; display: flex; flex-direction: column; 
+  justify-content: center; align-items: stretch; position: relative; z-index: 2; 
+}
+.ho-orbit-glass-card {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); padding: 2rem;
+  border-radius: 24px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  display: flex; align-items: center; justify-content: center; gap: 3rem; width: 100%; height: 100%;
+}
+
+/* Bulletproof Container to prevent SVG drift */
+.ho-neon-orbit-container {
+  position: relative; width: 170px; height: 170px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+/* The rotation happens safely on the SVG Wrapper, NOT the circles */
+.ho-neon-svg-wrapper {
+  position: absolute; inset: 0; transform: rotate(-90deg); filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));
+}
+.ho-neon-svg { width: 100%; height: 100%; overflow: visible; }
+.ho-ring-bg { fill: none; stroke: rgba(255,255,255,0.12); stroke-width: 12; }
+.ho-ring-fill { fill: none; stroke-width: 12; stroke-linecap: round; }
+
+/* Pure CSS Keyframe Animation - No JS needed! */
+@keyframes fillActivity { from { stroke-dashoffset: 471.2; } to { stroke-dashoffset: 70.6; } } /* 85% */
+@keyframes fillNutrition { from { stroke-dashoffset: 345.6; } to { stroke-dashoffset: 89.8; } } /* 74% */
+@keyframes fillSleep { from { stroke-dashoffset: 219.9; } to { stroke-dashoffset: 76.9; } }    /* 65% */
+
+.ho-ring-neon-1 { stroke: var(--ho-mint-400); stroke-dasharray: 471.2; animation: fillActivity 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s; }
+.ho-ring-neon-2 { stroke: var(--ho-coral); stroke-dasharray: 345.6; animation: fillNutrition 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s; }
+.ho-ring-neon-3 { stroke: var(--ho-blue); stroke-dasharray: 219.9; animation: fillSleep 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s; }
+
+.ho-neon-score {
+  position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff;
+}
+.ho-neon-score strong { font-family: 'JetBrains Mono', monospace; font-size: 2.2rem; font-weight: 800; line-height: 1; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+.ho-neon-score span { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.8); font-weight: 700; margin-top: 4px; }
+
+/* New Informative Metric List */
+.ho-metric-list { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; min-width: 180px; }
+.ho-metric-card {
+  display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.15); 
+  padding: 0.9rem 1.2rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); transition: 0.3s;
+}
+.ho-metric-card:hover { background: rgba(0,0,0,0.25); transform: translateX(4px); border-color: rgba(255,255,255,0.15); }
+.ho-metric-left { display: flex; align-items: center; gap: 0.8rem; }
+.ho-metric-dot { width: 10px; height: 10px; border-radius: 50%; }
+.ho-metric-label { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #fff; letter-spacing: 0.05em; }
+.ho-metric-val { font-family: 'JetBrains Mono', monospace; font-size: 1.15rem; color: #fff; font-weight: 800; }
+
+/* --- 2. FOCUS AREA & NUTRITION OVERVIEW --- */
+.ho-focus-panel { grid-column: span 4; background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(251, 228, 222, 0.4)); }
+.ho-focus-list { display: flex; flex-direction: column; gap: 0.8rem; }
+.ho-focus-item { background: #fff; border: 1px solid var(--ho-glass-border-subtle); padding: 1rem 1.2rem; border-radius: 12px; display: flex; align-items: center; gap: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: transform 0.2s ease;}
+.ho-focus-item:hover { transform: translateX(4px); border-color: var(--ho-coral); }
+.ho-focus-num { width: 28px; height: 28px; background: var(--ho-coral-soft); color: var(--ho-danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;}
+.ho-focus-item span { font-size: 0.95rem; font-weight: 700; color: var(--ho-teal-900);}
+
+.ho-nutrition-panel { grid-column: span 8; }
+.ho-nutrition-bars { display: flex; flex-direction: column; gap: 1.2rem; justify-content: center; flex: 1;}
+.ho-nb-item { display: flex; flex-direction: column; gap: 0.4rem; }
+.ho-nb-top { display: flex; justify-content: space-between; font-size: 0.88rem; font-weight: 700; color: var(--ho-teal-900); }
+.ho-nb-top span { font-family: 'JetBrains Mono', monospace; color: var(--ho-text-muted); font-size: 0.8rem;}
+.ho-progress-track { width: 100%; height: 10px; background: rgba(13, 122, 110, 0.1); border-radius: 999px; overflow: hidden; }
+.ho-progress-fill { height: 100%; border-radius: 999px; width: 0%; transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* --- 3. MEALS & SUGGESTIONS --- */
+.ho-meal-panel { grid-column: span 8; }
+.ho-meal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
+.ho-meal-card { background: rgba(255,255,255,0.85); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: 0.2s;}
+.ho-meal-card:hover { border-color: var(--ho-teal-600); transform: translateY(-2px); background: #fff;}
+.ho-mc-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.ho-mc-top strong { font-size: 1.05rem; font-weight: 800; color: var(--ho-teal-900); display: block; margin-bottom: 0.2rem;}
+.ho-mc-top span { font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600;}
+.ho-mc-cals { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 800; color: var(--ho-teal-600);}
+.ho-food-items { font-size: 0.85rem; color: var(--ho-text-muted); line-height: 1.6; font-weight: 500;}
+
+.ho-meal-sugg-panel { grid-column: span 4; }
+.ho-sugg-list { display: flex; flex-direction: column; gap: 1rem; flex: 1; overflow-y: auto;}
+.ho-sugg-card { background: #fff; border: 1px dashed var(--ho-teal-600); padding: 1rem; border-radius: 12px; display: flex; flex-direction: column; gap: 0.4rem; transition: transform 0.2s ease;}
+.ho-sugg-card:hover { transform: translateX(3px); border-style: solid; box-shadow: 0 6px 15px rgba(13, 122, 110, 0.08); }
+.ho-sugg-card strong { font-size: 0.85rem; color: var(--ho-teal-900); font-weight: 800; text-transform: uppercase;}
+.ho-sugg-card p { font-size: 0.85rem; color: var(--ho-text-muted); line-height: 1.5; margin: 0; font-weight: 500;}
+.ho-ai-reason { font-size: 0.75rem; color: var(--ho-coral); font-weight: 600; display: flex; gap: 0.4rem; align-items: flex-start; margin-top: 0.4rem; background: var(--ho-coral-soft); padding: 6px 10px; border-radius: 6px;}
+
+/* --- 4. HYDRATION, ACTIVITY, SLEEP --- */
+.ho-hydro-panel { grid-column: span 4; display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center;}
+.ho-hydro-panel .ho-panel-header { width: 100%; }
+.ho-water-glass { position: relative; width: 80px; height: 110px; border: 3px solid rgba(52, 152, 219, 0.2); border-radius: 10px 10px 20px 20px; overflow: hidden; background: #fff; margin: 0.5rem 0; box-shadow: inset 0 0 20px rgba(52, 152, 219, 0.05);}
+.ho-water-liquid { position: absolute; bottom: 0; left: 0; right: 0; height: 72%; background: linear-gradient(180deg, #5dade2, #2980b9); transition: height 0.6s ease;}
+.ho-water-num { font-family: 'JetBrains Mono', monospace; font-size: 1.8rem; font-weight: 800; color: #2980b9; margin-bottom: 0.2rem;}
+.ho-water-actions { display: flex; gap: 0.6rem; width: 100%; justify-content: center; margin-top: auto;}
+.ho-water-btn { background: rgba(52, 152, 219, 0.1); color: #2980b9; border: none; padding: 0.6rem; border-radius: 10px; font-weight: 800; font-size: 0.8rem; cursor: pointer; flex: 1; transition: 0.2s;}
+.ho-water-btn:hover { background: #3498db; color: #fff; transform: translateY(-2px);}
+
+.ho-act-panel { grid-column: span 4; display: flex; flex-direction: column;}
+.ho-act-stat { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 1rem 1.2rem; border-radius: 12px; border: 1px solid var(--ho-glass-border-subtle); margin-bottom: 0.8rem; transition: transform 0.2s ease;}
+.ho-act-stat:hover { transform: translateX(3px); border-color: var(--ho-teal-600); }
+.ho-act-stat span { font-size: 0.85rem; font-weight: 700; color: var(--ho-text-muted); }
+.ho-act-stat strong { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; color: var(--ho-teal-900); }
+.ho-insight-text { font-size: 0.85rem; color: var(--ho-teal-900); background: rgba(13, 122, 110, 0.05); padding: 1rem; border-radius: 12px; font-weight: 500; line-height: 1.5; margin-top: auto;}
+
+.ho-sleep-panel { grid-column: span 4; display: flex; flex-direction: column;}
+
+/* --- 5. HABITS & WELLNESS PLAN --- */
+.ho-habits-panel { grid-column: span 4; }
+.ho-habits-list { display: flex; flex-direction: column; gap: 0.6rem; overflow-y: auto; max-height: 250px;}
+.ho-habit-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 0.8rem 1.2rem; border-radius: 10px; border: 1px solid var(--ho-glass-border-subtle); transition: transform 0.2s ease;}
+.ho-habit-item:hover { transform: translateX(3px); }
+.ho-habit-label { display: flex; align-items: center; gap: 0.8rem; font-size: 0.85rem; font-weight: 700; color: var(--ho-teal-900); cursor: pointer;}
+.ho-habit-checkbox { width: 18px; height: 18px; accent-color: var(--ho-teal-600); cursor: pointer;}
+
+.ho-plan-panel { grid-column: span 8; }
+.ho-plan-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
+.ho-plan-block { background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 14px; padding: 1.2rem; transition: 0.2s ease;}
+.ho-plan-block:hover { transform: translateY(-2px); border-color: var(--ho-teal-600); box-shadow: 0 6px 15px rgba(13, 122, 110, 0.05);}
+.ho-plan-block h4 { font-size: 0.85rem; font-weight: 800; color: var(--ho-teal-900); text-transform: uppercase; margin-bottom: 0.8rem; border-bottom: 1px dashed var(--ho-glass-border-subtle); padding-bottom: 0.4rem;}
+.ho-plan-block ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;}
+.ho-plan-block li { font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 500; display: flex; align-items: flex-start; gap: 0.5rem;}
+.ho-plan-block li::before { content: '•'; color: var(--ho-mint-400); font-weight: 800;}
+
+/* --- 6. WEEKLY SUMMARY, GOALS, ASK AI --- */
+.ho-goals-panel { grid-column: span 6; }
+.ho-goal-list { display: flex; flex-direction: column; gap: 1rem; }
+.ho-goal-item { display: flex; flex-direction: column; gap: 0.4rem; background: #fff; padding: 1.2rem; border-radius: 14px; border: 1px solid var(--ho-glass-border-subtle); transition: 0.2s ease;}
+.ho-goal-item:hover { transform: translateX(3px); }
+.ho-goal-top { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 700; color: var(--ho-teal-900); }
+
+.ho-weekly-panel { grid-column: span 6; background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(223, 241, 236, 0.6));}
+.ho-weekly-text { font-size: 0.95rem; line-height: 1.6; color: var(--ho-teal-900); font-weight: 500; margin-bottom: 1rem;}
+.ho-weekly-focus { background: #fff; padding: 1.2rem; border-radius: 12px; border: 1px solid var(--ho-mint-400); box-shadow: 0 4px 15px rgba(13, 122, 110, 0.05);}
+.ho-weekly-focus strong { display: block; font-size: 0.85rem; text-transform: uppercase; color: var(--ho-teal-700); margin-bottom: 0.5rem;}
+
+.ho-ask-ai-panel { grid-column: span 12; background: #fff; align-items: center; text-align: center; padding: 3rem 2rem;}
+.ho-ai-input-wrap { display: flex; gap: 1rem; width: 100%; max-width: 600px; margin: 1.5rem auto 0;}
+.ho-ai-input-wrap input { flex: 1; padding: 1rem 1.5rem; border-radius: 999px; border: 1px solid var(--ho-glass-border-subtle); background: var(--ho-bg-airy); outline: none; font-family: inherit; font-size: 0.95rem; transition: 0.2s;}
+.ho-ai-input-wrap input:focus { border-color: var(--ho-teal-600); box-shadow: 0 0 0 4px rgba(13, 122, 110, 0.1); background: #fff;}
+.ho-suggestions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; margin-top: 1rem;}
+.ho-sugg-chip { font-size: 0.8rem; font-weight: 600; color: var(--ho-teal-700); background: rgba(13, 122, 110, 0.08); padding: 6px 12px; border-radius: 999px; cursor: pointer; transition: 0.2s;}
+.ho-sugg-chip:hover { background: rgba(13, 122, 110, 0.15); transform: translateY(-2px);}
+
+.ho-disclaimer-panel { grid-column: span 12; background: transparent; border: 1px dashed var(--ho-glass-border-subtle); box-shadow: none; padding: 1.5rem; text-align: center; }
+.ho-disclaimer-panel p { font-size: 0.8rem; color: var(--ho-text-muted); line-height: 1.5; font-weight: 500; margin: 0 auto; max-width: 800px;}
+
+/* ==========================================================
+   RESPONSIVE OVERRIDES
+========================================================== */
 @media (max-width: 1200px) {
-  .bento { grid-template-columns: repeat(8, 1fr); }
-  .c-macros { grid-column: span 8; }
-  .c-water { grid-column: span 8; }
-  .c-dietitian, .c-meals { grid-column: span 4; }
-  .c-habits { grid-column: span 8; }
-  .habit-grid { grid-template-columns: repeat(2, 1fr); }
+  .ho-ai-overview { flex-direction: column; }
+  .ho-ai-left-col { padding: 2rem; border-bottom: 1px dashed rgba(255,255,255,0.2); flex: none; }
+  .ho-ai-right-col { padding: 2rem; }
+
+  .ho-focus-panel, .ho-nutrition-panel, .ho-meal-panel, .ho-meal-sugg-panel, .ho-hydro-panel,
+  .ho-act-panel, .ho-sleep-panel, .ho-habits-panel, .ho-plan-panel, .ho-goals-panel, .ho-weekly-panel { grid-column: span 12; }
+  .ho-meal-grid, .ho-plan-grid { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 768px) {
-  .shell { flex-direction: column; width: 100%; overflow-x: hidden; }
-  .topbar { padding: 1.2rem 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
-  .bento-wrapper { padding: 1.5rem; }
-  .bento { grid-template-columns: 1fr; }
-  .c-macros, .c-water, .c-dietitian, .c-meals, .c-habits { grid-column: span 1; }
-  .macro-layout { flex-direction: column; text-align: center; }
-  .habit-grid { grid-template-columns: 1fr; }
+
+@media screen and (max-width: 768px) {
+  body, html { height: auto !important; min-height: 100vh !important; overflow-x: hidden !important; background: #edf6f4 !important; }
+  .ho-main-content { height: auto !important; min-height: 100vh !important; padding-top: 5.6rem !important; overflow-y: visible !important; }
+
+  .ho-topbar {
+    flex-direction: column; align-items: flex-start; padding: 0 1.25rem 0.5rem !important; gap: 0.8rem;
+    position: static !important; background: transparent !important; border: none !important;
+  }
+  .ho-topbar-actions { width: 100%; display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .ho-topbar-actions button, .ho-topbar-actions a { flex: 1; min-width: 130px; text-align: center; padding: 0.9rem;}
+  .ho-topbar h1 { font-size: 1.55rem; }
+
+  .ho-workspace-grid {
+    grid-template-columns: 1fr !important; padding: 0.5rem 1.25rem 2.5rem !important; gap: 1.2rem !important;
+    display: flex !important; flex-direction: column !important; flex: 1 0 auto !important;
+  }
+
+  .ho-panel { height: auto !important; min-height: 0 !important; padding: 1.4rem !important; border-radius: 22px !important; flex: none !important; }
+
+  .ho-ai-overview { padding: 0 !important; }
+  .ho-ai-left-col { padding: 1.4rem !important; }
+  .ho-ai-right-col { padding: 1.4rem !important; flex-direction: column; gap: 2rem;}
+  .ho-orbit-glass-card { flex-direction: column; padding: 1.5rem; gap: 1.5rem; }
+  
+  .ho-ai-icon { display: none; }
+  .ho-ai-observations { grid-template-columns: 1fr !important; }
+  
+  .ho-meal-grid, .ho-plan-grid { grid-template-columns: 1fr !important; }
+
+  .ho-hydro-panel { flex-direction: row; flex-wrap: wrap; text-align: left; }
+  .ho-hydro-panel .ho-panel-header { width: 100%; margin-bottom: 0;}
+  .ho-water-glass { width: 60px; height: 80px; margin: 0;}
+  .ho-water-actions { width: 100%; margin-top: 1rem;}
+
+  .ho-ai-input-wrap { flex-direction: column; }
+  .ho-ai-input-wrap button { width: 100%; }
 }
+
 </style>
 </head>
 <body>
 
-<div class="ambient"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+<div class="ho-ambient-canvas">
+  <div class="ho-glow-orb ho-orb-1"></div>
+  <div class="ho-glow-orb ho-orb-2"></div>
+  <div class="ho-glow-orb ho-orb-3"></div>
+</div>
 
-<div class="shell">
+<div class="ho-app-layout">
+
   <!-- UNIVERSAL SIDEBAR IMPORT -->
   <%- include('../partials/sidebar') %>
 
-  <main class="main">
-    <header class="topbar">
+  <!-- SCOPED MAIN CONTENT -->
+  <main class="ho-main-content">
+
+    <header class="ho-topbar">
       <div>
-        <h1>Nutrition & Lifestyle</h1>
-        <div class="sub">Caloric tracking, habit monitoring, and AI-driven dietary coaching.</div>
+        <h1><span class="ho-brand-text">Health<span style="color:var(--ho-coral);">Orbit</span></span></h1>
+        <p style="font-size: 1.2rem; font-weight: 800; color: var(--ho-teal-900); margin-bottom: 0.3rem;">Nutrition & Lifestyle</p>
+        <p>Build healthier daily habits by tracking nutrition, hydration, activity and sleep.</p>
       </div>
-      <div class="actions">
-        <button class="btn primary">+ Log Meal</button>
+      <div class="ho-topbar-actions">
+        <button class="ho-btn-primary">+ Log Meal</button>
+        <button class="ho-btn-primary" onclick="addWater()">+ Add Water</button>
+        <a href="#ask-ai" class="ho-btn-ghost">Ask AI</a>
       </div>
     </header>
 
-    <div class="bento-wrapper">
-      <div class="bento">
+    <div class="ho-workspace-grid">
 
-        <!-- 1. MACROS HERO (Spans 8 Cols) -->
-        <div class="card c-macros shine-effect">
-          <div class="macro-layout">
-            <div class="macro-text">
-              <h2>You have 520 kcal remaining today.</h2>
-              <p>Your data is currently syncing with MyFitnessPal. You are on track to hit your protein targets, which aligns with your muscle recovery goals.</p>
+      <!-- 1. AI PERSONALIZED OVERVIEW -->
+      <section class="ho-panel ho-ai-overview ho-delay-1">
+
+        <div class="ho-ai-left-col">
+          <div class="ho-ai-header">
+            <div class="ho-ai-icon">✨</div>
+            <h3>Your Personalized Health & Lifestyle Insights</h3>
+          </div>
+          <p>HealthOrbit AI has processed your longitudinal data. Based on your recorded parameters, here is your current holistic progress overview.</p>
+
+          <div class="ho-ai-observations">
+            <div class="ho-obs-card">
+              <strong>🌙 Sleep</strong>
+              <p>Average duration this week is below your 7–8 hour goal.</p>
+            </div>
+            <div class="ho-obs-card">
+              <strong>🚶 Activity</strong>
+              <p>Activity level increased 12% compared with last week.</p>
+            </div>
+            <div class="ho-obs-card">
+              <strong>💧 Hydration</strong>
+              <p>Water intake was below your 2.5L target on several days.</p>
+            </div>
+            <div class="ho-obs-card">
+              <strong>🥗 Nutrition</strong>
+              <p>Recorded meals show lower protein intake than your goal.</p>
+            </div>
+          </div>
+
+          <a href="#ask-ai" class="ho-btn-ghost" style="align-self: flex-start; margin-top: 1.2rem; border-color: rgba(255,255,255,0.3); color: #fff; background: rgba(255,255,255,0.1);">Chat about insights →</a>
+        </div>
+
+        <!-- NEW INFORMATIVE RIGHT COLUMN (Neon Rings + Stats Cards) -->
+        <div class="ho-ai-right-col">
+          <div class="ho-orbit-glass-card">
+
+            <!-- NEON ORBIT GRAPH (CSS Handled, No Drop Shadow Bug) -->
+            <div class="ho-neon-orbit-container">
+              <div class="ho-neon-svg-wrapper">
+                <svg class="ho-neon-svg" viewBox="0 0 200 200">
+                  <!-- Background Rings -->
+                  <circle class="ho-ring-bg" cx="100" cy="100" r="75"></circle>
+                  <circle class="ho-ring-bg" cx="100" cy="100" r="55"></circle>
+                  <circle class="ho-ring-bg" cx="100" cy="100" r="35"></circle>
+
+                  <!-- Animated Foreground Rings -->
+                  <circle class="ho-ring-fill ho-ring-neon-1" cx="100" cy="100" r="75"></circle>
+                  <circle class="ho-ring-fill ho-ring-neon-2" cx="100" cy="100" r="55"></circle>
+                  <circle class="ho-ring-fill ho-ring-neon-3" cx="100" cy="100" r="35"></circle>
+                </svg>
+              </div>
+              <div class="ho-neon-score">
+                <strong>82</strong>
+                <span>Score</span>
+              </div>
+            </div>
+
+            <!-- INFORMATIVE METRICS LIST -->
+            <div class="ho-metric-list">
               
-              <div class="macro-stats">
-                <div class="m-stat">
-                  <span style="color: var(--mist);">Carbs</span>
-                  <strong>180g <small style="font-size:0.7rem; font-weight:400;">/ 250g</small></strong>
+              <div class="ho-metric-card">
+                <div class="ho-metric-left">
+                  <div class="ho-metric-dot" style="background: var(--ho-mint-400); box-shadow: 0 0 6px var(--ho-mint-400);"></div>
+                  <span class="ho-metric-label">Activity Target</span>
                 </div>
-                <div class="m-stat">
-                  <span style="color: var(--coral);">Protein</span>
-                  <strong>115g <small style="font-size:0.7rem; font-weight:400;">/ 140g</small></strong>
-                </div>
-                <div class="m-stat">
-                  <span style="color: #f1c40f;">Fats</span>
-                  <strong>45g <small style="font-size:0.7rem; font-weight:400;">/ 65g</small></strong>
-                </div>
+                <strong class="ho-metric-val">85%</strong>
               </div>
+
+              <div class="ho-metric-card">
+                <div class="ho-metric-left">
+                  <div class="ho-metric-dot" style="background: var(--ho-coral); box-shadow: 0 0 6px var(--ho-coral);"></div>
+                  <span class="ho-metric-label">Nutrition Goal</span>
+                </div>
+                <strong class="ho-metric-val">74%</strong>
+              </div>
+
+              <div class="ho-metric-card">
+                <div class="ho-metric-left">
+                  <div class="ho-metric-dot" style="background: #3498db; box-shadow: 0 0 6px #3498db;"></div>
+                  <span class="ho-metric-label">Sleep Quality</span>
+                </div>
+                <strong class="ho-metric-val">65%</strong>
+              </div>
+
             </div>
 
-            <div class="macro-chart">
-              <svg viewBox="0 0 200 200">
-                <circle class="m-circle-bg" cx="100" cy="100" r="85"></circle>
-                <!-- Carbs -->
-                <circle class="m-circle" cx="100" cy="100" r="85" stroke="var(--mist)" stroke-dasharray="534" style="stroke-dashoffset: 200;"></circle>
-                <!-- Protein -->
-                <circle class="m-circle" cx="100" cy="100" r="65" stroke="var(--coral)" stroke-dasharray="408" style="stroke-dashoffset: 80;"></circle>
-                <!-- Fats -->
-                <circle class="m-circle" cx="100" cy="100" r="45" stroke="#f1c40f" stroke-dasharray="282" style="stroke-dashoffset: 100;"></circle>
-              </svg>
-              <div class="macro-center">
-                <strong>1,880</strong>
-                <span>kcal Eaten</span>
-              </div>
-            </div>
           </div>
         </div>
+      </section>
 
-        <!-- 2. HYDRATION TRACKER (Spans 4 Cols) -->
-        <div class="card c-water shine-effect">
-          <div class="card-head" style="margin-bottom: 0;">
-            <h3 style="color: #0284c7;">Hydration</h3>
-            <button class="btn" style="background: rgba(255,255,255,0.5); color: #0284c7; padding: 4px 10px;">+ 250ml</button>
+      <!-- 2. YOUR FOCUS THIS WEEK -->
+      <section class="ho-panel ho-focus-panel ho-delay-2">
+        <div class="ho-panel-header"><h2>Your Focus This Week</h2></div>
+        <div class="ho-focus-list">
+          <div class="ho-focus-item"><div class="ho-focus-num">1</div><span>Sleep Consistency</span></div>
+          <div class="ho-focus-item"><div class="ho-focus-num">2</div><span>Hydration Target (2.5L)</span></div>
+          <div class="ho-focus-item"><div class="ho-focus-num">3</div><span>Protein Intake</span></div>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--ho-text-muted); margin-top: 1rem; font-weight: 500; line-height: 1.5;">Focus areas dynamically shift based on your recorded measurements and goals.</p>
+      </section>
+
+      <!-- 3. NUTRITION OVERVIEW -->
+      <section class="ho-panel ho-nutrition-panel ho-delay-2">
+        <div class="ho-panel-header"><h2>Nutrition Overview</h2><span class="ho-badge">Today</span></div>
+        <div class="ho-nutrition-bars">
+          <div class="ho-nb-item">
+            <div class="ho-nb-top">Calories <span>1,640 / 2,000 kcal (82%)</span></div>
+            <div class="ho-progress-track"><div class="ho-progress-fill" style="width: 82%;"></div></div>
           </div>
-          <div class="water-content">
-            <div class="water-glass"><div class="water-fill"></div></div>
-            <div class="water-text">
-              <strong>1.8L</strong>
-              <span>Target: 3.0L / Day</span>
-            </div>
+          <div class="ho-nb-item">
+            <div class="ho-nb-top">Protein <span>72g / 90g (80%)</span></div>
+            <div class="ho-progress-track"><div class="ho-progress-fill" style="width: 80%; background: var(--ho-teal-700);"></div></div>
+          </div>
+          <div class="ho-nb-item">
+            <div class="ho-nb-top">Carbohydrates <span>185g / 250g (74%)</span></div>
+            <div class="ho-progress-track"><div class="ho-progress-fill" style="width: 74%; background: var(--ho-warning);"></div></div>
+          </div>
+          <div class="ho-nb-item">
+            <div class="ho-nb-top">Fats <span>54g / 65g (83%)</span></div>
+            <div class="ho-progress-track"><div class="ho-progress-fill" style="width: 83%; background: var(--ho-coral);"></div></div>
           </div>
         </div>
+      </section>
 
-        <!-- 3. AI DIETITIAN (Spans 6 Cols) -->
-        <div class="card c-dietitian shine-effect">
-          <div class="card-head">
-            <h3>Clinical Dietitian</h3>
-            <span style="font-size: 0.75rem; color: var(--ink-soft); font-weight: 700; background: var(--sage-soft); padding: 3px 8px; border-radius: 6px;">Gemini Powered</span>
+      <!-- 4. TODAY'S MEALS -->
+      <section class="ho-panel ho-meal-panel ho-delay-3">
+        <div class="ho-panel-header"><h2>Today's Meals</h2></div>
+        <div class="ho-meal-grid">
+          <div class="ho-meal-card">
+            <div class="ho-mc-top"><div><strong>Breakfast</strong><span>8:30 AM</span></div><div class="ho-mc-cals">420 kcal</div></div>
+            <div class="ho-food-items">Oatmeal + Banana + Milk</div>
           </div>
-          
-          <div class="diet-box">
-            <div class="diet-head">
-              <div class="diet-icon">✨</div>
-              <h4>Targeting: Vitamin D Deficiency</h4>
-            </div>
-            <p>Based on your latest CBC report (Aug 15) which flagged Vitamin D at 18 ng/mL, I recommend incorporating these specific dietary sources alongside your prescribed 60k IU supplement protocol to improve absorption.</p>
-            <div class="food-recs">
-              <span class="food-chip">🐟 Wild-caught Salmon</span>
-              <span class="food-chip">🥚 Egg Yolks</span>
-              <span class="food-chip">🍄 UV-exposed Mushrooms</span>
-              <span class="food-chip">🥛 Fortified Almond Milk</span>
-            </div>
+          <div class="ho-meal-card">
+            <div class="ho-mc-top"><div><strong>Lunch</strong><span>1:20 PM</span></div><div class="ho-mc-cals">560 kcal</div></div>
+            <div class="ho-food-items">Rice + Dal + Mixed Vegetables</div>
           </div>
-        </div>
-
-        <!-- 4. RECENT MEALS (Spans 6 Cols) -->
-        <div class="card c-meals shine-effect">
-          <div class="card-head">
-            <h3>Recent Logs</h3>
-            <span style="font-size: 0.8rem; color: var(--coral); font-weight: 700; cursor: pointer;">View All</span>
+          <div class="ho-meal-card">
+            <div class="ho-mc-top"><div><strong>Snack</strong><span>5:00 PM</span></div><div class="ho-mc-cals">250 kcal</div></div>
+            <div class="ho-food-items">Fresh Fruit Salad</div>
           </div>
-
-          <div class="meal-feed">
-            <div class="meal-item">
-              <div class="meal-info">
-                <span class="m-icon">🥗</span>
-                <div class="m-details">
-                  <strong>Grilled Chicken Salad</strong>
-                  <span>Lunch • 1:30 PM</span>
-                </div>
-              </div>
-              <span class="m-calories">420 kcal</span>
-            </div>
-
-            <div class="meal-item">
-              <div class="meal-info">
-                <span class="m-icon">🍳</span>
-                <div class="m-details">
-                  <strong>Oatmeal & 2 Boiled Eggs</strong>
-                  <span>Breakfast • 9:00 AM</span>
-                </div>
-              </div>
-              <span class="m-calories">380 kcal</span>
-            </div>
-            
-            <div class="meal-item">
-              <div class="meal-info">
-                <span class="m-icon">☕</span>
-                <div class="m-details">
-                  <strong>Black Coffee</strong>
-                  <span>Morning • 7:30 AM</span>
-                </div>
-              </div>
-              <span class="m-calories">5 kcal</span>
-            </div>
+          <div class="ho-meal-card" style="border: 2px dashed var(--ho-glass-border-subtle); background: rgba(255,255,255,0.3); text-align: center; justify-content: center; align-items: center; padding: 1.5rem; cursor: pointer;" onclick="alert('Meal Logger Placeholder')">
+            <strong style="color: var(--ho-teal-900); margin-bottom: 0.4rem;">Dinner</strong>
+            <span style="font-size: 0.8rem; color: var(--ho-text-muted); margin-bottom: 1rem;">Not logged yet</span>
+            <button class="ho-btn-ghost" style="padding: 0.5rem 1rem; font-size: 0.75rem;">+ Add</button>
           </div>
         </div>
+      </section>
 
-        <!-- 5. WELLNESS HABITS (Spans 12 Cols) -->
-        <div class="card c-habits shine-effect">
-          <div class="card-head">
-            <h3>Daily Wellness Habits</h3>
-            <span style="font-size: 0.8rem; color: var(--ink-soft);">Reset at Midnight</span>
+      <!-- 5. PERSONALIZED MEAL SUGGESTIONS -->
+      <section class="ho-panel ho-meal-sugg-panel ho-delay-3">
+        <div class="ho-panel-header"><h2>Personalized Suggestions</h2></div>
+        <div class="ho-sugg-list">
+          <div class="ho-sugg-card">
+            <strong>Proteins & Greens</strong>
+            <p>Recorded meals show lower protein intake than your goal. Consider more protein-rich foods (lentils, paneer, lean meats) at dinner.</p>
+            <div class="ho-ai-reason"><span>✨</span> Insight derived from daily macro deficit.</div>
           </div>
-
-          <div class="habit-grid">
-            <div class="habit-card done" onclick="this.classList.toggle('done')">
-              <div class="h-info">
-                <span style="font-size: 1.2rem;">🧘</span>
-                <strong>10 Min Meditation</strong>
-              </div>
-              <div class="checkbox">✓</div>
-            </div>
-
-            <div class="habit-card" onclick="this.classList.toggle('done')">
-              <div class="h-info">
-                <span style="font-size: 1.2rem;">🌞</span>
-                <strong>15 Min Morning Sun</strong>
-              </div>
-              <div class="checkbox">✓</div>
-            </div>
-
-            <div class="habit-card" onclick="this.classList.toggle('done')">
-              <div class="h-info">
-                <span style="font-size: 1.2rem;">📱</span>
-                <strong>No Screen 1hr Pre-Sleep</strong>
-              </div>
-              <div class="checkbox">✓</div>
-            </div>
-
-            <div class="habit-card" onclick="this.classList.toggle('done')">
-              <div class="h-info">
-                <span style="font-size: 1.2rem;">⏱️</span>
-                <strong>16h Intermittent Fast</strong>
-              </div>
-              <div class="checkbox">✓</div>
-            </div>
+          <div class="ho-sugg-card">
+            <strong>Hydration Pacing</strong>
+            <p>Water intake has been below target. Keep a bottle visible and drink gradually through the afternoon.</p>
           </div>
-
         </div>
+      </section>
 
-      </div>
+      <!-- 6. HYDRATION -->
+      <section class="ho-panel ho-hydro-panel ho-delay-4">
+        <div class="ho-panel-header" style="width:100%;"><h2>Hydration</h2></div>
+        <div class="ho-water-glass"><div class="ho-water-liquid" style="height: 72%;" id="waterLevel"></div></div>
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <div class="ho-water-num" id="waterDisplay">1.8 L</div>
+          <p style="font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600;">Target: 2.5 L</p>
+        </div>
+        <div class="ho-water-actions">
+          <button class="ho-water-btn" onclick="addWater(0.25)">+250 ml</button>
+          <button class="ho-water-btn" onclick="addWater(0.5)">+500 ml</button>
+        </div>
+      </section>
+
+      <!-- 7. ACTIVITY -->
+      <section class="ho-panel ho-act-panel ho-delay-4">
+        <div class="ho-panel-header"><h2>Activity & Movement</h2></div>
+        <div class="ho-act-stat"><span>Steps</span><strong>8,420</strong></div>
+        <div class="ho-act-stat"><span>Active Min</span><strong>42 min</strong></div>
+        <div class="ho-insight-text">✨ Activity level was higher this week than last. Great job maintaining momentum!</div>
+      </section>
+
+      <!-- 8. SLEEP -->
+      <section class="ho-panel ho-sleep-panel ho-delay-4">
+        <div class="ho-panel-header"><h2>Sleep & Recovery</h2></div>
+        <div class="ho-act-stat"><span>Duration</span><strong>7h 12m</strong></div>
+        <div class="ho-act-stat"><span>Target</span><strong>7-8 h</strong></div>
+        <div class="ho-insight-text" style="background: var(--ho-coral-soft); color: var(--ho-danger);">✨ Recent sleep duration has been lower than goal. Consider reducing stimulating activities close to bedtime.</div>
+      </section>
+
+      <!-- 9. HABITS -->
+      <section class="ho-panel ho-habits-panel">
+        <div class="ho-panel-header"><h2>Daily Lifestyle Habits</h2><span class="ho-badge" id="habitBadge">3/5</span></div>
+        <div class="ho-habits-list">
+          <div class="ho-habit-item"><label class="ho-habit-label"><input type="checkbox" class="ho-habit-checkbox" checked> Drink enough water</label></div>
+          <div class="ho-habit-item"><label class="ho-habit-label"><input type="checkbox" class="ho-habit-checkbox" checked> Physical activity</label></div>
+          <div class="ho-habit-item"><label class="ho-habit-label"><input type="checkbox" class="ho-habit-checkbox" checked> Eat balanced meals</label></div>
+          <div class="ho-habit-item"><label class="ho-habit-label"><input type="checkbox" class="ho-habit-checkbox"> Sleep on time</label></div>
+          <div class="ho-habit-item"><label class="ho-habit-label"><input type="checkbox" class="ho-habit-checkbox"> Limit processed food</label></div>
+        </div>
+      </section>
+
+      <!-- 10. WELLNESS PLAN -->
+      <section class="ho-panel ho-plan-panel">
+        <div class="ho-panel-header"><h2>Today's Wellness Plan</h2></div>
+        <div class="ho-plan-grid">
+          <div class="ho-plan-block"><h4>Morning</h4><ul><li>Hydrate immediately after waking</li><li>Balanced breakfast (Carbs + Protein)</li><li>Light stretching or movement</li></ul></div>
+          <div class="ho-plan-block"><h4>Afternoon</h4><ul><li>Balanced lunch to prevent crashes</li><li>Set a water reminder every hour</li><li>Short 5-min activity break</li></ul></div>
+          <div class="ho-plan-block"><h4>Evening</h4><ul><li>Light physical activity / Walk</li><li>Balanced, lighter dinner</li><li>Reduce excessive screen use</li></ul></div>
+          <div class="ho-plan-block"><h4>Night</h4><ul><li>Maintain a consistent bedtime</li><li>Prepare environment for adequate sleep</li></ul></div>
+        </div>
+      </section>
+
+      <!-- 11. WEEKLY SUMMARY -->
+      <section class="ho-panel ho-weekly-panel">
+        <div class="ho-panel-header"><h2>Your Week in Review</h2></div>
+        <p class="ho-weekly-text">This week, activity increased compared with last week, while average sleep duration decreased slightly. Hydration target was achieved on 4 of 7 days.</p>
+        <div class="ho-weekly-focus"><strong>Suggested focus for next week:</strong> Improve sleep consistency and maintain regular hydration.</div>
+      </section>
+
+      <!-- 12. GOALS -->
+      <section class="ho-panel ho-goals-panel">
+        <div class="ho-panel-header"><h2>My Wellness Goals</h2></div>
+        <div class="ho-goal-list">
+          <div class="ho-goal-item"><div class="ho-goal-top">Drink 2.5 L water <span>72%</span></div><div class="ho-progress-track"><div class="ho-progress-fill" style="width: 72%; background: #3498db;"></div></div></div>
+          <div class="ho-goal-item"><div class="ho-goal-top">Walk 8,000 steps <span>100%</span></div><div class="ho-progress-track"><div class="ho-progress-fill" style="width: 100%; background: #27ae60;"></div></div></div>
+          <div class="ho-goal-item"><div class="ho-goal-top">Sleep 7 hours <span>92%</span></div><div class="ho-progress-track"><div class="ho-progress-fill" style="width: 92%;"></div></div></div>
+        </div>
+      </section>
+
+      <!-- 13. ASK AI -->
+      <section class="ho-panel ho-ask-ai-panel" id="ask-ai">
+        <h2>Ask HealthOrbit AI</h2>
+        <p style="color: var(--ho-text-muted); font-size: 0.95rem;">Have questions about your nutrition or lifestyle data?</p>
+        <div class="ho-ai-input-wrap">
+          <input type="text" placeholder="e.g. What should I focus on this week?">
+          <button class="ho-btn-primary">Ask Analyst</button>
+        </div>
+        <div class="ho-suggestions">
+          <span class="ho-sugg-chip">How was my sleep this week?</span>
+          <span class="ho-sugg-chip">Give me healthy meal ideas.</span>
+          <span class="ho-sugg-chip">How can I improve my hydration?</span>
+          <span class="ho-sugg-chip">Summarize my lifestyle this week.</span>
+        </div>
+      </section>
+
+      <!-- 14. DISCLAIMER -->
+      <section class="ho-panel ho-disclaimer-panel">
+        <p><strong>Safety Notice:</strong> HealthOrbit provides general health and wellness information based on available user data. AI-generated suggestions are not medical diagnosis or treatment and should not replace advice from qualified healthcare professionals. For specific medical conditions, allergies, or dietary restrictions, consult a qualified healthcare professional before making significant changes.</p>
+      </section>
+
     </div>
+
+    <!-- UNIVERSAL FOOTER -->
+    <%- include('../partials/footer') %>
+
   </main>
 </div>
 
 <script>
-  function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('collapsed');
+  // Hydration tracker
+  let waterVal = 1.8;
+  function addWater(amount = 0.25) {
+    if (waterVal < 4.0) {
+      waterVal = parseFloat((waterVal + amount).toFixed(2));
+      document.getElementById('waterDisplay').innerText = waterVal + ' L';
+      const pct = Math.min(100, Math.round((waterVal / 2.5) * 100));
+      document.getElementById('waterLevel').style.height = pct + '%';
+    } else {
+      alert('Hydration target exceeded for today!');
+    }
   }
+
+  // Habit checklist
+  function updateHabits() {
+    const checkboxes = document.querySelectorAll('.ho-habit-checkbox');
+    let checked = 0;
+    checkboxes.forEach(cb => { if (cb.checked) checked++; });
+    document.getElementById('habitBadge').innerText = `${checked}/${checkboxes.length}`;
+  }
+  document.querySelectorAll('.ho-habit-checkbox').forEach(cb => cb.addEventListener('change', updateHabits));
+
+  // Progress Bars Initialization
+  document.addEventListener('DOMContentLoaded', () => {
+    updateHabits();
+    setTimeout(() => {
+      document.querySelectorAll('.ho-progress-fill').forEach(fill => {
+        fill.style.width = fill.style.width; 
+      });
+    }, 100);
+  });
 </script>
+
 </body>
 </html>

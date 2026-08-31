@@ -1,312 +1,462 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HealthOrbit — Insurance & ID</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/sidebar.css">
+<!-- 1. Imports your common Fonts, Title, and Global CSS -->
+<%- include('../partials/header', { title: 'Longitudinal Health Timeline' }) %>
+<!-- < %- include('../partials/header', { title: 'HealthOrbit - Profile & Privacy', cssFile: 'profile' }) % > -->
+<link rel="icon" href="/images/Logo.png">
+
 <style>
+/* 
+==================================================================
+  STRICTLY SCOPED CSS (PREFIXED WITH 'ho-') FOR INSURANCE WALLET
+================================================================== 
+*/
 :root {
-  --void: #084039; --void-soft: #0d7a6e;
-  --paper: #f2f8f6; --card: #ffffff;
-  --ink: #0f1c1a; --ink-soft: #5e736f;
-  --coral: #ef6f5b; --coral-soft: #fbe4de;
-  --sage: #109485; --sage-soft: #dff1ec;
-  --mist: #42b89d; --line: rgba(13, 122, 110, 0.15);
-  --radius: 24px;
-  --glass-bg: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.95);
-  --shadow-glass: 0 10px 30px rgba(8, 64, 57, 0.05);
+  --ho-bg-airy: #edf6f4;
+  --ho-teal-900: #0b5e55;
+  --ho-teal-700: #0d7a6e;
+  --ho-teal-600: #109485;
+  --ho-mint-400: #42b89d;
+  --ho-coral: #e07a68;
+  --ho-coral-soft: #fbe4de;
+  --ho-text-main: #0f1c1a;
+  --ho-text-muted: #4e6b63;
+  --ho-danger: #d94b4b;
+  
+  --ho-glass-clear: rgba(255, 255, 255, 0.45);
+  --ho-glass-solid: rgba(255, 255, 255, 0.85);
+  --ho-glass-border: rgba(255, 255, 255, 0.95);
+  --ho-glass-border-subtle: rgba(255, 255, 255, 0.5);
+  
+  --ho-radius-xl: 32px;
+  --ho-radius-lg: 20px;
+  --ho-radius-md: 12px;
+  
+  --ho-shadow-glass: 0 30px 60px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background: var(--paper); color: var(--ink); overflow-x: hidden; }
-.mono { font-family: 'JetBrains Mono', monospace; }
 
-/* Ambient Orbs */
-.ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.35; animation: float 22s infinite alternate; }
-.orb1 { width: 420px; height: 420px; background: #a3e4d7; top: -120px; left: -100px; }
-.orb2 { width: 460px; height: 460px; background: #fcefc9; bottom: -140px; right: -100px; animation-delay: -6s; }
-@keyframes float { 100% { transform: translate(40px, 40px) scale(1.1); } }
-
-/* App Layout */
-.shell { display: flex; width: 100vw; min-height: 100vh; position: relative; z-index: 1; }
-.main { flex: 1; min-width: 0; display: flex; flex-direction: column; transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
-
-/* Topbar */
-.topbar { display: flex; justify-content: space-between; align-items: center; padding: 2.5rem 3.5rem 1rem; background: transparent; z-index: 10; }
-.topbar h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.8rem; color: var(--void); }
-.topbar .sub { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.4rem; font-weight: 500; }
-.actions { display: flex; gap: 0.8rem; align-items: center; }
-
-.btn { border: none; border-radius: 999px; padding: 0.75rem 1.4rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.2s; font-family: inherit; display: inline-flex; align-items: center; gap: 0.4rem; }
-.btn.primary { background: var(--coral); color: #fff; box-shadow: 0 4px 15px rgba(239, 111, 91, 0.2); }
-.btn.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239, 111, 91, 0.35); background: #d95a46; }
-.btn.ghost { background: rgba(255, 255, 255, 0.7); color: var(--void); border: 1px solid var(--line); }
-.btn.ghost:hover { background: #fff; border-color: var(--void-soft); }
-
-/* Bento Grid */
-.bento-wrapper { padding: 1rem 3.5rem 4rem; flex: 1; }
-.bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; }
-
-.card {
-  background: var(--glass-bg); backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
-  border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 2rem;
-  overflow: hidden; position: relative; box-shadow: var(--shadow-glass);
-  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s; display: flex; flex-direction: column;
+body {
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  background-color: var(--ho-bg-airy);
+  color: var(--ho-text-main);
+  overflow-x: hidden; 
+  -webkit-font-smoothing: antialiased;
 }
-.card::before {
-  content: ""; position: absolute; top: 0; left: -150%; width: 60%; height: 100%;
-  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.7) 45%, transparent 90%);
-  transform: skewX(-18deg); transition: left 0.7s ease; pointer-events: none; z-index: 20;
+
+/* ---------- AMBIENT ORBS ---------- */
+
+.ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
+
+/* ---------- MAIN WORKSPACE (DESKTOP) ---------- */
+
+/* TOP NAVBAR */
+.ho-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 2.2rem 3rem 1.2rem; flex-shrink: 0;
+  background: transparent;
+  z-index: 20;
 }
-.card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(8, 64, 57, 0.1); border-color: var(--sage-soft); }
-.card:hover::before { left: 150%; }
-.card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; z-index: 2;}
-.card h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.3rem; color: var(--void); }
+.ho-topbar h1 { font-weight: 800; font-size: 1.8rem; color: var(--ho-teal-900); margin-bottom: 0.3rem; letter-spacing: -0.5px;}
+.ho-topbar p { font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 500; }
+.ho-topbar-actions { display: flex; gap: 1rem; align-items: center; }
 
-/* 1. DIGITAL ID CARD (Spans 6 Cols) */
-.c-id { grid-column: span 6; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 2rem;}
-.digital-card { width: 100%; max-width: 420px; aspect-ratio: 1.586; background: linear-gradient(135deg, var(--void), var(--void-soft), #1f6158); border-radius: 20px; padding: 1.5rem 2rem; color: #fff; position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(8, 64, 57, 0.3), inset 0 1px 1px rgba(255,255,255,0.3); display: flex; flex-direction: column; justify-content: space-between; transition: 0.4s ease; transform-style: preserve-3d; perspective: 1000px;}
-.digital-card:hover { transform: rotateX(5deg) rotateY(-5deg) scale(1.02); box-shadow: -10px 30px 50px rgba(8, 64, 57, 0.4);}
-.digital-card::after { content: ''; position: absolute; right: -50px; top: -50px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); }
-.card-top { display: flex; justify-content: space-between; align-items: flex-start; z-index: 2;}
-.card-brand { font-family: 'Fraunces', serif; font-weight: 800; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;}
-.nfc-icon { width: 24px; opacity: 0.8; }
-.card-chip { width: 45px; height: 35px; background: linear-gradient(135deg, #e5c07b, #f1c40f); border-radius: 6px; position: relative; overflow: hidden; opacity: 0.9;}
-.card-chip::after { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 11px); }
+/* Buttons */
+.ho-btn-primary {
+  background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); color: #fff;
+  border: none; border-radius: 999px; padding: 0.85rem 1.8rem; font-weight: 700; font-size: 0.95rem;
+  cursor: pointer; box-shadow: 0 10px 25px rgba(13, 122, 110, 0.25); transition: 0.25s; text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.ho-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(13, 122, 110, 0.35); }
+.ho-btn-primary:active { transform: scale(0.96); }
 
-.card-mid { flex: 1; display: flex; flex-direction: column; justify-content: center; z-index: 2;}
-.card-num { font-family: 'JetBrains Mono', monospace; font-size: 1.3rem; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
-.card-bot { display: flex; justify-content: space-between; align-items: flex-end; z-index: 2;}
-.card-holder span { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; margin-bottom: 0.2rem;}
-.card-holder strong { font-size: 1.1rem; letter-spacing: 1px; text-transform: uppercase;}
-.card-valid { text-align: right; }
+/* ---------- MOSAIC GRID ---------- */
+.ho-workspace-grid {
+  display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem;
+  padding: 0.5rem 3rem 3rem; flex: 1 0 auto;
+}
 
-/* 2. INSURANCE POLICY (Spans 6 Cols) */
-.c-policy { grid-column: span 6; }
-.policy-box { background: rgba(255,255,255,0.5); border: 1px solid var(--line); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;}
-.policy-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px dashed var(--line); padding-bottom: 1rem;}
-.policy-header h4 { font-size: 1.1rem; color: var(--void);}
-.policy-tag { font-size: 0.7rem; font-weight: 700; background: var(--sage-soft); color: var(--sage); padding: 4px 10px; border-radius: 999px;}
+/* Content-Adaptive Panel Glass Style */
+.ho-panel {
+  background: var(--ho-glass-clear);
+  backdrop-filter: blur(50px) saturate(200%); -webkit-backdrop-filter: blur(50px) saturate(200%);
+  border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
+  padding: 2rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass);
+  height: auto; min-height: 0; /* ADAPTIVE FIX: Panels grow naturally with content, no footer clipping */
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.ho-panel:hover {
+  transform: translateY(-3px); box-shadow: 0 40px 80px rgba(13, 122, 110, 0.12); border-color: #fff; background: rgba(255,255,255,0.65);
+}
+@keyframes hoSlideUp { from { opacity: 0; transform: translateY(35px); } to { opacity: 1; transform: translateY(0); } }
 
-.coverage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;}
-.cov-item { display: flex; flex-direction: column; gap: 0.2rem;}
-.cov-item span { font-size: 0.7rem; color: var(--ink-soft); text-transform: uppercase; font-weight: 700;}
-.cov-item strong { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; color: var(--void);}
+.ho-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-shrink: 0; }
+.ho-panel-header h2 { font-weight: 800; font-size: 1.25rem; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem; }
+.ho-badge { background: #fff; border: 1px solid var(--ho-glass-border); padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ho-teal-700); box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
 
-.deductible-wrap { margin-top: 1.5rem; }
-.deductible-header { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: var(--ink-soft); margin-bottom: 0.5rem;}
-.deductible-bar { width: 100%; height: 10px; background: rgba(13,122,110,0.1); border-radius: 999px; overflow: hidden; position: relative;}
-.deductible-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--coral); border-radius: 999px; width: 45%; }
+/* --- 1. ACTIVE INSURANCE COVERAGE (Spans 8) --- */
+.ho-ins-panel { grid-column: span 8; }
+.ho-ins-layout { display: flex; gap: 2rem; align-items: stretch; }
 
-/* 3. RECENT CLAIMS (Spans 8 Cols) */
-.c-claims { grid-column: span 8; display: flex; flex-direction: column;}
-.claims-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
-.claims-table th { text-align: left; padding: 1rem; font-size: 0.75rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid var(--line);}
-.claims-table td { padding: 1.2rem 1rem; border-bottom: 1px solid var(--line); font-size: 0.9rem; color: var(--void); font-weight: 500;}
-.claims-table tr:hover td { background: rgba(255,255,255,0.6); }
-.claim-date { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;}
-.claim-status { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700;}
-.status-approved { background: var(--sage-soft); color: var(--sage); }
-.status-pending { background: #fdecd2; color: #d68910; }
-.status-denied { background: var(--coral-soft); color: #c0392b; }
-.claim-amount { font-family: 'JetBrains Mono', monospace; font-weight: 700; text-align: right;}
+/* Holographic Digital Card */
+.ho-id-card {
+  width: 330px;
+  height: 210px;
+  background: linear-gradient(135deg, #109485, #084039);
+  border-radius: 20px;
+  padding: 1.5rem;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(8, 64, 57, 0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+.ho-id-card:hover { transform: scale(1.02) rotateY(2deg); }
+/* Holographic effect overlay */
+.ho-id-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.2) 40%, rgba(255,255,255,0.4) 50%, transparent 60%);
+  background-size: 200% 200%; animation: holoGlare 6s linear infinite; pointer-events: none;
+}
+@keyframes holoGlare { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-/* 4. EMERGENCY PROTOCOL (Spans 4 Cols) */
-.c-emergency { grid-column: span 4; background: linear-gradient(135deg, var(--coral-soft), #fff); border-color: rgba(239, 111, 91, 0.3);}
-.c-emergency h3 { color: #a13d2d; display: flex; align-items: center; gap: 0.5rem;}
-.emergency-content { margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;}
-.e-box { background: rgba(255,255,255,0.6); border: 1px solid rgba(239, 111, 91, 0.2); padding: 1rem; border-radius: 12px;}
-.e-box span { display: block; font-size: 0.75rem; font-weight: 700; color: #a13d2d; text-transform: uppercase; margin-bottom: 0.3rem;}
-.e-box strong { font-size: 1.1rem; color: var(--void);}
-.qr-share { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 0.5rem; background: var(--card); padding: 1rem; border-radius: 12px; cursor: pointer; border: 1px solid var(--line); transition: 0.2s;}
-.qr-share:hover { border-color: var(--coral); transform: translateY(-2px);}
-.qr-icon { font-size: 2rem; }
-.qr-text { font-size: 0.85rem; font-weight: 600; color: var(--void);}
+.ho-idc-top { display: flex; justify-content: space-between; align-items: flex-start; z-index: 1;}
+.ho-idc-top strong { font-family: 'Fraunces', serif; font-size: 1.15rem; }
+.ho-idc-icon { width: 34px; height: 34px; background: rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; backdrop-filter: blur(10px); }
 
+.ho-idc-mid { z-index: 1; margin-top: auto; margin-bottom: 1.5rem;}
+.ho-idc-num { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; letter-spacing: 2px; margin-bottom: 0.2rem; text-shadow: 0 2px 4px rgba(0,0,0,0.2);}
+.ho-idc-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8; font-weight: 700;}
+
+.ho-idc-bot { display: flex; justify-content: space-between; align-items: flex-end; z-index: 1;}
+.ho-idc-name { font-size: 0.95rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;}
+.ho-idc-valid { text-align: right; }
+
+/* Easy-to-understand Breakdown */
+.ho-ins-details { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 1.2rem;}
+.ho-ins-stat-row { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.8rem; border-bottom: 1px dashed var(--ho-glass-border-subtle);}
+.ho-ins-stat-row:last-child { border-bottom: none; padding-bottom: 0;}
+.ho-stat-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 600; }
+.ho-stat-label .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ho-mint-400); }
+.ho-stat-val { font-size: 1.1rem; color: var(--ho-teal-900); font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+
+/* Progress Bar */
+.ho-progress-bg { width: 100%; height: 8px; background: rgba(13, 122, 110, 0.1); border-radius: 999px; overflow: hidden; margin-top: 0.4rem;}
+.ho-progress-fill { height: 100%; background: var(--ho-mint-400); width: 85%; border-radius: 999px;}
+
+/* --- 2. NATIONAL ID WALLET (Spans 4) --- */
+.ho-id-panel { grid-column: span 4; }
+.ho-wallet-list { display: flex; flex-direction: column; gap: 0.8rem; }
+.ho-wallet-item {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.7); border: 1px solid var(--ho-glass-border); border-radius: 16px;
+  padding: 1rem 1.2rem; transition: 0.2s; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+.ho-wallet-item:hover { transform: translateY(-2px); background: #fff; border-color: var(--ho-teal-600); box-shadow: 0 8px 20px rgba(13, 122, 110, 0.08); }
+.ho-wallet-item:active { transform: scale(0.98); }
+.ho-wi-left { display: flex; align-items: center; gap: 0.8rem; }
+.ho-wi-icon { font-size: 1.4rem; }
+.ho-wi-text strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.1rem; }
+.ho-wi-text span { font-size: 0.72rem; color: var(--ho-text-muted); font-weight: 600; font-family: 'JetBrains Mono', monospace;}
+.ho-wi-status { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; background: rgba(46, 204, 113, 0.15); color: #27ae60; padding: 4px 8px; border-radius: 6px; }
+
+/* --- 3. RECENT CLAIMS & TRANSACTIONS (Spans 7) --- */
+.ho-claims-panel { grid-column: span 7; }
+.ho-claim-list { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; }
+.ho-claim-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.2rem; background: #fff; border: 1px solid var(--ho-glass-border-subtle);
+  border-radius: 14px; transition: 0.2s;
+}
+.ho-claim-item:hover { transform: translateX(3px); border-color: var(--ho-teal-600); box-shadow: 0 4px 15px rgba(13, 122, 110, 0.06); }
+.ho-cl-info strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.2rem;}
+.ho-cl-info span { font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600;}
+.ho-cl-meta { text-align: right; }
+.ho-cl-amount { font-family: 'JetBrains Mono', monospace; font-size: 1.05rem; font-weight: 800; color: var(--ho-teal-900); display: block; margin-bottom: 0.3rem;}
+.ho-cl-pill { display: inline-block; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; }
+.ho-cl-pill.approved { background: rgba(46, 204, 113, 0.15); color: #27ae60; }
+.ho-cl-pill.processing { background: rgba(243, 156, 18, 0.15); color: #d35400; }
+
+/* --- 4. QUICK ACTIONS & DOWNLOADS (Spans 5) --- */
+.ho-actions-panel { grid-column: span 5; }
+.ho-act-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.ho-act-card {
+  background: rgba(255,255,255,0.6); border: 1.5px dashed rgba(13, 122, 110, 0.2);
+  border-radius: 16px; padding: 1.2rem; text-align: center; cursor: pointer; transition: 0.2s;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.ho-act-card:hover { background: #fff; border-style: solid; border-color: var(--ho-teal-600); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(13, 122, 110, 0.08); }
+.ho-act-card:active { transform: scale(0.96); }
+.ho-act-icon { font-size: 1.6rem; margin-bottom: 0.2rem; }
+.ho-act-card strong { font-size: 0.85rem; color: var(--ho-teal-900); font-weight: 800; }
+
+/* ==========================================================
+   DEDICATED MOBILE-ONLY VIEWPORT RULES (PHONES)
+   ========================================================== */
 @media (max-width: 1200px) {
-  .bento { grid-template-columns: 1fr; }
-  .c-id, .c-policy, .c-claims, .c-emergency { grid-column: span 1; }
+  .ho-ins-panel, .ho-id-panel, .ho-claims-panel, .ho-actions-panel { grid-column: span 12; }
 }
+
 @media (max-width: 768px) {
-  .shell { flex-direction: column; width: 100%; overflow-x: hidden; }
-  .topbar { padding: 1.2rem 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
-  .bento-wrapper { padding: 1.5rem; }
-  .claims-table th:nth-child(3), .claims-table td:nth-child(3) { display: none; }
+  /* Clear the Mobile Navbar overlap and remove sticky header */
+  .ho-main-content { padding-top: 5.6rem !important; }
+  .ho-topbar {
+    flex-direction: column; align-items: flex-start; 
+    padding: 0 1.25rem 1.2rem !important; gap: 0.6rem;
+    position: static !important; background: transparent !important;
+    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+    mask-image: none !important; border: none !important;
+  }
+  .ho-topbar-actions { display: none !important; }
+  .ho-topbar h1 { font-size: 1.6rem; }
+  
+  .ho-workspace-grid { 
+    grid-template-columns: 1fr !important; 
+    padding: 0 1.25rem 2.5rem !important;
+    gap: 1.4rem !important;
+  }
+  
+  .ho-panel { 
+    height: auto !important; 
+    min-height: auto !important; 
+    padding: 1.5rem !important; 
+    border-radius: 24px !important;
+  }
+
+  /* Stack the Insurance Card & Details naturally on mobile */
+  .ho-ins-layout { flex-direction: column; gap: 1.5rem; }
+  .ho-id-card { width: 100%; height: auto; min-height: 210px; }
+  
+  /* Convert Action Grid into a Native Horizontal Swipe Row */
+  .ho-act-grid { 
+    display: flex; 
+    overflow-x: auto; 
+    scroll-snap-type: x mandatory; 
+    scrollbar-width: none; 
+    gap: 1rem; 
+    padding-bottom: 0.5rem;
+    margin-right: -1.5rem; 
+    padding-right: 1.5rem;
+  }
+  .ho-act-grid::-webkit-scrollbar { display: none; }
+  .ho-act-card { 
+    min-width: 140px; 
+    scroll-snap-align: start; 
+    flex-shrink: 0; 
+  }
 }
 </style>
 </head>
 <body>
 
-<div class="ambient"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+<div class="ho-ambient-canvas">
+  <div class="ho-glow-orb ho-orb-1"></div>
+  <div class="ho-glow-orb ho-orb-2"></div>
+  <div class="ho-glow-orb ho-orb-3"></div>
+</div>
 
-<div class="shell">
-  <!-- UNIVERSAL SIDEBAR -->
+<div class="ho-app-layout">
+  
+  <!-- UNIVERSAL SIDEBAR IMPORT -->
   <%- include('../partials/sidebar') %>
 
-  <main class="main">
-    <header class="topbar">
+  <!-- SCOPED MAIN CONTENT -->
+  <main class="ho-main-content">
+    
+    <header class="ho-topbar">
       <div>
-        <h1>Insurance & Identity</h1>
-        <div class="sub">Your digital health wallet, active policies, and claims history.</div>
+        <h1>Insurance <b style="color: #e07a68;">&</b> <b  >Digital ID</b></h1>
+        <p>Access your health policies, verified identity cards, and claim history securely.</p>
       </div>
-      <div class="actions">
-        <button class="btn primary">Download ID Card</button>
+      <div class="ho-topbar-actions">
+        <button class="ho-btn-primary">+ Add New Card</button>
       </div>
     </header>
 
-    <div class="bento-wrapper">
-      <div class="bento">
-
-        <!-- 1. DIGITAL ID CARD (Spans 6) -->
-        <div class="card c-id shine-effect">
-          <div class="digital-card">
-            <div class="card-top">
-              <div class="card-brand">
-                <svg class="nfc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zM12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
-                HealthOrbit
-              </div>
-              <div class="card-chip"></div>
-            </div>
-            
-            <div class="card-mid">
-              <div class="card-num">HO-9824-7731-AX</div>
-            </div>
-            
-            <div class="card-bot">
-              <div class="card-holder">
-                <span>Primary Insured</span>
-                <strong><%= locals.userName ? userName : 'ATHARV DESHMUKH' %></strong>
-              </div>
-              <div class="card-holder card-valid">
-                <span>Valid Thru</span>
-                <strong>12/28</strong>
-              </div>
-            </div>
-          </div>
-          <p style="text-align: center; font-size: 0.8rem; color: var(--ink-soft); margin-top: 1.5rem;">Tap card to securely transmit via NFC</p>
+    <div class="ho-workspace-grid">
+      
+      <!-- 1. ACTIVE INSURANCE COVERAGE (Spans 8) -->
+      <section class="ho-panel ho-ins-panel">
+        <div class="ho-panel-header">
+          <h2><span>🛡️</span> Active Health Coverage</h2>
+          <span class="ho-badge">Verified</span>
         </div>
 
-        <!-- 2. INSURANCE POLICY (Spans 6) -->
-        <div class="card c-policy shine-effect">
-          <div class="card-head">
-            <h3>Active Coverage</h3>
-            <button class="btn ghost" style="padding: 0.4rem 1rem; font-size: 0.75rem;">Update</button>
-          </div>
-          
-          <div class="policy-box">
-            <div class="policy-header">
-              <h4>HDFC ERGO Optima Secure</h4>
-              <span class="policy-tag">Active</span>
+        <div class="ho-ins-layout">
+          <!-- Holographic Card -->
+          <div class="ho-id-card">
+            <div class="ho-idc-top">
+              <strong>OrbitCare Health</strong>
+              <div class="ho-idc-icon">🏥</div>
             </div>
-            <div class="coverage-grid">
-              <div class="cov-item">
-                <span>Policy Number</span>
-                <strong>2831-9982-HD</strong>
+            <div class="ho-idc-mid">
+              <div class="ho-idc-label">Policy Number</div>
+              <div class="ho-idc-num">POL-2026-98765</div>
+            </div>
+            <div class="ho-idc-bot">
+              <div>
+                <div class="ho-idc-label">Cardholder</div>
+                <div class="ho-idc-name"><%= locals.userName || 'Atharv Manoj Deshmukh' %></div>
               </div>
-              <div class="cov-item">
-                <span>Group/Group ID</span>
-                <strong>EMP-772</strong>
+              <div class="ho-idc-valid">
+                <div class="ho-idc-label">Valid Thru</div>
+                <div class="ho-idc-name">12/2028</div>
               </div>
-              <div class="cov-item">
-                <span>Co-Pay</span>
-                <strong>0%</strong>
+            </div>
+          </div>
+
+          <!-- Plain English Breakdown -->
+          <div class="ho-ins-details">
+            <div>
+              <div class="ho-ins-stat-row">
+                <span class="ho-stat-label"><span class="dot"></span> Annual Coverage Limit</span>
+                <span class="ho-stat-val">₹10,00,000</span>
               </div>
-              <div class="cov-item">
-                <span>Room Rent Limit</span>
-                <strong>No Cap</strong>
-              </div>
+              <div class="ho-progress-bg"><div class="ho-progress-fill"></div></div>
+              <span style="font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600; display: block; margin-top: 0.4rem;">₹8,50,000 remaining this year</span>
             </div>
 
-            <div class="deductible-wrap">
-              <div class="deductible-header">
-                <span>Total Limit Consumed (₹4.5L / ₹10L)</span>
-                <span>45%</span>
-              </div>
-              <div class="deductible-bar">
-                <div class="deductible-fill"></div>
-              </div>
+            <div class="ho-ins-stat-row">
+              <span class="ho-stat-label"><span class="dot" style="background: var(--ho-coral);"></span> Co-Pay</span>
+              <span class="ho-stat-val">10%</span>
+            </div>
+
+            <div class="ho-ins-stat-row">
+              <span class="ho-stat-label"><span class="dot" style="background: var(--ho-teal-700);"></span> Network Hospitals</span>
+              <span class="ho-stat-val" style="font-family: inherit;">8,500+</span>
             </div>
           </div>
         </div>
+      </section>
 
-        <!-- 3. CLAIMS HISTORY (Spans 8) -->
-        <div class="card c-claims shine-effect">
-          <div class="card-head">
-            <h3>Recent Claims</h3>
-          </div>
-          
-          <div style="overflow-x: auto;">
-            <table class="claims-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Provider / Hospital</th>
-                  <th>Status</th>
-                  <th style="text-align: right;">Amount Claimed</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="claim-date">Aug 02, 2026</td>
-                  <td>Care Hospitals (OPD/Consultation)</td>
-                  <td><span class="claim-status status-approved">Approved</span></td>
-                  <td class="claim-amount">₹2,500</td>
-                </tr>
-                <tr>
-                  <td class="claim-date">Jun 14, 2026</td>
-                  <td>Max Super Speciality (Diagnostic)</td>
-                  <td><span class="claim-status status-pending">In Review</span></td>
-                  <td class="claim-amount">₹14,200</td>
-                </tr>
-                <tr>
-                  <td class="claim-date">Jan 09, 2026</td>
-                  <td>Apollo Pharmacy</td>
-                  <td><span class="claim-status status-denied">Out of Network</span></td>
-                  <td class="claim-amount">₹4,100</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+      <!-- 2. DIGITAL ID WALLET (Spans 4) -->
+      <section class="ho-panel ho-id-panel">
+        <div class="ho-panel-header">
+          <h2><span>🪪</span> Identity Wallet</h2>
         </div>
-
-        <!-- 4. EMERGENCY SOS (Spans 4) -->
-        <div class="card c-emergency shine-effect">
-          <div class="card-head">
-            <h3>🚨 Emergency Protocol</h3>
-          </div>
-          <p style="font-size: 0.85rem; color: #a13d2d; margin-top: -0.5rem; margin-bottom: 1rem;">Crucial data for first responders.</p>
-
-          <div class="emergency-content">
-            <div class="coverage-grid" style="gap: 0.5rem;">
-              <div class="e-box">
-                <span>Blood Type</span>
-                <strong>O+ (Positive)</strong>
-              </div>
-              <div class="e-box">
-                <span>Known Allergies</span>
-                <strong>Penicillin</strong>
+        
+        <div class="ho-wallet-list">
+          <!-- ABHA Health ID -->
+          <div class="ho-wallet-item">
+            <div class="ho-wi-left">
+              <div class="ho-wi-icon">🇮🇳</div>
+              <div class="ho-wi-text">
+                <strong>ABHA Health ID</strong>
+                <span>91-XXXX-XXXX-3412</span>
               </div>
             </div>
+            <span class="ho-wi-status">Linked</span>
+          </div>
 
-            <div class="e-box" style="margin-top: 0.5rem;">
-              <span>Emergency Contact</span>
-              <strong>+91 98765 43210 (Mother)</strong>
+          <!-- National ID Placeholder (Strictly Redacted) -->
+          <div class="ho-wallet-item">
+            <div class="ho-wi-left">
+              <div class="ho-wi-icon">🏛️</div>
+              <div class="ho-wi-text">
+                <strong>National Registry</strong>
+                <span>XXXX-XXXX-XXXX</span>
+              </div>
             </div>
+            <span class="ho-wi-status">Linked</span>
+          </div>
 
-            <div class="qr-share" title="Click to enlarge QR Code">
-              <div class="qr-icon">📱</div>
-              <div class="qr-text">Scan for Emergency Medical Profile</div>
+          <!-- Driving License -->
+          <div class="ho-wallet-item" style="border-style: dashed; background: rgba(255,255,255,0.4);">
+            <div class="ho-wi-left">
+              <div class="ho-wi-icon" style="filter: grayscale(1); opacity: 0.5;">🚗</div>
+              <div class="ho-wi-text">
+                <strong>Driving License</strong>
+                <span>Not linked yet</span>
+              </div>
+            </div>
+            <span class="ho-wi-status" style="background: rgba(13, 122, 110, 0.1); color: var(--ho-teal-700);">+ Add</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. RECENT CLAIMS (Spans 7) -->
+      <section class="ho-panel ho-claims-panel">
+        <div class="ho-panel-header">
+          <h2><span>🧾</span> Claim History</h2>
+          <span style="font-size: 0.8rem; color: var(--ho-teal-700); font-weight: 700; cursor: pointer;">View All →</span>
+        </div>
+
+        <div class="ho-claim-list">
+          <div class="ho-claim-item">
+            <div class="ho-cl-info">
+              <strong>Routine Diagnostics & Blood Work</strong>
+              <span>OrbitCare Health • Aug 14, 2026</span>
+            </div>
+            <div class="ho-cl-meta">
+              <span class="ho-cl-amount">₹4,500</span>
+              <span class="ho-cl-pill approved">Approved</span>
+            </div>
+          </div>
+
+          <div class="ho-claim-item">
+            <div class="ho-cl-info">
+              <strong>Pharmacy Prescription (Chronic)</strong>
+              <span>OrbitCare Health • Jul 22, 2026</span>
+            </div>
+            <div class="ho-cl-meta">
+              <span class="ho-cl-amount">₹1,200</span>
+              <span class="ho-cl-pill approved">Approved</span>
+            </div>
+          </div>
+
+          <div class="ho-claim-item">
+            <div class="ho-cl-info">
+              <strong>Specialist Consultation</strong>
+              <span>Out-of-Network Claim • Aug 20, 2026</span>
+            </div>
+            <div class="ho-cl-meta">
+              <span class="ho-cl-amount">₹2,000</span>
+              <span class="ho-cl-pill processing">Processing</span>
             </div>
           </div>
         </div>
+      </section>
 
-      </div>
+      <!-- 4. WALLET ACTIONS (Spans 5) -->
+      <section class="ho-panel ho-actions-panel">
+        <div class="ho-panel-header">
+          <h2><span>⚡</span> Quick Actions</h2>
+        </div>
+
+        <div class="ho-act-grid">
+          <div class="ho-act-card">
+            <div class="ho-act-icon">📥</div>
+            <strong>Download E-Card</strong>
+          </div>
+          <div class="ho-act-card">
+            <div class="ho-act-icon">🏥</div>
+            <strong>Share with Hospital</strong>
+          </div>
+          <div class="ho-act-card">
+            <div class="ho-act-icon">🔄</div>
+            <strong>Renew Policy</strong>
+          </div>
+          <div class="ho-act-card" style="border-color: var(--ho-coral-soft);">
+            <div class="ho-act-icon">💬</div>
+            <strong>Contact Support</strong>
+          </div>
+        </div>
+      </section>
+
     </div>
+
+    <!-- UNIVERSAL FOOTER -->
+    <%- include('../partials/footer') %>
+
   </main>
 </div>
 

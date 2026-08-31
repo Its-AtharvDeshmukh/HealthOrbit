@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- CRITICAL FOR MOBILE: Prevents zooming and respects safe areas -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <link rel="icon" href="/images/Logo.png">
+  <title>HealthOrbit — Next Generation Module</title> 
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Shared Sidebar Styles -->
+  <link rel="stylesheet" href="/css/sidebar.css">
+
+  <style>
+    /* ==================================================================
+       HEALTHORBIT "TRUE 3D PLANETARY SYSTEM" — CORRECTED PHYSICS
+    ================================================================== */
+    :root {
+      --ho-bg-airy: #edf6f4;
+      --ho-teal-900: #0b5e55;
+      --ho-teal-800: #0c6b61;
+      --ho-teal-700: #0d7a6e;
+      --ho-teal-600: #109485;
+      --ho-mint-400: #42b89d;
+      --ho-coral: #e07a68;
+      --ho-text-main: #0f1c1a;
+      --ho-text-muted: #4e6b63;
+      --ho-danger: #d94b4b;
+
+      --ho-glass-clear: rgba(255, 255, 255, 0.55);
+      --ho-glass-solid: rgba(255, 255, 255, 0.95);
+      --ho-glass-border: rgba(255, 255, 255, 0.9);
+      --ho-glass-border-subtle: rgba(13, 122, 110, 0.2);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh; min-height: 100dvh;
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      background-color: var(--ho-bg-airy);
+      color: var(--ho-text-main);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ---------- AMBIENT CANVAS & TECH GRID ---------- */
+    .ho-cs-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .ho-cs-tech-grid {
+      position: absolute; inset: 0; opacity: 0.35;
+      background-image: radial-gradient(var(--ho-teal-600) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(circle at center, black 10%, transparent 80%);
+      -webkit-mask-image: radial-gradient(circle at center, black 10%, transparent 80%);
+    }
+
+    /* Glowing Orbs */
+    .ho-cs-glow-orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.5; animation: hoCsDrift 20s ease-in-out infinite alternate; }
+    .ho-cs-orb-1 { width: 700px; height: 700px; background: #76d7c4; top: -10%; left: -10%; }
+    .ho-cs-orb-2 { width: 600px; height: 600px; background: #fbe4de; bottom: -10%; right: -10%; animation-delay: -5s; }
+    @keyframes hoCsDrift { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(40px, 60px) scale(1.1); } }
+
+    /* ---------- BASE LAYOUT ---------- */
+    .ho-app-layout { display: flex; width: 100vw; min-height: 100vh; position: relative; z-index: 10; }
+    .ho-main-content {
+      flex: 1; min-width: 0; display: flex; flex-direction: column;
+      overflow-y: auto; scrollbar-width: none;
+    }
+    .ho-main-content::-webkit-scrollbar { display: none; }
+
+    /* ---------- DESKTOP HEADER ---------- */
+    .ho-cs-topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 2.2rem 3rem 1.2rem; flex-shrink: 0; z-index: 20;
+    }
+    .ho-cs-brand-title {
+      font-family: 'Fraunces', serif; font-weight: 800; font-size: 1.8rem; color: var(--ho-teal-900);
+      letter-spacing: -0.5px; margin-bottom: 0.2rem;
+    }
+    .ho-cs-brand-highlight { 
+      color: var(--ho-coral); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; 
+    }
+    
+    /* ---------- WORKSPACE ---------- */
+    .ho-cs-workspace {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 1rem 3rem 4rem; flex: 1 0 auto; text-align: center;
+    }
+
+    .ho-cs-eyebrow {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; font-weight: 800;
+      color: var(--ho-teal-700); letter-spacing: 0.1em; text-transform: uppercase;
+      display: flex; align-items: center; gap: 0.6rem; margin-bottom: 2rem;
+      background: rgba(255,255,255,0.7); padding: 0.4rem 1.2rem; border-radius: 999px;
+      border: 1px solid var(--ho-glass-border); box-shadow: 0 4px 15px rgba(13,122,110,0.05);
+      animation: hoCsFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .ho-cs-eyebrow .dot { width: 8px; height: 8px; background: var(--ho-coral); border-radius: 50%; box-shadow: 0 0 8px var(--ho-coral); }
+
+    /* ==================================================================
+       THE 3D PLANETARY SYSTEM
+    ================================================================== */
+    .ho-cs-system-wrapper {
+      position: relative; width: 340px; height: 340px; margin-bottom: 3.5rem;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; animation: hoCsFadeUp 0.8s forwards 0.2s;
+    }
+
+    /* The System Container with the Exact Tilted Angle */
+    .ho-cs-system-tilt {
+      position: absolute; width: 100%; height: 100%;
+      transform: rotateX(65deg) rotateY(-15deg);
+      transform-style: preserve-3d;
+    }
+
+    /* Central Sun / Core */
+    .ho-cs-core-star {
+      position: absolute; top: 50%; left: 50%; width: 56px; height: 56px; 
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffffff 0%, #b73535 60%, var(--ho-teal-600) 100%);
+      box-shadow: 0 0 35px 12px rgba(16, 148, 133, 0.4), inset -5px -5px 15px rgba(0,0,0,0.2);
+      transform: translate(-50%, -50%) rotateY(15deg) rotateX(-65deg); 
+      z-index: 10;
+      animation: hoCsPulseStar 3s infinite alternate cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes hoCsPulseStar { 
+      0% { transform: translate(-50%, -50%) rotateY(15deg) rotateX(-65deg) scale(0.95); box-shadow: 0 0 25px rgba(16,148,133,0.3); } 
+      100% { transform: translate(-50%, -50%) rotateY(15deg) rotateX(-65deg) scale(1.05); box-shadow: 0 0 45px rgba(16,148,133,0.6); } 
+    }
+
+    /* Orbital Rings (Static visually) */
+    .ho-cs-ring {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      border-radius: 50%; transform-style: preserve-3d; pointer-events: none;
+    }
+    .ho-cs-ring-1 { width: 340px; height: 340px; border: 2px dashed rgba(13, 122, 110, 0.25); }
+    .ho-cs-ring-2 { width: 240px; height: 240px; border: 1.5px solid rgba(224, 122, 104, 0.3); }
+    .ho-cs-ring-3 { width: 140px; height: 140px; border: 1.5px dashed rgba(66, 184, 157, 0.5); }
+
+    /* Planet Pivots (Rotates around the 3D center axis) */
+    .ho-cs-pivot {
+      position: absolute; top: 50%; left: 50%; transform-style: preserve-3d; pointer-events: none;
+    }
+    .ho-cs-pivot-1 { animation: hoCsSpinZ 22s linear infinite; }
+    .ho-cs-pivot-2 { animation: hoCsSpinZRev 15s linear infinite; }
+    .ho-cs-pivot-3 { animation: hoCsSpinZ 9s linear infinite; }
+
+    /* DYNAMIC PLANETARY SCALING MATH */
+    .ho-cs-orbit-1 { --radius: 170px; --p-size: 30px; }
+    .ho-cs-orbit-2 { --radius: 120px; --p-size: 24px; }
+    .ho-cs-orbit-3 { --radius: 70px;  --p-size: 18px; }
+
+    /* Planet Container - Translates to orbit radius */
+    .ho-cs-planet-container {
+      position: absolute; top: 50%; left: 50%;
+      margin-top: calc(-1 * var(--p-size) / 2); margin-left: calc(-1 * var(--p-size) / 2);
+      width: var(--p-size); height: var(--p-size);
+      transform: translateX(var(--radius));
+      transform-style: preserve-3d;
+    }
+
+    /* The Planets (Properly rendered 3D spheres with counter-rotation) */
+    .ho-cs-planet {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%;
+      box-shadow: -4px 6px 12px rgba(0,0,0,0.35), inset -4px -4px 10px rgba(0,0,0,0.5);
+    }
+    
+    .ho-cs-planet-teal { background: radial-gradient(circle at 30% 30%, #ffffff 0%, var(--ho-teal-600) 50%, #042e2a 90%); }
+    .ho-cs-planet-coral { background: radial-gradient(circle at 30% 30%, #ffffff 0%, var(--ho-coral) 50%, #873323 90%); }
+    .ho-cs-planet-mint { background: radial-gradient(circle at 30% 30%, #ffffff 0%, var(--ho-mint-400) 50%, var(--ho-teal-800) 90%); }
+
+    /* 3D Animation Keyframes */
+    @keyframes hoCsSpinZ { to { transform: rotateZ(360deg); } }
+    @keyframes hoCsSpinZRev { to { transform: rotateZ(-360deg); } }
+
+    /* Counter-Spins: Cancels Pivot Z, then counters parent Y and X */
+    .ho-cs-pivot-1 .ho-cs-planet { animation: hoCsCounterSpin 22s linear infinite; }
+    .ho-cs-pivot-2 .ho-cs-planet { animation: hoCsCounterSpinRev 15s linear infinite; }
+    .ho-cs-pivot-3 .ho-cs-planet { animation: hoCsCounterSpin 9s linear infinite; }
+
+    @keyframes hoCsCounterSpin {
+      from { transform: rotateZ(0deg) rotateY(15deg) rotateX(-65deg); }
+      to { transform: rotateZ(-360deg) rotateY(15deg) rotateX(-65deg); }
+    }
+    @keyframes hoCsCounterSpinRev {
+      from { transform: rotateZ(0deg) rotateY(15deg) rotateX(-65deg); }
+      to { transform: rotateZ(360deg) rotateY(15deg) rotateX(-65deg); } 
+    }
+
+    /* ---------- TYPOGRAPHY ---------- */
+    .ho-cs-title {
+      font-family: 'Fraunces', serif; font-size: 3.2rem; font-weight: 800; color: var(--ho-teal-900);
+      margin-bottom: 1rem; line-height: 1.1; letter-spacing: -1px;
+      opacity: 0; animation: hoCsFadeUp 0.8s forwards 0.4s;
+    }
+    .ho-cs-title span { color: var(--ho-coral); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;}
+    
+    .ho-cs-desc {
+      font-size: 1.1rem; color: var(--ho-text-muted); font-weight: 500; line-height: 1.6;
+      max-width: 580px; margin: 0 auto 2.5rem;
+      opacity: 0; animation: hoCsFadeUp 0.8s forwards 0.6s;
+    }
+
+    /* ---------- REDESIGNED FORM (SLEEK PILL DESIGN) ---------- */
+    .ho-cs-notify-container {
+      width: 100%; max-width: 500px; margin: 0 auto 2rem; position: relative; z-index: 10;
+      opacity: 0; animation: hoCsFadeUp 0.8s forwards 0.8s;
+    }
+    
+    .ho-cs-pill-form {
+      display: flex; align-items: center;
+      background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--ho-glass-border); padding: 0.4rem; border-radius: 999px; 
+      box-shadow: 0 10px 30px rgba(13, 122, 110, 0.08); transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .ho-cs-pill-form:focus-within { background: #fff; box-shadow: 0 15px 40px rgba(13, 122, 110, 0.15); transform: translateY(-2px); border-color: var(--ho-teal-600); }
+    
+    .ho-cs-input {
+      flex: 1; border: none; background: transparent; padding: 0 1.5rem; height: 50px;
+      font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 500; color: var(--ho-text-main); outline: none;
+    }
+    .ho-cs-input::placeholder { color: #8ba8a4; }
+    
+    .ho-cs-btn-submit {
+      background: var(--ho-teal-900); color: #fff;
+      border: none; border-radius: 999px; height: 50px; padding: 0 2rem; 
+      font-weight: 700; font-size: 0.95rem; cursor: pointer; 
+      transition: all 0.25s ease; white-space: nowrap; font-family: inherit; 
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .ho-cs-btn-submit:hover { background: var(--ho-coral); transform: scale(1.02); }
+    .ho-cs-btn-submit:active { transform: scale(0.98); }
+
+    /* Success Message */
+    .ho-cs-notify-success {
+      display: none; align-items: center; justify-content: center; gap: 0.8rem;
+      background: #fff; border: 1px solid rgba(46, 204, 113, 0.3);
+      color: #27ae60; padding: 1.2rem 2rem; border-radius: 999px; font-weight: 700; font-size: 1rem;
+      animation: hoCsPopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      box-shadow: 0 10px 30px rgba(46, 204, 113, 0.1); width: 100%; max-width: 500px; margin: 0 auto;
+    }
+
+    /* ---------- BOTTOM ACTIONS ---------- */
+    .ho-cs-bottom-actions { opacity: 0; animation: hoCsFadeUp 0.8s forwards 1s; }
+    .ho-cs-back-link {
+      display: inline-flex; align-items: center; gap: 0.5rem; color: var(--ho-teal-700);
+      font-weight: 700; font-size: 0.95rem; text-decoration: none; transition: 0.2s;
+    }
+    .ho-cs-back-link:hover { color: var(--ho-coral); transform: translateX(-4px); }
+
+    @keyframes hoCsFadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes hoCsPopIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+    /* ==================================================================
+       MOBILE ERGONOMIC ENGINE (SCREEN <= 768px)
+    ================================================================== */
+    @media screen and (max-width: 768px) {
+      .ho-cs-topbar{
+        visibility: hidden;;
+      }
+      body, html { height: auto !important; min-height: 100vh !important; overflow-x: hidden !important; }
+      .ho-main-content { padding-top: 5rem !important; }
+      .ho-cs-topbar { padding: 1rem 1.25rem 0.5rem !important; }
+      .ho-cs-brand-title { font-size: 1.6rem; }
+      .ho-cs-workspace { padding: 1rem 1.25rem 4rem !important; }
+      
+      /* Mobile Scaling for the 3D System (Seamless via CSS Variables) */
+      .ho-cs-system-wrapper { width: 240px; height: 240px; margin-bottom: 2rem; }
+      .ho-cs-ring-1 { width: 240px; height: 240px; }
+      .ho-cs-ring-2 { width: 170px; height: 170px; }
+      .ho-cs-ring-3 { width: 100px; height: 100px; }
+
+      .ho-cs-orbit-1 { --radius: 120px; --p-size: 26px; }
+      .ho-cs-orbit-2 { --radius: 85px; --p-size: 20px; }
+      .ho-cs-orbit-3 { --radius: 50px;  --p-size: 16px; }
+
+      .ho-cs-title { font-size: 2.2rem; letter-spacing: -1px;}
+      .ho-cs-desc { font-size: 0.95rem; margin-bottom: 2.5rem; }
+
+      .ho-cs-notify-container { width: 100%; padding: 0; }
+      .ho-cs-pill-form { flex-direction: column; padding: 0.4rem; border-radius: 20px; background: rgba(255,255,255,0.9); gap: 0.4rem;}
+      .ho-cs-input { width: 100%; text-align: center; padding: 0 1rem; font-size: 16px;}
+      .ho-cs-btn-submit { width: 100%; border-radius: 16px; justify-content: center; }
+      .ho-cs-notify-success { border-radius: 20px; padding: 1rem; font-size: 0.9rem; text-align: center; }
+    }
+
+    .ho-cs-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 2.2rem 3rem 1.2rem; flex-shrink: 0; z-index: 20;
+}
+
+.ho-cs-brand-title {
+  font-family: 'Plus Jakarta Sans', sans-serif; /* Unified font for the entire word */
+  font-weight: 800; 
+  font-size: 1.8rem; 
+  color: var(--ho-teal-900);
+  letter-spacing: -0.5px; 
+  margin-bottom: 0.2rem;
+}
+
+.ho-cs-brand-highlight { 
+  color: var(--ho-coral); /* Only changes the color, strictly inherits the font */
+}
+  </style>
+</head>
+
+<body>
+
+<!-- Ambient Background Canvas -->
+<div class="ho-cs-ambient-canvas">
+  <div class="ho-cs-tech-grid"></div>
+  <div class="ho-cs-glow-orb ho-cs-orb-1"></div>
+  <div class="ho-cs-glow-orb ho-cs-orb-2"></div>
+</div>
+
+<div class="ho-app-layout">
+  
+  <!-- Universal Sidebar / Mobile Island -->
+  <%- include('../partials/sidebar') %>
+
+  <!-- Main Scrollable Content -->
+  <main class="ho-main-content">
+    
+    <!-- Topbar -->
+   <header class="ho-cs-topbar">
+  <div>
+    <div class="ho-cs-brand-title">Health<span class="ho-cs-brand-highlight">Orbit</span></div>
+  </div>
+</header>
+
+    <div class="ho-cs-workspace">
+
+     <div class="ho-cs-eyebrow"><span class="dot"></span> Work in Progress</div>
+      <!-- ==========================================
+           THE TRUE 3D PLANETARY SYSTEM
+      =========================================== -->
+      <div class="ho-cs-system-wrapper">
+        <div class="ho-cs-system-tilt" role="img" aria-label="3D Planetary Animation">
+          
+          <!-- Orbit 1 (Outer - Teal) -->
+          <div class="ho-cs-ring ho-cs-ring-1"></div>
+          <div class="ho-cs-pivot ho-cs-pivot-1 ho-cs-orbit-1">
+            <div class="ho-cs-planet-container">
+              <div class="ho-cs-planet ho-cs-planet-teal"></div>
+            </div>
+          </div>
+          
+          <!-- Orbit 2 (Middle - Coral) -->
+          <div class="ho-cs-ring ho-cs-ring-2"></div>
+          <div class="ho-cs-pivot ho-cs-pivot-2 ho-cs-orbit-2">
+            <div class="ho-cs-planet-container">
+              <div class="ho-cs-planet ho-cs-planet-coral"></div>
+            </div>
+          </div>
+          
+          <!-- Orbit 3 (Inner - Mint) -->
+          <div class="ho-cs-ring ho-cs-ring-3"></div>
+          <div class="ho-cs-pivot ho-cs-pivot-3 ho-cs-orbit-3">
+            <div class="ho-cs-planet-container">
+              <div class="ho-cs-planet ho-cs-planet-mint"></div>
+            </div>
+          </div>
+
+          <!-- Central Core (The Sun) -->
+          <div class="ho-cs-core-star"></div>
+
+        </div>
+      </div>
+      <!-- END PLANETARY SYSTEM -->
+
+      <!-- Typography -->
+      <h2 class="ho-cs-title">Module <span>Orbiting</span> Soon</h2>
+      <p class="ho-cs-desc">
+  <%= locals.moduleCopy || "This section is coming soon. We're putting the finishing touches on a brand-new way for you to manage your health data." %>
+</p>
+
+      <!-- Redesigned Pill Form (No labels, super clean) -->
+      <!-- <div class="ho-cs-notify-container" id="notifyContainer">
+        <form id="notifyForm" class="ho-cs-pill-form">
+          <input type="email" id="userEmail" class="ho-cs-input" placeholder="Initialize secure sync (email)..." required aria-label="Email Address">
+          <button type="submit" class="ho-cs-btn-submit">
+            Notify Me
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+        </form>
+      </div> -->
+
+      <!-- Success Message (Hidden by default) -->
+      <div class="ho-cs-notify-success" id="notifySuccess">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        Coordinates locked. We'll alert you when live.
+      </div>
+
+      <!-- Back Action -->
+      <div class="ho-cs-bottom-actions">
+        <a href="/dashboard" class="ho-cs-back-link">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          Return to Base
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Universal Footer -->
+    <%- include('../partials/footer') %>
+
+  </main>
+</div>
+
+<!-- Interactive Logic for the "Notify Me" form -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const notifyForm = document.getElementById('notifyForm');
+    const notifyContainer = document.getElementById('notifyContainer');
+    const notifySuccess = document.getElementById('notifySuccess');
+
+    if (notifyForm) {
+      notifyForm.addEventListener('submit', (e) => {
+        e.preventDefault(); 
+        notifyContainer.style.display = 'none';
+        notifySuccess.style.display = 'flex';
+      });
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,383 +1,489 @@
 <!DOCTYPE html>
 <html lang="en">
+<link rel="icon" href="/images/Logo.png">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HealthOrbit — AI Health Intelligence</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- 1. Imports your common Fonts, Title, and Global CSS -->
+<%- include('../partials/header', { title: 'Longitudinal Health Timeline' }) %>
+<!-- < %- include('../partials/header', { title: 'HealthOrbit - Profile & Privacy', cssFile: 'profile' }) % > -->
 <style>
+/* 
+==================================================================
+  STRICTLY SCOPED CSS FOR AI ANALYSIS (DESKTOP FINAL)
+================================================================== 
+*/
 :root {
-  /* Official HealthOrbit Palette */
-  --void: #084039;       
-  --void-soft: #0d7a6e;  
-  --paper: #f2f8f6;      
-  --card: #ffffff;
-  --ink: #0f1c1a; 
-  --ink-soft: #5e736f;
-  --coral: #ef6f5b;      
-  --coral-soft: #fbe4de;
-  --sage: #109485;       
-  --sage-soft: #dff1ec;
-  --mist: #42b89d;       
-  --line: rgba(13, 122, 110, 0.15); 
-  --radius: 24px;
+  --ho-bg-airy: #edf6f4;
+  --ho-teal-900: #0b5e55;
+  --ho-teal-700: #0d7a6e;
+  --ho-teal-600: #109485;
+  --ho-mint-400: #42b89d;
+  --ho-coral: #e07a68;
+  --ho-text-main: #0f1c1a;
+  --ho-text-muted: #4e6b63;
+  --ho-danger: #d94b4b;
+  
+  --ho-glass-clear: rgba(255, 255, 255, 0.45);
+  --ho-glass-solid: rgba(255, 255, 255, 0.85);
+  --ho-glass-border: rgba(255, 255, 255, 0.95);
+  --ho-glass-border-subtle: rgba(13, 122, 110, 0.15);
+  
+  --ho-radius-xl: 28px;
+  --ho-radius-lg: 20px;
+  --ho-radius-md: 12px;
+  --ho-shadow-glass: 0 20px 50px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--paper);
-  color: var(--ink);
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-
-.mono { font-family: 'JetBrains Mono', monospace; }
-.display { font-family: 'Fraunces', serif; }
+body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: var(--ho-bg-airy); color: var(--ho-text-main); overflow-x: hidden; -webkit-font-smoothing: antialiased; display: flex; }
 
 /* ---------- AMBIENT ORBS ---------- */
-.ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-.orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.35; animation: float 22s infinite alternate; }
-.orb1 { width: 420px; height: 420px; background: #a3e4d7; top: -120px; left: -100px; }
-.orb2 { width: 460px; height: 460px; background: #fcefc9; bottom: -140px; right: -100px; animation-delay: -6s; }
-@keyframes float { 100% { transform: translate(40px, 40px) scale(1.1); } }
+/* .ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
+.ho-orb-1 { width: 600px; height: 600px; background: #76d7c4; top: -150px; left: -100px; }
+.ho-orb-2 { width: 700px; height: 700px; background: #a9dfbf; bottom: -200px; right: -150px; animation-delay: -5s; }
+@keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(60px, 70px) scale(1.15); } } */
 
-/* ---------- APP LAYOUT ---------- */
-.shell { display: flex; width: 100vw; min-height: 100vh; position: relative; z-index: 1; }
-
-/* ---------- TRANSPARENT SLIM SIDEBAR ---------- */
-.nav {
-  width: 260px; position: sticky; top: 0; height: 100vh;
-  background: transparent; display: flex; flex-direction: column;
-  border-right: 1px solid var(--line);
-  transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-  overflow: hidden; z-index: 20; flex-shrink: 0;
+/* ---------- MAIN WORKSPACE LAYOUT ---------- */
+.ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
+.ho-main-content { 
+  flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; 
+  overflow-y: auto; scrollbar-width: none; 
 }
-.nav.collapsed { width: 78px; }
-.nav.collapsed .brand-text, .nav.collapsed .link-text, .nav.collapsed .profile-info { opacity: 0; visibility: hidden; display: none; }
-.nav.collapsed .navlinks a { justify-content: center; padding: 0.85rem 0; }
-.nav.collapsed .profile { justify-content: center; padding: 1.5rem 0; }
-.nav.collapsed .nav-header { padding: 1.8rem 0; flex-direction: column; gap: 1.5rem; justify-content: center;}
-.nav.collapsed .sidebar-toggle { margin: 0 auto; }
+.ho-main-content::-webkit-scrollbar { display: none; }
 
-.nav-header { display: flex; justify-content: space-between; align-items: center; padding: 1.8rem 1.4rem; }
-.brand { display: flex; align-items: center; gap: 0.8rem; font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.4rem; white-space: nowrap; }
-
-.orbit-mark { position: relative; width: 28px; height: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;}
-.orbit-mark .ring { position: absolute; inset: 0; border-radius: 50%; border: 2px dashed var(--void-soft); animation: spin 10s linear infinite; }
-.orbit-mark .ring2 { inset: 4px; border-color: var(--coral); animation: spin 8s linear infinite reverse; }
-.orbit-mark .ring3 { width: 8px; height: 8px; border-radius: 50%; background: var(--void); box-shadow: 0 0 8px var(--mist); }
-@keyframes spin { to { transform: rotate(360deg); } }
-.txt-h { color: var(--void); } .txt-o { color: var(--coral); }
-
-.sidebar-toggle { background: none; border: none; color: var(--ink-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-.sidebar-toggle:hover { color: var(--void); transform: scale(1.1); }
-
-.navlinks { 
-    display: flex; flex-direction: column; gap: 0.2rem; 
-    padding: 0 0.8rem 1rem; flex: 1; margin-top: 1rem;
-    overflow-y: auto; overflow-x: hidden;
-    scrollbar-width: none; -ms-overflow-style: none;
+/* TOP NAVBAR */
+.ho-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 2.5rem 3rem 1.5rem; flex-shrink: 0; background: transparent;
+  z-index: 20; position: sticky; top: 0;
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
 }
-.navlinks::-webkit-scrollbar { width: 0px; background: transparent; }
+.ho-topbar-text h1 { font-family: 'Fraunces', serif; font-weight: 800; font-size: 2.2rem; color: var(--ho-teal-900); margin-bottom: 0.3rem; letter-spacing: -1px; display: flex; align-items: center; gap: 0.8rem;}
+.ho-topbar-text p { font-size: 0.95rem; color: var(--ho-text-muted); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;}
+.ho-pulse-dot { width: 8px; height: 8px; background: var(--ho-coral); border-radius: 50%; box-shadow: 0 0 10px var(--ho-coral); animation: hoPulse 2s infinite; }
+@keyframes hoPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.5); } }
 
-.navlinks a { 
-    text-decoration: none; color: var(--ink-soft); font-size: 0.9rem; font-weight: 600; 
-    padding: 0.7rem 1rem; border-radius: 12px; display: flex; align-items: center; gap: 0.8rem; 
-    transition: 0.2s; white-space: nowrap; 
+.ho-ai-core-mini { width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle, #fff, var(--ho-mint-400)); position: relative; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(66, 184, 157, 0.5);}
+.ho-ai-core-mini::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 1.5px dashed var(--ho-teal-700); animation: hoSpin 4s linear infinite; }
+@keyframes hoSpin { 100% { transform: rotate(360deg); } }
+
+.ho-btn-ghost { padding: 0.85rem 1.8rem; background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border); border-radius: 999px; color: var(--ho-teal-900); font-weight: 700; font-size: 0.95rem; cursor: pointer; text-decoration: none; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: inline-block; }
+.ho-btn-ghost:hover { background: #fff; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.1); transform: translateY(-1px); }
+
+/* ---------- MOSAIC GRID (DESKTOP) ---------- */
+.ho-mosaic-grid {
+  display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem;
+  padding: 0.5rem 3rem 2rem; flex: 1;
 }
-.navlinks a .icon { font-size: 1.2rem; flex-shrink: 0; }
-.navlinks a.active { background: var(--void-soft); color: #fff; box-shadow: 0 4px 12px rgba(13, 122, 110, 0.2);}
-.navlinks a:hover:not(.active) { background: rgba(255,255,255,0.5); color: var(--void-soft); transform: translateX(4px);}
 
-.sidebar-footer { margin-top: auto; background: transparent; }
-.profile { display: flex; align-items: center; gap: 0.8rem; padding: 1.2rem 1rem; border-top: 1px solid var(--line); white-space: nowrap; }
-.profile .av { width: 38px; height: 38px; border-radius: 50%; background: var(--void); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 600; font-size: 0.9rem; flex-shrink: 0; }
-.profile-info strong { display: block; font-size: 0.9rem; color: var(--void); }
-.profile-info span { font-size: 0.75rem; color: var(--ink-soft); }
-
-/* ---------- MAIN CONTENT AREA ---------- */
-.main { flex: 1; min-width: 0; padding: 0; display: flex; flex-direction: column; transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
-
-.topbar { 
-    display: flex; justify-content: space-between; align-items: center; 
-    padding: 2.5rem 3.5rem 1rem; background: transparent; border-bottom: none; z-index: 10; 
+.ho-panel {
+  background: var(--ho-glass-clear);
+  backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
+  padding: 1.8rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass);
+  position: relative; overflow: hidden; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-.topbar h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.8rem; color: var(--void);}
-.topbar .sub { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.4rem; font-weight: 500;}
-.actions { display: flex; gap: 0.8rem; }
+@keyframes hoSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
-.btn { border: none; border-radius: 999px; padding: 0.75rem 1.4rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.2s; font-family: inherit; }
-.btn.primary { background: var(--coral); color: #fff; box-shadow: 0 4px 15px rgba(239, 111, 91, 0.2);}
-.btn.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239, 111, 91, 0.35); background: #d95a46;}
-.btn.ghost { background: rgba(255,255,255,0.7); color: var(--void); border: 1px solid var(--line); }
-.btn.ghost:hover { background: var(--card); border-color: var(--void-soft); }
+.ho-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; z-index: 2;}
+.ho-panel-head h3 { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 700; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem;}
+.ho-badge { background: rgba(13, 122, 110, 0.1); color: var(--ho-teal-700); padding: 4px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;}
 
-/* ---------- BENTO GRID ---------- */
-.bento-wrapper { padding: 1rem 3.5rem 4rem; flex: 1;}
-.bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; }
+/* --- ① REPORT SUMMARY --- */
+.ho-summary-banner { grid-column: span 12; background: linear-gradient(135deg, var(--ho-teal-900), var(--ho-teal-700)); color: #fff; border: none; padding: 2.2rem 2.8rem; }
+.ho-sum-layout { display: flex; justify-content: space-between; align-items: center; gap: 2rem; position: relative; z-index: 2; }
+.ho-sum-text h2 { font-family: 'Fraunces', serif; font-size: 1.8rem; font-weight: 600; line-height: 1.2; margin-bottom: 0.6rem; }
+.ho-sum-text p { font-size: 0.95rem; color: #dcebe8; line-height: 1.6; max-width: 800px; }
 
-.card {
-  background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(25px) saturate(180%);
-  -webkit-backdrop-filter: blur(25px) saturate(180%);
-  border: 1px solid rgba(255,255,255,1); border-radius: var(--radius); padding: 2rem;
-  overflow: hidden; position: relative; box-shadow: 0 10px 30px rgba(8, 64, 57, 0.05);
-  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s;
-  display: flex; flex-direction: column;
-}
-.card::before {
-  content: ""; position: absolute; top: 0; left: -150%; width: 60%; height: 100%;
-  background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.7) 45%, transparent 90%);
-  transform: skewX(-18deg); transition: left 0.7s ease; pointer-events: none; z-index: 20;
-}
-.card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(8, 64, 57, 0.1); border-color: var(--sage-soft);}
-.card:hover::before { left: 150%; }
+/* --- ② IMPORTANT FINDINGS --- */
+.ho-findings-panel { grid-column: span 6; }
+.ho-finding-feed { display: flex; flex-direction: column; gap: 0.8rem; }
+.ho-finding-card { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.2rem; background: rgba(255,255,255,0.7); border: 1px solid var(--ho-glass-border-subtle); border-radius: 14px; transition: 0.2s; }
+.ho-finding-card:hover { background: #fff; transform: translateX(3px); }
+.ho-fc-left { display: flex; align-items: center; gap: 1rem; }
+.ho-fc-status-icon { font-size: 1.2rem; }
+.ho-fc-meta strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.15rem; }
+.ho-fc-meta span { font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600; }
+.ho-fc-val { font-family: 'JetBrains Mono', monospace; font-size: 1.05rem; font-weight: 800; color: var(--ho-teal-900); text-align: right; }
+.ho-fc-val small { font-size: 0.7rem; color: var(--ho-text-muted); font-family: 'Plus Jakarta Sans', sans-serif; display: block; }
 
-.card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;}
-.card h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.3rem; color: var(--void);}
+/* --- ③ SIMPLE EXPLANATION --- */
+.ho-explanation-panel { grid-column: span 6; }
+.ho-expl-box { background: rgba(255,255,255,0.75); border: 1px solid var(--ho-glass-border-subtle); border-left: 4px solid var(--ho-mint-400); border-radius: 16px; padding: 1.5rem; height: 100%;}
+.ho-expl-box h4 { font-family: 'Fraunces', serif; font-size: 1.1rem; color: var(--ho-teal-900); margin-bottom: 0.6rem; }
+.ho-expl-box p { font-size: 0.9rem; color: var(--ho-text-muted); line-height: 1.6; font-weight: 500; }
 
-/* --- 1. HEALTH TWIN HERO (Spans 7 Cols) --- */
-.c-twin { grid-column: span 7; background: linear-gradient(135deg, var(--void), var(--void-soft)); color: #fff; border: none; padding: 2.5rem; justify-content: center;}
-.c-twin::before { background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.15) 45%, transparent 90%); }
-.twin-text { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 1rem;}
-.c-twin .eyebrow { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist); font-weight: 700; display: flex; align-items: center; gap: 0.5rem;}
-.pulse-dot { width: 8px; height: 8px; background: var(--mist); border-radius: 50%; box-shadow: 0 0 10px var(--mist); animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.4); } }
-.c-twin h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 2.2rem; line-height: 1.15; letter-spacing: -1px;}
-.c-twin p { color: #dcebe8; font-size: 1rem; line-height: 1.6; max-width: 90%;}
+/* --- ④ REFERENCE RANGE TABLE --- */
+.ho-table-panel { grid-column: span 6; display: flex; flex-direction: column; }
+.ho-table-wrapper { width: 100%; overflow-x: auto; scrollbar-width: none; }
+.ho-ref-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; min-width: 400px; }
+.ho-ref-table th { text-align: left; padding: 0.8rem 1rem; font-size: 0.72rem; color: var(--ho-text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid var(--ho-glass-border-subtle); }
+.ho-ref-table td { padding: 1rem; border-bottom: 1px solid var(--ho-glass-border-subtle); font-size: 0.88rem; color: var(--ho-teal-900); font-weight: 600; }
+.ho-ref-table tr:hover td { background: rgba(255,255,255,0.5); }
 
-/* Twin Flags */
-.twin-flags { display: flex; gap: 0.8rem; margin-top: 1rem; flex-wrap: wrap;}
-.flag { font-size: 0.8rem; font-weight: 600; padding: 0.4rem 1rem; border-radius: 999px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; gap: 0.5rem;}
-.flag.up { color: #f2a58f; } 
-.flag.down { color: #a7c79a; }
+/* --- ⑤ PREVIOUS VS CURRENT --- */
+.ho-comparison-panel { grid-column: span 6; }
+.ho-comp-card { background: linear-gradient(135deg, #fff, rgba(223, 241, 236, 0.6)); border: 1.5px solid var(--ho-mint-400); border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; height: 100%; }
+.ho-comp-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;}
+.ho-comp-header strong { font-family: 'Fraunces', serif; font-size: 1.2rem; color: var(--ho-teal-900); }
+.ho-comp-badge { background: rgba(46, 204, 113, 0.15); color: #27ae60; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 999px; }
 
-/* --- 2. ANOMALY DETECTION (Spans 5 Cols) --- */
-.c-anomalies { grid-column: span 5; }
-.anomaly-list { display: flex; flex-direction: column; gap: 1rem; }
-.anomaly-item { display: flex; align-items: flex-start; gap: 1rem; padding: 1.2rem; background: var(--coral-soft); border: 1px solid rgba(239, 111, 91, 0.2); border-radius: 16px; transition: 0.3s; }
-.anomaly-item:hover { background: #fff; border-color: var(--coral); box-shadow: 0 5px 15px rgba(239, 111, 91, 0.1);}
-.anomaly-icon { width: 36px; height: 36px; background: var(--coral); color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(239, 111, 91, 0.3);}
-.anomaly-text strong { display: block; font-size: 1rem; color: #a13d2d; margin-bottom: 0.2rem; font-family: 'Fraunces', serif;}
-.anomaly-text p { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.5; }
-.anomaly-item.neutral { background: var(--sage-soft); border-color: rgba(13, 122, 110, 0.1); }
-.anomaly-item.neutral .anomaly-icon { background: var(--void-soft); box-shadow: 0 4px 10px rgba(13, 122, 110, 0.2); }
-.anomaly-item.neutral strong { color: var(--void); }
+.ho-comp-metrics { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.7); padding: 1rem 1.2rem; border-radius: 12px; }
+.ho-cm-col span { display: block; font-size: 0.7rem; color: var(--ho-text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 0.2rem; }
+.ho-cm-col strong { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; color: var(--ho-teal-900); }
+.ho-arrow-icon { color: var(--ho-text-muted); font-weight: 800; font-size: 1.2rem;}
 
-/* --- 3. LONGITUDINAL TRENDS (Spans 8 Cols) --- */
-.c-trends { grid-column: span 8; display: flex; flex-direction: column; }
-.trend-controls { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; background: rgba(13, 122, 110, 0.05); padding: 4px; border-radius: 12px; width: fit-content;}
-.trend-tab { background: transparent; border: none; padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; transition: 0.2s;}
-.trend-tab.active { background: #fff; color: var(--teal-900); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+/* --- ⑥ AI SYNTHESIS SUMMARY --- */
+.ho-ai-summary-panel { grid-column: span 6; }
+.ho-ai-text-box { background: var(--ho-teal-900); color: #fff; border-radius: 16px; padding: 1.6rem; box-shadow: 0 10px 25px rgba(11, 94, 85, 0.15); height: 100%; display: flex; align-items: center;}
+.ho-ai-text-box p { font-size: 0.95rem; line-height: 1.6; color: #dcebe8; font-weight: 500; }
 
-.chart-container { flex: 1; width: 100%; position: relative; min-height: 250px; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 1.5rem; display: flex; align-items: flex-end; justify-content: space-between; gap: 10px;}
-/* Pure CSS/SVG Chart visualization */
-.chart-svg { position: absolute; inset: 0; width: 100%; height: 100%; padding: 1.5rem; overflow: visible;}
-.chart-line { fill: none; stroke: var(--mist); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 8px 6px rgba(66, 184, 157, 0.3)); animation: drawLine 2s ease-out forwards; stroke-dasharray: 1000; stroke-dashoffset: 1000;}
-@keyframes drawLine { to { stroke-dashoffset: 0; } }
+/* --- ⑦ QUESTIONS TO ASK YOUR DOCTOR --- */
+.ho-doctor-panel { grid-column: span 6; }
+.ho-qa-feed { display: flex; flex-direction: column; gap: 0.8rem; }
+.ho-qa-item { display: flex; gap: 0.9rem; align-items: flex-start; padding: 1rem 1.2rem; background: rgba(255,255,255,0.7); border: 1px solid var(--ho-glass-border-subtle); border-radius: 14px; }
+.ho-qa-num { width: 26px; height: 26px; border-radius: 50%; background: var(--ho-teal-900); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; flex-shrink: 0; }
+.ho-qa-item p { font-size: 0.88rem; color: var(--ho-teal-900); font-weight: 600; line-height: 1.5; }
 
-.chart-axis-y { position: absolute; left: 1rem; top: 1.5rem; bottom: 2rem; display: flex; flex-direction: column; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--ink-soft); font-weight: 600;}
-.chart-axis-x { position: absolute; left: 3rem; right: 1.5rem; bottom: 0.5rem; display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--ink-soft); font-weight: 600;}
+/* --- ⑧ RAG CHAT INTERFACE --- */
+.ho-rag-chat { grid-column: span 12; display: flex; flex-direction: row; gap: 2rem; padding: 0; background: rgba(255,255,255,0.5);}
+.ho-chat-area { flex: 2; display: flex; flex-direction: column; border-right: 1px solid var(--ho-glass-border-subtle); padding: 2rem;}
+.ho-context-area { flex: 1; padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; background: rgba(223, 241, 236, 0.35);}
+.ho-chat-feed { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; padding-bottom: 2rem; scrollbar-width: none;}
+.ho-msg-wrap { display: flex; max-width: 85%; gap: 1rem;}
+.ho-msg-wrap.ai { align-self: flex-start; }
+.ho-msg-wrap.user { align-self: flex-end; flex-direction: row-reverse; }
+.ho-msg-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
+.ai .ho-msg-avatar { background: var(--ho-teal-900); color: #fff; }
+.user .ho-msg-avatar { background: var(--ho-coral); color: #fff; font-weight: 800; font-family: 'Fraunces', serif;}
+.ho-msg-bubble { padding: 1.2rem 1.5rem; border-radius: 16px; font-size: 0.95rem; line-height: 1.6; }
+.ai .ho-msg-bubble { background: #fff; color: var(--ho-text-main); border: 1px solid var(--ho-glass-border-subtle); border-top-left-radius: 4px; box-shadow: 0 4px 15px rgba(13, 122, 110, 0.04);}
+.user .ho-msg-bubble { background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); color: #fff; border-top-right-radius: 4px; box-shadow: 0 4px 15px rgba(13, 122, 110, 0.15);}
 
-.chart-grid-lines { position: absolute; inset: 1.5rem 1.5rem 2rem 3rem; display: flex; flex-direction: column; justify-content: space-between;}
-.chart-grid-line { width: 100%; height: 1px; background: rgba(13, 122, 110, 0.08); border-top: 1px dashed rgba(13, 122, 110, 0.15);}
+.ho-input-bar { display: flex; gap: 1rem; align-items: flex-end; background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 20px; padding: 0.6rem; box-shadow: 0 10px 25px rgba(0,0,0,0.03); transition: 0.2s;}
+.ho-input-bar:focus-within { border-color: var(--ho-teal-600); box-shadow: 0 0 0 4px rgba(13, 122, 110, 0.1);}
+.ho-chat-input { flex: 1; border: none; background: transparent; padding: 0.8rem 1rem; font-family: 'Inter', sans-serif; font-size: 0.95rem; color: var(--ho-text-main); resize: none; max-height: 120px; outline: none;}
+.ho-send-btn { width: 44px; height: 44px; border-radius: 14px; background: var(--ho-coral); color: white; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; margin-bottom: 2px; margin-right: 2px;}
 
-.chart-tooltip { position: absolute; top: 20%; left: 75%; background: var(--void); color: #fff; padding: 0.5rem 0.8rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; font-family: 'JetBrains Mono', monospace; box-shadow: 0 10px 20px rgba(8, 64, 57, 0.2); animation: float 3s infinite alternate; z-index: 10;}
-.chart-tooltip::after { content: ''; position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); border-width: 5px 5px 0; border-style: solid; border-color: var(--void) transparent transparent transparent; }
+.ho-context-head { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--ho-teal-700); letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem;}
+.ho-context-box { background: rgba(255,255,255,0.85); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; padding: 1.2rem; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--ho-text-muted); box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);}
+.ho-rag-step { display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 0.6rem; line-height: 1.4;}
+.ho-rag-step::before { content: '>'; color: var(--ho-mint-400); font-weight: 800;}
+.ho-typing { overflow: hidden; white-space: nowrap; border-right: 2px solid var(--ho-teal-700); width: 0; animation: hoTyping 2s steps(40, end) forwards, hoBlink 0.75s step-end infinite; }
+@keyframes hoTyping { from { width: 0 } to { width: 100% } }
+@keyframes hoBlink { from, to { border-color: transparent } 50% { border-color: var(--ho-teal-700); } }
+.ho-delay-1 { animation-delay: 0.5s; } .ho-delay-2 { animation-delay: 1s; } .ho-delay-3 { animation-delay: 1.5s; }
 
-/* --- 4. CLINICAL TRANSLATION (Spans 4 Cols) --- */
-.c-translation { grid-column: span 4; display: flex; flex-direction: column;}
-.translation-block { flex: 1; display: flex; flex-direction: column; gap: 1rem; }
-.jargon-box { background: rgba(255,255,255,0.5); border: 1px dashed var(--mist); border-radius: 16px; padding: 1.2rem; position: relative;}
-.jargon-box::after { content: '↓'; position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 1.2rem; color: var(--mist); background: var(--paper); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; z-index: 2;}
-.jargon-box span { font-size: 0.7rem; font-weight: 700; color: var(--mist); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;}
-.jargon-box p { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--void); line-height: 1.5; }
+/* --- ⑨ SAFETY DISCLAIMER --- */
+.ho-disclaimer-panel { grid-column: span 12; background: rgba(239, 111, 91, 0.05); border: 1.5px dashed rgba(239, 111, 91, 0.4); border-radius: 16px; padding: 1.2rem; text-align: center; }
+.ho-disclaimer-panel p { font-size: 0.85rem; color: #a13d2d; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
 
-.plain-text-box { background: var(--void); color: #fff; border-radius: 16px; padding: 1.5rem; flex: 1; box-shadow: 0 10px 25px rgba(8, 64, 57, 0.15);}
-.plain-text-box span { font-size: 0.7rem; font-weight: 700; color: var(--coral); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;}
-.plain-text-box p { font-size: 0.95rem; line-height: 1.6; color: #dcebe8;}
-
-/* ---------- RESPONSIVE ---------- */
-@media (max-width: 1200px) {
-  .bento { grid-template-columns: 1fr; }
-  .c-twin, .c-anomalies, .c-trends, .c-translation { grid-column: span 1; }
-  .chart-container { min-height: 300px; }
-}
-@media (max-width: 768px) {
-  .shell { flex-direction: column; width: 100%; overflow-x: hidden; }
-  .nav { position: relative; height: auto; width: 100%; border-right: none; border-bottom: 1px solid var(--line); padding: 1rem; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px);}
-  .nav.collapsed { width: 100%; } 
-  .navlinks, .sidebar-footer { display: none; }
-  .nav-header { padding: 0.5rem; }
-  .topbar { padding: 1.2rem 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; background: rgba(255,255,255,0.85); }
-  .bento-wrapper { padding: 1.5rem; }
+/* 
+==================================================================
+  MOBILE OPTIMIZATION (THE ULTIMATE GRID STACKER FIX)
+  This guarantees zero squishing on phones and tablets.
+================================================================== 
+*/
+@media (max-width: 1024px) {
+  .ho-app-layout { flex-direction: column !important; }
+  .ho-main-content { margin-left: 0 !important; padding-left: 0 !important; }
   
-  .chart-axis-y { display: none; }
-  .chart-grid-lines { inset: 1.5rem 1.5rem 2rem 1.5rem; }
-  .chart-axis-x { left: 1.5rem; }
-  .chart-tooltip { left: 50%; }
+  /* Kill the Grid, Embrace the Flex Stack */
+  .ho-mosaic-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 1rem 1.2rem 2rem 1.2rem !important;
+    gap: 1.2rem !important;
+  }
+  
+  .ho-panel {
+    grid-column: unset !important;
+    width: 100% !important;
+    padding: 1.5rem !important;
+    margin: 0 !important;
+  }
+
+  .ho-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.2rem 1.2rem;
+    gap: 1rem;
+    height: auto;
+  }
+  
+  .ho-sum-layout { flex-direction: column; align-items: flex-start; text-align: left; }
+  .ho-comp-metrics { flex-direction: column; gap: 1rem; align-items: flex-start; }
+  .ho-cm-col { text-align: left !important; }
+  .ho-arrow-icon { transform: rotate(90deg); margin: 0.5rem 0; align-self: center; }
+
+  .ho-rag-chat { flex-direction: column !important; padding: 0 !important; }
+  .ho-chat-area { border-right: none !important; border-bottom: 1px solid var(--ho-glass-border-subtle); padding: 1.5rem !important; }
+  .ho-context-area { padding: 1.5rem !important; }
+  .ho-msg-wrap { max-width: 95%; }
+  .ho-msg-avatar { display: none; }
+  
+  /* Prevent iOS Input Zoom */
+  .ho-chat-input, .ho-input { font-size: 16px !important; }
 }
 </style>
 </head>
 <body>
 
-<!-- Ambient Orbs -->
-<div class="ambient"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+<div class="ho-ambient-canvas">
+  <div class="ho-glow-orb ho-orb-1"></div>
+  <div class="ho-glow-orb ho-orb-2"></div>
+</div>
 
-<div class="shell">
+<div class="ho-app-layout">
   
-  <!-- TRANSPARENT SLIM NAVBAR -->
-  <nav class="nav" id="sidebar">
- <%- include('../partials/sidebar') %>
-  </nav>
+  <!-- UNIVERSAL SIDEBAR IMPORT -->
+  <%- include('../partials/sidebar') %>
 
-  <!-- MAIN CONTENT -->
-  <main class="main">
+  <!-- SCOPED MAIN CONTENT -->
+  <main class="ho-main-content">
     
-    <div class="topbar">
-      <div>
-        <h1>AI Health Intelligence</h1>
-        <div class="sub">Deep clinical insights, trend tracking, and anomaly detection driven by Gemini.</div>
+    <header class="ho-topbar">
+      <div class="ho-topbar-text">
+        <h1><div class="ho-ai-core-mini"></div> <b style="color: #e07a68;"> AI </b>Medical Analyst</h1>
+        <p>Translating complex medical reports into simple, actionable intelligence[cite: 4].</p>
       </div>
-      <div class="actions">
-        <button class="btn ghost">Generate Summary Report</button>
+      <div class="ho-topbar-actions">
+        <a href="/xyz" class="ho-btn-ghost">Upload New Report</a>
       </div>
-    </div>
+    </header>
 
-    <div class="bento-wrapper">
-      <div class="bento">
+    <div class="ho-mosaic-grid">
 
-        <!-- 1. HEALTH TWIN HERO (Spans 7 Cols) -->
-        <div class="card c-twin shine-effect">
-          <div class="twin-text">
-            <span class="eyebrow"><span class="pulse-dot"></span> Health Twin Engine • Active</span>
-            <h2>Two measurements shifted from your usual pattern this week.</h2>
-            <p>Resting BPM and sleep duration moved outside your recent baseline. Multiple health measurements have changed compared with your previous records. This is not a diagnosis — just a change worth tracking.</p>
-            
-            <div class="twin-flags">
-              <span class="flag up">📈 BPM Elevated</span>
-              <span class="flag down">📉 Sleep Decreased</span>
-              <span class="flag down">📉 Vitamin D Low</span>
-            </div>
+      <!-- ① REPORT SUMMARY -->
+      <section class="ho-panel ho-summary-banner">
+        <div class="ho-sum-layout">
+          <div class="ho-sum-text">
+            <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ho-mint-400); font-weight: 800; display: block; margin-bottom: 0.5rem;">Clinical Report Breakdown</span>
+            <h2>What does my medical report mean?</h2>
+            <p>Your CBC report contains 18 extracted parameters. Most values are within the provided reference ranges. Two values require attention[cite: 4].</p>
           </div>
+          <div class="ho-badge" style="background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.25);">Status: Verified</div>
+        </div>
+      </section>
+
+      <!-- ② IMPORTANT FINDINGS -->
+      <section class="ho-panel ho-findings-panel">
+        <div class="ho-panel-head">
+          <h3><span>🔍</span> Important Findings</h3>
+          <span class="ho-badge">Module 3 Engine</span>
         </div>
 
-        <!-- 2. ANOMALY DETECTION (Spans 5 Cols) -->
-        <div class="card c-anomalies shine-effect">
-          <div class="card-head">
-            <h3>Detected Deviations</h3>
-          </div>
-          
-          <div class="anomaly-list">
-            <div class="anomaly-item">
-              <div class="anomaly-icon">⚠️</div>
-              <div class="anomaly-text">
-                <strong>Elevated Resting Heart Rate</strong>
-                <p>Your recorded resting heart-rate values have increased by 12% (Average 82 BPM) over the last 14 days compared to your historical baseline of 68-72 BPM.</p>
+        <div class="ho-finding-feed">
+          <div class="ho-finding-card">
+            <div class="ho-fc-left">
+              <span class="ho-fc-status-icon">🟢</span>
+              <div class="ho-fc-meta">
+                <strong>Hemoglobin</strong>
+                <span>Oxygen carrying capacity</span>
               </div>
             </div>
-            
-            <div class="anomaly-item neutral">
-              <div class="anomaly-icon">💡</div>
-              <div class="anomaly-text">
-                <strong>Vitamin D Deficiency</strong>
-                <p>Latest OCR report shows Vitamin D at 18 ng/mL, which is below the standard reference range (20-50 ng/mL). Consider discussing supplementation with a doctor.</p>
+            <div class="ho-fc-val">13.2 <small>g/dL</small></div>
+          </div>
+
+          <div class="ho-finding-card" style="border-color: rgba(239, 111, 91, 0.4); background: rgba(251, 228, 222, 0.4);">
+            <div class="ho-fc-left">
+              <span class="ho-fc-status-icon">🟠</span>
+              <div class="ho-fc-meta">
+                <strong style="color: #c0392b;">Vitamin D (Below Reference)</strong>
+                <span>Bone absorption & immunity</span>
+              </div>
+            </div>
+            <div class="ho-fc-val" style="color: #c0392b;">18 <small>ng/mL</small></div>
+          </div>
+
+          <div class="ho-finding-card">
+            <div class="ho-fc-left">
+              <span class="ho-fc-status-icon">🟢</span>
+              <div class="ho-fc-meta">
+                <strong>Platelets</strong>
+                <span>Clotting function</span>
+              </div>
+            </div>
+            <div class="ho-fc-val">2.4 <small>lakh</small></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ③ SIMPLE EXPLANATION -->
+      <section class="ho-panel ho-explanation-panel">
+        <div class="ho-panel-head">
+          <h3><span>💡</span> Plain English Explanation</h3>
+          <span class="ho-badge">Jargon Free</span>
+        </div>
+
+        <div class="ho-expl-box">
+          <h4>What does Vitamin D mean?</h4>
+          <p>Vitamin D helps the body absorb calcium and supports bone health[cite: 4]. When your serum level is below the reference range mentioned in the report, your body may experience reduced calcium absorption efficiency. Continuing your prescribed supplement protocol will help restore optimal balance.</p>
+        </div>
+      </section>
+
+      <!-- ④ REFERENCE RANGE TABLE -->
+      <section class="ho-panel ho-table-panel">
+        <div class="ho-panel-head">
+          <h3><span>📊</span> Reference Range Matrix</h3>
+        </div>
+
+        <div class="ho-table-wrapper">
+          <table class="ho-ref-table">
+            <thead>
+              <tr>
+                <th>Test Parameter</th>
+                <th>Result</th>
+                <th>Reference Range</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Hemoglobin</td>
+                <td>13.2 g/dL</td>
+                <td>13 – 17 g/dL</td>
+              </tr>
+              <tr style="background: rgba(239, 111, 91, 0.05);">
+                <td>Vitamin D</td>
+                <td style="color: #c0392b; font-weight: 800;">18 ng/mL ⚠️</td>
+                <td>20 – 50 ng/mL</td>
+              </tr>
+              <tr>
+                <td>Platelets</td>
+                <td>2.4 lakh</td>
+                <td>1.5 – 4.5 lakh</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ⑤ PREVIOUS VS CURRENT -->
+      <section class="ho-panel ho-comparison-panel">
+        <div class="ho-panel-head">
+          <h3><span>📈</span> Longitudinal Comparison</h3>
+          <span class="ho-badge">Timeline & Trends</span>
+        </div>
+
+        <div class="ho-comp-card">
+          <div class="ho-comp-header">
+            <strong>Vitamin D Progression</strong>
+            <span class="ho-comp-badge">↑ Improved by 4 ng/mL</span>
+          </div>
+
+          <div class="ho-comp-metrics">
+            <div class="ho-cm-col">
+              <span>Previous Reading</span>
+              <strong>14 ng/mL</strong>
+            </div>
+            <div class="ho-arrow-icon">➔</div>
+            <div class="ho-cm-col" style="text-align: right;">
+              <span>Current Reading</span>
+              <strong style="color: var(--ho-teal-900);">18 ng/mL</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ⑥ AI SYNTHESIS SUMMARY -->
+      <section class="ho-panel ho-ai-summary-panel">
+        <div class="ho-panel-head">
+          <h3><span>✨</span> AI Synthesis Summary</h3>
+        </div>
+
+        <div class="ho-ai-text-box">
+          <p>"Compared with your previous report, Vitamin D has increased from 14 to 18 ng/mL. The value remains below the reference range shown in the report."</p>
+        </div>
+      </section>
+
+      <!-- ⑦ QUESTIONS TO ASK YOUR DOCTOR -->
+      <section class="ho-panel ho-doctor-panel">
+        <div class="ho-panel-head">
+          <h3><span>🗣️</span> Questions to Ask Your Doctor</h3>
+          <span class="ho-badge">Module 10 Prep</span>
+        </div>
+
+        <div class="ho-qa-feed">
+          <div class="ho-qa-item">
+            <div class="ho-qa-num">1</div>
+            <p>"Given my Vitamin D level is 18 ng/mL, should I adjust my current 60,000 IU weekly dosage?"</p>
+          </div>
+          <div class="ho-qa-item">
+            <div class="ho-qa-num">2</div>
+            <p>"Are there specific dietary changes I can combine with my supplements to speed up absorption?"</p>
+          </div>
+        </div>
+        <p style="font-size: 0.78rem; color: var(--ho-text-muted); margin-top: 1rem; font-weight: 600;">You may discuss these questions with your healthcare professional[cite: 4].</p>
+      </section>
+
+      <!-- ⑧ RAG CHAT INTERFACE (Spans 12) -->
+      <div class="ho-panel ho-rag-chat">
+        
+        <!-- Chat Area -->
+        <div class="ho-chat-area">
+          <div class="ho-panel-head" style="margin-bottom: 2rem;">
+            <h3><span>🤖</span> Health Assistant</h3>
+            <span class="ho-badge">RAG Active</span>
+          </div>
+
+          <div class="ho-chat-feed">
+            <div class="ho-msg-wrap user">
+              <div class="ho-msg-avatar"><%= locals.userName ? userName.substring(0,1).toUpperCase() : 'U' %></div>
+              <div class="ho-msg-bubble">What was my cholesterol six months ago?[cite: 4]</div>
+            </div>
+
+            <div class="ho-msg-wrap ai">
+              <div class="ho-msg-avatar">✨</div>
+              <div class="ho-msg-bubble">
+                Based on your authorized health records, your total cholesterol level was <strong>185 mg/dL</strong> six months ago (measured on February 12, 2026). This value was within the optimal reference range. Is there anything else you'd like to check?
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- 3. LONGITUDINAL TRENDS (Spans 8 Cols) -->
-        <div class="card c-trends shine-effect">
-          <div class="card-head">
-            <h3>Longitudinal Trends</h3>
-            <div class="trend-controls">
-              <button class="trend-tab active">BPM</button>
-              <button class="trend-tab">SpO2</button>
-              <button class="trend-tab">Sleep</button>
-              <button class="trend-tab">Weight</button>
-            </div>
-          </div>
-
-          <div class="chart-container">
-            <!-- Y-Axis -->
-            <div class="chart-axis-y">
-              <span>90</span>
-              <span>80</span>
-              <span>70</span>
-              <span>60</span>
-            </div>
-            
-            <!-- Grid Lines -->
-            <div class="chart-grid-lines">
-              <div class="chart-grid-line"></div>
-              <div class="chart-grid-line"></div>
-              <div class="chart-grid-line"></div>
-              <div class="chart-grid-line"></div>
-            </div>
-
-            <!-- X-Axis -->
-            <div class="chart-axis-x">
-              <span>Jan</span>
-              <span>Feb</span>
-              <span>Mar</span>
-              <span>Apr</span>
-              <span>May</span>
-              <span>Jun</span>
-            </div>
-
-            <!-- CSS/SVG Chart Line -->
-            <svg class="chart-svg" viewBox="0 0 800 200" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="var(--sage)" />
-                  <stop offset="70%" stop-color="var(--mist)" />
-                  <stop offset="100%" stop-color="var(--coral)" />
-                </linearGradient>
-              </defs>
-              <!-- Smooth bezier curve representing BPM trend -->
-              <path class="chart-line" d="M 50,150 C 150,150 200,140 300,130 C 400,120 500,160 600,80 C 700,0 750,20 780,40" stroke="url(#lineGrad)"></path>
-            </svg>
-
-            <!-- Tooltip -->
-            <div class="chart-tooltip">Jun: 82 BPM</div>
+          <div class="ho-input-bar">
+            <textarea class="ho-chat-input" rows="1" placeholder="Ask about your health data..."></textarea>
+            <button class="ho-send-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
           </div>
         </div>
 
-        <!-- 4. CLINICAL TRANSLATION (Spans 4 Cols) -->
-        <div class="card c-translation shine-effect">
-          <div class="card-head">
-            <h3>Clinical Translation</h3>
+        <!-- RAG Context Visualizer Terminal -->
+        <div class="ho-context-area">
+          <div class="ho-context-head">
+            <span class="ho-pulse-dot" style="background:var(--ho-teal-600); box-shadow:none;"></span> Context Retrieval Engine
           </div>
           
-          <div class="translation-block">
-            <div class="jargon-box">
-              <span>Medical Report Jargon</span>
-              <p>"Patient exhibits mild leukocytosis with a WBC count of 11.5 K/uL. Diff shows neutrophil predominance without left shift."</p>
-            </div>
-            
-            <div class="plain-text-box">
-              <span>Gemini AI Plain English</span>
-              <p>Your white blood cell (WBC) count is slightly higher than normal. This usually means your body's immune system is actively fighting off a mild infection or responding to stress or inflammation. There are no signs of severe infection.</p>
-            </div>
+          <p style="font-size: 0.88rem; color: var(--ho-text-muted); line-height: 1.5;">The AI uses <strong>Retrieval-Augmented Generation (RAG)</strong> to answer questions using your own authorized health information[cite: 4].</p>
+
+          <div class="ho-context-box">
+            <div class="ho-rag-step">Parsing user query for entities...</div>
+            <div class="ho-rag-step ho-typing">Target: "Cholesterol"</div>
+            <div class="ho-rag-step ho-typing ho-delay-1">Timeframe: "Six months ago"</div>
+            <div class="ho-rag-step ho-typing ho-delay-2" style="color: var(--ho-teal-700); font-weight: 700;">Querying MongoDB (userId: <%= locals.userId || '1001' %>)[cite: 4]...</div>
+            <div class="ho-rag-step ho-typing ho-delay-3">Document found: Lipid_Profile_Feb.pdf</div>
+            <div class="ho-rag-step ho-typing ho-delay-3" style="color: var(--ho-coral);">Injecting context into prompt...</div>
           </div>
         </div>
 
       </div>
+
+      <!-- ⑨ SAFETY DISCLAIMER -->
+      <div class="ho-disclaimer-panel">
+        <p>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          HealthOrbit provides health information and decision-support based on available data. It does not provide medical diagnosis or replace professional medical advice[cite: 4].
+        </p>
+      </div>
+
     </div>
-    
-    <!-- Compliance Disclaimer -->
-    <footer style="margin: 0 3.5rem 3rem; padding: 1.5rem; border: 1px dashed var(--sage); border-radius: 16px; font-size: 0.85rem; color: var(--void); line-height: 1.5; text-align: center; background: rgba(13, 122, 110, 0.05);">
-      HealthOrbit provides clinical decision support. AI insights describe how values compare with reference ranges — always confirm with a qualified healthcare professional.
-    </footer>
+
+    <!-- UNIVERSAL FOOTER IMPORT -->
+    <%- include('../partials/footer') %>
+
   </main>
 </div>
 
-<script>
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('collapsed');
-    }
-</script>
 </body>
 </html>

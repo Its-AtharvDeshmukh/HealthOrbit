@@ -2,6 +2,9 @@ const fs = require('fs');
 const { GoogleGenAI } = require('@google/genai');
 const { extractTextFromFile } = require('./ocrService');
 
+// ==========================================
+// 1. OCR DOCUMENT EXTRACTION (GEMINI)
+// ==========================================
 const analyzeMedicalTextWithAI = async (filePath, mimeType, rawFallbackText = '') => {
     let extractedText = rawFallbackText;
     
@@ -18,7 +21,6 @@ const analyzeMedicalTextWithAI = async (filePath, mimeType, rawFallbackText = ''
         const fileBuffer = fs.readFileSync(filePath);
         const base64Data = fileBuffer.toString('base64');
 
-        // FIXED PROMPT: Now extracts BOTH Medical and Non-Medical documents flawlessly.
         const promptText = `
 You are HealthOrbit's Universal Document Extraction Engine.
 Analyze the attached document (it could be a Medical Report, Resume, ID, or Invoice).
@@ -49,7 +51,7 @@ Return ONLY a valid JSON object matching this schema exactly:
 `;
 
         const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-1.5-pro',
             contents: [ promptText, { inlineData: { mimeType: mimeType, data: base64Data } } ],
             config: { responseMimeType: 'application/json' }
         });
@@ -68,7 +70,6 @@ Return ONLY a valid JSON object matching this schema exactly:
         console.warn('[HealthOrbit AI Parsing Error]:', error.message);
     }
 
-    // Fallback if AI fails
     return {
         parameters: [{
             name: 'Document Scanned', category: 'General', value: extractedText.substring(0, 100) + '...',
@@ -79,4 +80,56 @@ Return ONLY a valid JSON object matching this schema exactly:
     };
 };
 
-module.exports = { analyzeMedicalTextWithAI };
+// ==========================================
+// 2. MESH API CHAT INTEGRATION
+// ==========================================
+const chatWithMeshAPI = async (userMessage) => {
+    try {
+        const apiKey = process.env.MESH_API_KEY;
+        // FIXED: Replaced 'api.mesh.dev' with the correct 'api.meshapi.ai' domain
+        const baseUrl = process.env.MESH_BASE_URL || 'https://api.meshapi.ai/v1/chat/completions'; 
+
+        if (!apiKey) throw new Error('MESH_API_KEY is missing in .env');
+
+        // Fetch call to Mesh API
+        const response = await fetch(baseUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                // FIXED: Changed to Gemini 2.5 Flash as preferred in your Mesh API dashboard logs
+                model: 'google/gemini-2.5-flash', 
+                messages: [
+                    { 
+                        role: 'system', 
+                        content: 'You are HealthOrbit AI, a highly intelligent medical analyst assistant. Provide clear, concise, and empathetic answers regarding health data, medical metrics, and wellness.' 
+                    },
+                    { 
+                        role: 'user', 
+                        content: userMessage 
+                    }
+                ]
+            })
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`Mesh API error: ${response.status} - ${errText}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.choices && data.choices.length > 0) {
+            return data.choices[0].message.content;
+        } else {
+            throw new Error('Invalid response format from Mesh API');
+        }
+    } catch (error) {
+        console.error('[HealthOrbit Mesh API Error]:', error.message);
+        return "I am currently experiencing a connection issue with my Mesh API core. Please verify your API key in the .env file and try again.";
+    }
+};
+
+module.exports = { analyzeMedicalTextWithAI, chatWithMeshAPI };
