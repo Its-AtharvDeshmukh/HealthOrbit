@@ -15,6 +15,7 @@ const User = require('./models/User');
 const MedicalReport = require('./models/MedicalReport');
 const HealthMeasurement = require('./models/HealthMeasurement');
 const { extractTextFromFile } = require('./services/ocrService');
+const { buildUserAIContext } = require('./services/contextService');
 
 
 const { analyzeMedicalTextWithAI, chatWithMeshAPI } = require('./services/aiService');
@@ -251,15 +252,7 @@ app.get("/error",requireAuth, (req, res) => {
     }
 });
 
-// ==========================================
-// PROFILE & FAMILY ROUTE
-// ==========================================
-// ==========================================
-// PROFILE & FAMILY ROUTE
-// ==========================================
-// ==========================================
-// PROFILE, HEALTH & EMERGENCY ROUTES
-// ==================================
+
 // ==========================================
 // PROFILE, HEALTH & FAMILY ROUTES
 // ==========================================
@@ -797,17 +790,48 @@ app.post('/account/delete', requireAuth, async (req, res) => {
 // ==========================================
 app.post('/api/chat', requireAuth, async (req, res) => {
     try {
-        const { message } = req.body;
+        const { message, currentPage, selectedRecordId } = req.body;
         if (!message) {
             return res.status(400).json({ error: 'Message is required' });
         }
 
-        // Call the Mesh API service
-        const reply = await chatWithMeshAPI(message);
+        // SECURITY: Obtain active user ID exclusively from the verified server session
+        const activeUserId = req.session.userId || (req.user ? req.user._id : null);
+        if (!activeUserId) {
+            return res.status(401).json({ error: 'Unauthorized: No active session' });
+        }
+
+        // --- PHASE 5: INITIALIZE/RETRIEVE SESSION CHAT HISTORY ---
+        if (!req.session.chatHistory) {
+            req.session.chatHistory = [];
+        }
+
+        // Build secure, LONGITUDINAL user context
+        let userContextJSON = "{}";
+        try {
+            userContextJSON = await buildUserAIContext(activeUserId, { currentPage, selectedRecordId }, message);
+        } catch (contextErr) {
+            console.error('[HealthOrbit Context Error]:', contextErr.message);
+            userContextJSON = JSON.stringify({ error: "Data retrieval temporarily unavailable." });
+        }
+
+        // --- PHASE 5: PASS HISTORY TO AI SERVICE ---
+        const reply = await chatWithMeshAPI(message, userContextJSON, req.session.chatHistory);
         
+        // --- PHASE 5: UPDATE CONVERSATION MEMORY ---
+        // Push the latest turn into the session memory
+        req.session.chatHistory.push({ role: 'user', content: message });
+        req.session.chatHistory.push({ role: 'assistant', content: reply });
+        
+        // BOUNDARY ENFORCEMENT: Keep only the last 10 messages (5 full exchanges) to prevent token bloat
+        if (req.session.chatHistory.length > 10) {
+            req.session.chatHistory = req.session.chatHistory.slice(-10);
+        }
+
+        // Preserve existing response format
         res.json({ reply: reply });
     } catch (error) {
-        console.error('[HealthOrbit Chat API Error]:', error);
+        console.error('[HealthOrbit Chat API Error]:', error.message);
         res.status(500).json({ error: 'Failed to process chat request' });
     }
 });

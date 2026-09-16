@@ -83,13 +83,38 @@ Return ONLY a valid JSON object matching this schema exactly:
 // ==========================================
 // 2. MESH API CHAT INTEGRATION
 // ==========================================
-const chatWithMeshAPI = async (userMessage) => {
+// UPDATE chatWithMeshAPI to accept chatHistory:
+const chatWithMeshAPI = async (userMessage, userContextJSON = "{}", chatHistory = []) => {
     try {
         const apiKey = process.env.MESH_API_KEY;
-        // FIXED: Replaced 'api.mesh.dev' with the correct 'api.meshapi.ai' domain
-        const baseUrl = process.env.MESH_BASE_URL || 'https://api.meshapi.ai/v1/chat/completions'; 
+        const baseUrl = process.env.MESH_BASE_URL || 'https://api.meshapi.ai/v1/chat/completions';
 
         if (!apiKey) throw new Error('MESH_API_KEY is missing in .env');
+
+        // Construct Dynamic System Prompt with Guardrails
+        const systemPrompt = `You are HealthOrbit AI, an intelligent, context-aware longitudinal assistant integrated into the HealthOrbit platform.
+
+MEDICAL SAFETY & PRIVACY RULES:
+1. YOU ARE NOT A DOCTOR. Do not make diagnoses, prescribe medications, or recommend changes to treatment. For serious symptoms, advise seeking professional medical care.
+2. Differentiate fact from knowledge: Clearly distinguish between "According to your HealthOrbit records..." and general medical information.
+3. NO HALLUCINATIONS: NEVER invent, estimate, or mock up a missing measurement, medicine, symptom, report result, or trend. If the data is not in the JSON context, explicitly state that the information is unavailable.
+4. DO NOT attempt to manipulate or modify records. You are read-only.
+5. AMBIGUITY: If the user asks a follow-up question that is ambiguous or lacks context, politely ask them to clarify what they are referring to.
+
+USER DATA CONTEXT (JSON FACTUAL DATA):
+${userContextJSON}
+
+INSTRUCTIONS:
+- Use the USER DATA CONTEXT as the absolute source of truth to answer the question.
+- Conversation history is provided so you can understand follow-up questions (e.g., "Was that higher than yesterday?").
+- Be concise, professional, and empathetic.`;
+
+        // --- PHASE 5: INJECT CHAT HISTORY INTO MESSAGE PAYLOAD ---
+        const messagesPayload = [
+            { role: 'system', content: systemPrompt },
+            ...chatHistory, // Spread the previous session turns
+            { role: 'user', content: userMessage }
+        ];
 
         // Fetch call to Mesh API
         const response = await fetch(baseUrl, {
@@ -99,18 +124,8 @@ const chatWithMeshAPI = async (userMessage) => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                // FIXED: Changed to Gemini 2.5 Flash as preferred in your Mesh API dashboard logs
-                model: 'google/gemini-2.5-flash', 
-                messages: [
-                    { 
-                        role: 'system', 
-                        content: 'You are HealthOrbit AI, a highly intelligent medical analyst assistant. Provide clear, concise, and empathetic answers regarding health data, medical metrics, and wellness.' 
-                    },
-                    { 
-                        role: 'user', 
-                        content: userMessage 
-                    }
-                ]
+                model: 'google/gemini-2.5-flash',
+                messages: messagesPayload
             })
         });
 
@@ -128,7 +143,7 @@ const chatWithMeshAPI = async (userMessage) => {
         }
     } catch (error) {
         console.error('[HealthOrbit Mesh API Error]:', error.message);
-        return "I am currently experiencing a connection issue with my Mesh API core. Please verify your API key in the .env file and try again.";
+        return "I am currently experiencing a connection issue. Please ensure your API keys are configured correctly and try again.";
     }
 };
 
