@@ -7,27 +7,30 @@ const Notification = require('../models/Notification');
 const MedicineLog = require('../models/MedicineLog');
 
 const initScheduler = () => {
-    // 1. CLOUD CHECK: Completely bypass WhatsApp and Puppeteer if running on Render
-    // Render automatically sets process.env.RENDER = 'true'
-    if (process.env.RENDER) {
-        console.log('⚠️ [HealthOrbit] Render Cloud detected. WhatsApp scheduler bypassed to prevent Chrome crash.');
-        return; // Stops the function here. Chrome will not launch.
-    }
-
     // ==========================================
-    // 2. INITIALIZE FREE WHATSAPP CLIENT (Local Only)
+    // 1. INITIALIZE FREE WHATSAPP CLIENT (Cloud Safe)
     // ==========================================
     try {
         const whatsappClient = new Client({
             authStrategy: new LocalAuth(), 
             puppeteer: {
-                args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+                headless: true,
+                args: [
+                    '--no-sandbox', 
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-accelerated-2d-canvas',
+                    '--no-first-run',
+                    '--no-zygote',
+                    '--single-process',
+                    '--disable-gpu'
+                ] 
             }
         });
 
         whatsappClient.on('qr', (qr) => {
             console.log('\n======================================================');
-            console.log('[HealthOrbit] WHATSAPP AUTHENTICATION REQUIRED');
+            console.log('📱 [HealthOrbit] WHATSAPP AUTHENTICATION REQUIRED');
             console.log('Scan this QR code with your WhatsApp to enable free messages:');
             qrcode.generate(qr, { small: true });
             console.log('======================================================\n');
@@ -41,7 +44,7 @@ const initScheduler = () => {
         whatsappClient.initialize();
 
         // ==========================================
-        // 3. INITIALIZE BACKGROUND SCHEDULER
+        // 2. INITIALIZE BACKGROUND SCHEDULER
         // ==========================================
         cron.schedule('* * * * *', async () => {
             try {

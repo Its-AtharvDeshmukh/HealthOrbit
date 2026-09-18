@@ -195,7 +195,12 @@ app.post('/signup', async (req, res) => {
         req.session.userId = newUser._id;
         req.session.userName = newUser.fullName;
         req.session.userEmail = newUser.email;
-        return res.redirect('/dashboard');
+        
+        // FIX: Force session to save before redirecting
+        req.session.save((err) => {
+            if (err) console.error("Session save error:", err);
+            return res.redirect('/dashboard');
+        });
     } catch (error) {
         return res.render('auth/auth', { signupError: 'Internal server error.', loginError: null });
     }
@@ -214,7 +219,12 @@ app.post('/login', async (req, res) => {
         req.session.userId = user._id;
         req.session.userName = user.fullName;
         req.session.userEmail = user.email;
-        return res.redirect('/dashboard');
+        
+        // FIX: Force session to save before redirecting
+        req.session.save((err) => {
+            if (err) console.error("Session save error:", err);
+            return res.redirect('/dashboard');
+        });
     } catch (error) {
         return res.render('auth/auth', { loginError: 'Internal server error.', signupError: null });
     }
