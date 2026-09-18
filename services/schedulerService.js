@@ -7,6 +7,13 @@ const Notification = require('../models/Notification');
 const MedicineLog = require('../models/MedicineLog');
 
 const initScheduler = () => {
+
+    if (process.env.RENDER) {
+        console.log('⚠️ Render Cloud detected. WhatsApp bypassed to prevent memory crash.');
+        return; 
+    }
+
+    
     try {
         const whatsappClient = new Client({
             authStrategy: new LocalAuth(), 
