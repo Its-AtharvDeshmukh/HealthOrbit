@@ -7,9 +7,6 @@ const Notification = require('../models/Notification');
 const MedicineLog = require('../models/MedicineLog');
 
 const initScheduler = () => {
-    // ==========================================
-    // 1. INITIALIZE FREE WHATSAPP CLIENT (Cloud Safe)
-    // ==========================================
     try {
         const whatsappClient = new Client({
             authStrategy: new LocalAuth(), 
@@ -28,12 +25,24 @@ const initScheduler = () => {
             }
         });
 
+        // 1. ADDED: Timestamps and Expiration Warnings
         whatsappClient.on('qr', (qr) => {
+            const time = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata' });
             console.log('\n======================================================');
-            console.log('📱 [HealthOrbit] WHATSAPP AUTHENTICATION REQUIRED');
-            console.log('Scan this QR code with your WhatsApp to enable free messages:');
+            console.log(`📱 [${time}] NEW QR CODE GENERATED!`);
+            console.log('⚠️ THIS CODE EXPIRES IN 20 SECONDS. SCAN IT IMMEDIATELY!');
             qrcode.generate(qr, { small: true });
             console.log('======================================================\n');
+        });
+
+        // 2. ADDED: Success Alert
+        whatsappClient.on('authenticated', () => {
+            console.log('\n🔐 [HealthOrbit] SUCCESS! WhatsApp is Authenticated!\n');
+        });
+
+        // 3. ADDED: Failure Alert
+        whatsappClient.on('auth_failure', (msg) => {
+            console.log('\n❌ [HealthOrbit] WhatsApp Authentication Failed:', msg, '\n');
         });
 
         whatsappClient.on('ready', () => {
@@ -44,7 +53,7 @@ const initScheduler = () => {
         whatsappClient.initialize();
 
         // ==========================================
-        // 2. INITIALIZE BACKGROUND SCHEDULER
+        // BACKGROUND SCHEDULER
         // ==========================================
         cron.schedule('* * * * *', async () => {
             try {
