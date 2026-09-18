@@ -5,14 +5,15 @@ const Notification = require('../models/Notification');
 const MedicineLog = require('../models/MedicineLog');
 
 /**
- * Sends notifications via Telegram Bot HTTP API
+ * Dispatches instant notifications via Telegram Bot HTTP API (HTML Mode)
  */
 const sendTelegramAlert = async (messageText, chatId = null) => {
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const targetChatId = chatId || process.env.TELEGRAM_CHAT_ID;
+    // Clean the variables to ensure no invisible spaces cause errors
+    const token = process.env.TELEGRAM_BOT_TOKEN ? process.env.TELEGRAM_BOT_TOKEN.trim() : null;
+    const targetChatId = chatId || (process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.trim() : null);
 
     if (!token || !targetChatId) {
-        console.warn('[Telegram Alert] Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID.');
+        console.warn('⚠️ [Telegram Alert] Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID.');
         return false;
     }
 
@@ -23,14 +24,22 @@ const sendTelegramAlert = async (messageText, chatId = null) => {
             body: JSON.stringify({
                 chat_id: targetChatId,
                 text: messageText,
-                parse_mode: 'Markdown'
+                parse_mode: 'HTML' // HTML formatting is stable and reliable
             })
         });
 
         const data = await response.json();
-        return data.ok;
+        
+        if (!data.ok) {
+            console.error(`❌ [Telegram API Error]: ${data.description}`);
+            return false;
+        }
+
+        console.log(`📡 [Telegram] Successfully delivered to Chat ID: ${targetChatId}`);
+        return true;
+
     } catch (err) {
-        console.error('[Telegram Alert Error]:', err.message);
+        console.error('❌ [Telegram Network Error]:', err.message);
         return false;
     }
 };
@@ -84,11 +93,11 @@ const initScheduler = () => {
                     const user = await User.findById(med.userId);
                     const recipientName = user ? user.fullName : 'HealthOrbit User';
 
-                    const messageBody = `*HealthOrbit Reminder* 💊\n\nHello *${recipientName}*,\nIt is time to take your scheduled dose:\n\n• *Medicine:* ${med.name}\n• *Dosage:* ${med.dosage}\n• *Instructions:* ${med.instructions || 'As directed'}\n\n_Please log this in your HealthOrbit dashboard._`;
+                    const messageBody = `<b>HealthOrbit Reminder</b> 💊\n\nHello <b>${recipientName}</b>,\nIt is time to take your scheduled dose:\n\n• <b>Medicine:</b> ${med.name}\n• <b>Dosage:</b> ${med.dosage}\n• <b>Instructions:</b> ${med.instructions || 'As directed'}\n\n<i>Please log this in your HealthOrbit dashboard.</i>`;
 
                     const sent = await sendTelegramAlert(messageBody);
                     if (sent) {
-                        console.log(`[HealthOrbit] Telegram reminder sent for ${med.name} at ${currentTimeStr}`);
+                        console.log(`✅ [HealthOrbit] Medication reminder processed for: ${med.name}`);
                     }
                 }
             }
