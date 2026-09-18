@@ -1,28 +1,43 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-    fullName: { type: String, required: [true, 'Full name is required'], trim: true },
-    email: { type: String, required: [true, 'Email is required'], unique: true, lowercase: true, trim: true },
-    passwordHash: { type: String, required: [true, 'Password is required'] },
+    fullName: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    passwordHash: { type: String }, // Optional for Google OAuth users
     
-    // --- NEW PROFILE FIELDS ---
-    age: { type: Number },
-    gender: { type: String },
-    phone: { type: String },
+    // Personal Info
+    age: { type: Number, min: 0, max: 130 },
+    gender: { type: String, enum: ['Male', 'Female', 'Other', 'Prefer not to say', ''] },
+    phone: { type: String, trim: true },
     
-    // --- NEW HEALTH INFO FIELDS ---
-    bloodGroup: { type: String },
-    allergies: { type: [String], default: [] },
-    medicalConditions: { type: [String], default: [] },
-    currentMedicines: { type: [String], default: [] },
+    // Health Info
+    bloodGroup: { type: String, enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', ''] },
+    allergies: [{ type: String, trim: true }],
+    medicalConditions: [{ type: String, trim: true }],
+    currentMedicines: [{ type: String, trim: true }],
     
-    // --- NEW EMERGENCY CONTACT FIELDS ---
-    emergencyContactName: { type: String },
-    emergencyContactRelation: { type: String },
-    emergencyContactPhone: { type: String }
-}, {
-    timestamps: true 
-});
+    // Emergency Contact
+    emergencyContactName: { type: String, trim: true },
+    emergencyContactRelation: { type: String, trim: true },
+    emergencyContactPhone: { type: String, trim: true },
 
-const User = mongoose.model('User', userSchema);
-module.exports = User;
+    // PRIVACY & AI SETTINGS (NEW FOR PHASE 7)
+    privacySettings: {
+        emergencyCardEnabled: { type: Boolean, default: false },
+        aiAccess: {
+            profile: { type: Boolean, default: true },
+            medicalReports: { type: Boolean, default: true },
+            healthMeasurements: { type: Boolean, default: true },
+            medicines: { type: Boolean, default: true },
+            familyMetadata: { type: Boolean, default: false }
+        }
+    },
+    // Add this right below your privacySettings:
+    donorProfile: {
+        bloodDonorEnabled: { type: Boolean, default: false },
+        organDonorPreference: { type: String, enum: ['Yes', 'No', 'Not specified'], default: 'Not specified' },
+        contactSharingEnabled: { type: Boolean, default: false }
+    }
+}, { timestamps: true });
+
+module.exports = mongoose.model('User', userSchema);

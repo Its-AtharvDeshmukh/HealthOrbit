@@ -7,51 +7,60 @@ const medicalReportSchema = new mongoose.Schema({
         required: true,
         index: true
     },
-    originalFileName: {
-        type: String,
-        required: true
+    originalFileName: { 
+        type: String, 
+        required: true 
     },
-    storedFileName: {
-        type: String,
-        required: true
+    storedFileName: { 
+        type: String, 
+        required: true 
     },
-    filePath: {
-        type: String,
-        required: true
+    filePath: { 
+        type: String 
     },
-    mimeType: {
-        type: String,
-        required: true
+    mimeType: { 
+        type: String, 
+        required: true 
     },
-    fileSizeBytes: {
-        type: Number,
-        required: true
+    fileSizeBytes: { 
+        type: Number 
     },
     status: {
         type: String,
         enum: ['uploaded', 'processing', 'extracted', 'failed'],
         default: 'uploaded'
     },
-    extractedData: {
-        rawText: { type: String, default: '' },
-        parameters: [{
-            name: String,
-            category: String,
-            value: String,
-            unit: String,
-            referenceRange: String,
-            status: String,
-            statusClass: String
-        }]
+    aiExplanation: { 
+        type: String, 
+        default: '' 
     },
-    aiExplanation: {
-        type: String,
-        default: ''
+    extractedData: {
+        rawText: { 
+            type: String, 
+            default: '' 
+        },
+        parameters: [
+            {
+                name: { type: String },
+                category: { type: String, default: 'General' },
+                value: { type: String },
+                unit: { type: String, default: '' },
+                referenceRange: { type: String, default: '' },
+                status: { type: String, default: 'Standard' },
+                statusClass: { type: String, default: 'good' }
+            }
+        ]
+    },
+    analysisData: {
+        documentTitle: { type: String, default: '' },
+        plainEnglishExplanation: { type: String, default: '' },
+        doctorQuestions: [{ type: String }],
+        generatedAt: { type: Date, default: null },
+        dataHash: { type: String, default: '' },
+        status: { type: String, enum: ['ready', 'pending', 'stale'], default: 'pending' }
     }
-}, {
-    timestamps: true
-});
+}, { timestamps: true });
 
-const MedicalReport = mongoose.model('MedicalReport', medicalReportSchema);
+medicalReportSchema.index({ userId: 1, createdAt: -1 });
 
-module.exports = MedicalReport;
+module.exports = mongoose.models.MedicalReport || mongoose.model('MedicalReport', medicalReportSchema);

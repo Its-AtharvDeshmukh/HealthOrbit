@@ -1,29 +1,65 @@
-<link rel="icon" href="/images/Logo.png">
-<style>
-  @media (max-width: 1024px) {
-    /* Using 'body .ho-main-content' makes this rule stronger than the original */
-    body .ho-main-content {
-       margin-top: 5.5rem;
-        padding: 0 !important; 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/header', { title: 'HealthOrbit - Clinical Document Workspace', cssFile: 'document-engine' }) %>
+  <link rel="icon" href="/images/Logo.png">
+  <style>
+    :root {
+      --ho-bg-airy: #edf6f4;
+      --ho-teal-900: #0b5e55;
+      --ho-teal-700: #0d7a6e;
+      --ho-teal-600: #109485;
+      --ho-mint-400: #42b89d;
+      --ho-coral: #e07a68;
+      --ho-coral-soft: #fbe4de;
+      --ho-text-main: #0f1c1a;
+      --ho-text-muted: #4e6b63;
+      --ho-danger: #d94b4b;
+      --ho-green: #27ae60;
+      
+      --ho-glass-clear: rgba(255, 255, 255, 0.48);
+      --ho-glass-solid: rgba(255, 255, 255, 0.88);
+      --ho-glass-border: rgba(255, 255, 255, 0.95);
+      --ho-glass-border-subtle: rgba(13, 122, 110, 0.12);
+      
+      --ho-radius-xl: 32px;
+      --ho-radius-lg: 20px;
+      --ho-radius-md: 12px;
+      --ho-shadow-glass: 0 20px 50px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
     }
-}
-</style>
-<%- include('../partials/header', { title: 'HealthOrbit - Clinical Document Workspace', cssFile: 'document-engine' }) %>
+
+    .ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
+    .ho-orb-1 { width: 550px; height: 550px; background: #76d7c4; top: -100px; left: -100px; }
+    .ho-orb-2 { width: 600px; height: 600px; background: #fadbd8 !important; bottom: -150px; right: -100px; animation-delay: -5s; }
+    .ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 35%; left: 35%; opacity: 0.3; animation-delay: -10s; }
+    
+    @keyframes hoFloatOrb { 
+      0% { transform: translate(0, 0) scale(1); } 
+      100% { transform: translate(50px, 60px) scale(1.15); } 
+    }
+
+    @media (max-width: 1024px) {
+      body .ho-main-content {
+         margin-top: 5.5rem;
+         padding: 0 !important; 
+      }
+    }
+  </style>
+</head>
 <body>
 
 <%- include('../partials/ambient') %>
 
 <div class="ho-app-layout">
   
-  <!-- UNIVERSAL SIDEBAR IMPORT -->
   <%- include('../partials/sidebar') %>
 
-  <!-- SCOPED MAIN CONTENT -->
   <main class="ho-main-content">
     
     <header class="ho-topbar">
       <div>
-        <h1>Document <b style="color: #e07a68;" >Intelligence</b> Workspace</h1>
+        <h1>Document <b style="color: #e07a68;">Intelligence</b> Workspace</h1>
         <p>Inspect documents, verify AI extractions, and manage your clinical records.</p>
       </div>
       <div class="ho-topbar-actions">
@@ -33,7 +69,7 @@
 
     <div class="ho-workspace-grid">
       
-      <!-- MOBILE-ONLY USER-FRIENDLY UPLOAD CARD -->
+      <!-- MOBILE-ONLY UPLOAD CARD -->
       <div class="ho-mobile-upload-card" onclick="openUpload()">
         <div class="icon-wrap">📄</div>
         <h3>Add Medical Document</h3>
@@ -41,7 +77,7 @@
         <button>Select File to Upload</button>
       </div>
 
-      <!-- LEFT PANE: DOCUMENT VIEWER -->
+      <!-- LEFT PANE: SECURE DOCUMENT VIEWER -->
       <section class="ho-panel">
         <div class="ho-panel-header">
           <h2>Original Source</h2>
@@ -49,11 +85,11 @@
         </div>
 
         <div class="ho-doc-viewer">
-          <% if (locals.latestReport && latestReport.storedFileName) { %>
-            <% if (latestReport.mimeType === 'application/pdf') { %>
-              <iframe src="/uploads/<%= latestReport.storedFileName %>#toolbar=0"></iframe>
+          <% if (locals.latestReport && latestReport._id) { %>
+            <% if (latestReport.mimeType === 'application/pdf' || latestReport.originalFileName.toLowerCase().endsWith('.pdf')) { %>
+              <iframe src="/reports/<%= latestReport._id %>/file#toolbar=0"></iframe>
             <% } else { %>
-              <img src="/uploads/<%= latestReport.storedFileName %>" alt="Report Preview" style="max-width: 100%; max-height: 100%; padding: 0.8rem; border-radius: var(--ho-radius-md); object-fit: contain;">
+              <img src="/reports/<%= latestReport._id %>/file" alt="Report Preview" style="max-width: 100%; max-height: 100%; padding: 0.8rem; border-radius: var(--ho-radius-md); object-fit: contain;">
             <% } %>
           <% } else { %>
             <div class="ho-empty-state">
@@ -65,7 +101,7 @@
         </div>
       </section>
 
-      <!-- RIGHT PANE: CLEAR MIRROR CONSOLE -->
+      <!-- RIGHT PANE: INTELLIGENCE CONSOLE -->
       <section class="ho-panel">
         <div class="ho-panel-header">
           <h2>Intelligence Console</h2>
@@ -87,7 +123,6 @@
         <!-- TAB 1: FINDINGS -->
         <div id="ho-tab-findings" class="ho-tab-content active">
           <% if (locals.latestReport) { %>
-            <!-- OVERLAP FIX: Added ho-findings-form class -->
             <form class="ho-findings-form" action="/reports/update/<%= latestReport._id %>" method="POST">
               
               <div class="ho-scroll-container">
@@ -139,7 +174,6 @@
                 <% } %>
               </div>
               
-              <!-- Fixed footer button positioning -->
               <button type="submit" class="ho-btn-primary" style="width: 100%; margin-top: 1.2rem; padding: 1rem; font-size: 0.95rem; flex-shrink: 0;">Save & Sync Corrections</button>
             </form>
           <% } else { %>
@@ -155,9 +189,14 @@
           <div class="ho-scroll-container">
             <div class="ho-ai-box">
               <h3><span>✨</span> Medical Analyst Summary</h3>
-              <p>
+              <p style="line-height: 1.6; margin-top: 0.5rem;">
                 <%= (locals.latestReport && latestReport.aiExplanation) ? latestReport.aiExplanation : 'Clinical summaries will appear here once your document is analyzed.' %>
               </p>
+              <% if (locals.latestReport && latestReport._id) { %>
+                <a href="/ai-assistant?reportId=<%= latestReport._id %>" class="ho-btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1.2rem; padding: 0.7rem 1.4rem; font-size: 0.85rem; text-decoration: none; width: fit-content;">
+                  💬 Ask AI About This Report
+                </a>
+              <% } %>
             </div>
             <div style="background: rgba(255, 255, 255, 0.8); border: 1.5px dashed rgba(13, 122, 110, 0.3); border-radius: var(--ho-radius-md); padding: 1.2rem; font-size: 0.82rem; color: var(--ho-text-muted); line-height: 1.5; margin-top: 1rem;">
               🛡️ <strong>Decision Support Notice:</strong> HealthOrbit provides automated summaries. AI observations do not replace professional physician diagnosis or medical evaluation.

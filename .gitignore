@@ -2,3 +2,6 @@ node_modules/
 .env
 **/.DS_Store
 uploads/
+# WhatsApp Web local session and cache
+.wwebjs_auth/
+.wwebjs_cache/

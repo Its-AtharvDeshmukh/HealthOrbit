@@ -1,611 +1,300 @@
 <!-- views/partials/ai-widget.ejs -->
 <style>
   /* ==========================================================================
-     STRICTLY SCOPED AI WIDGET STYLES — HealthOrbit Glass Edition
+     HEALTHORBIT AI WIDGET - PREMIUM GLASSMORPHISM UI
      ========================================================================== */
+  :root {
+    --ho-ai-teal: #0d7a6e;
+    --ho-ai-teal-dark: #095950;
+    --ho-ai-teal-light: #15b3a1;
+    --ho-ai-coral: #e07a68;
+    --ho-ai-bg-airy: #edf6f4;
+    --ho-ai-text-main: #0f1c1a;
+    --ho-ai-text-muted: #4e6b63;
+    
+    --ho-ai-glass-bg: rgba(255, 255, 255, 0.75);
+    --ho-ai-glass-border: rgba(255, 255, 255, 0.7);
+    --ho-ai-glass-shadow: 0 24px 54px rgba(13, 122, 110, 0.15);
+    --ho-ai-easing: cubic-bezier(0.16, 1, 0.3, 1);
+  }
 
   .ho-ai-widget-root {
-    position: fixed;
-    bottom: 2rem;
-    right: 2.5rem;
-    z-index: 9999;
+    position: fixed; bottom: 2rem; right: 2.5rem; z-index: 9999;
     font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .ho-ai-widget-root *, .ho-ai-widget-root *::before, .ho-ai-widget-root *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
+  /* ---------- FLOATING ACTION BUTTON (FAB) ---------- */
+  .ho-ai-fab-container { position: relative; width: 64px; height: 64px; }
+  
+  .ho-ai-fab-ring {
+    position: absolute; inset: -4px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--ho-ai-teal-light), var(--ho-ai-teal));
+    opacity: 0.4; filter: blur(10px);
+    animation: hoAiPulse 3s infinite var(--ho-ai-easing);
   }
 
-  /* ---------- Orbit logo mark: a core with an orbiting satellite dot ---------- */
-  .ho-orbit-mark {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .ho-orbit-mark .ho-orbit-ring {
-    position: absolute;
-    inset: 0;
-    border: 1.5px dashed rgba(255, 255, 255, 0.45);
-    border-radius: 50%;
-    animation: hoOrbitSpin 6s linear infinite;
-  }
-
-  .ho-orbit-mark .ho-orbit-core {
-    width: 40%;
-    height: 40%;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #fff, var(--ho-coral, #e07a68) 70%);
-    box-shadow: 0 0 8px rgba(224, 122, 104, 0.7);
-  }
-
-  .ho-orbit-mark .ho-orbit-satellite {
-    position: absolute;
-    top: -2px;
-    left: 50%;
-    width: 16%;
-    height: 16%;
-    margin-left: -8%;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
-    transform-origin: 50% 500%;
-    animation: hoOrbitSpin 6s linear infinite;
-  }
-
-  @keyframes hoOrbitSpin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  /* ---------- Floating Action Button ---------- */
   .ho-ai-fab {
-    position: relative;
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--ho-teal-700, #0d7a6e), var(--ho-teal-900, #0b5e55));
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    box-shadow: 0 10px 30px rgba(13, 122, 110, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.3);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, var(--ho-ai-teal), var(--ho-ai-teal-dark));
+    color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 10px 25px rgba(13, 122, 110, 0.4);
+    transition: transform 0.4s var(--ho-ai-easing), box-shadow 0.4s var(--ho-ai-easing);
+    z-index: 2;
   }
+  .ho-ai-fab:hover { transform: translateY(-4px) scale(1.05); box-shadow: 0 15px 35px rgba(13, 122, 110, 0.5); }
+  .ho-ai-fab:active { transform: scale(0.95); }
+  .ho-ai-fab svg { width: 28px; height: 28px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; transition: 0.3s; }
+  
+  .ho-ai-widget-root.open .ho-ai-fab { transform: scale(0.8) translateY(10px); opacity: 0; pointer-events: none; }
 
-  .ho-ai-fab::before {
-    content: '';
-    position: absolute;
-    inset: -6px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(13, 122, 110, 0.35), transparent 70%);
-    opacity: 0.8;
-    animation: hoFabPulse 2.6s ease-in-out infinite;
-    z-index: -1;
-  }
-
-  @keyframes hoFabPulse {
-    0%, 100% { transform: scale(0.9); opacity: 0.55; }
-    50% { transform: scale(1.18); opacity: 0.1; }
-  }
-
-  .ho-ai-fab:hover {
-    transform: translateY(-4px) scale(1.06);
-    box-shadow: 0 18px 40px rgba(13, 122, 110, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.35);
-  }
-
-  .ho-ai-fab:active {
-    transform: scale(0.93);
-  }
-
-  .ho-ai-fab svg {
-    width: 26px;
-    height: 26px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .ho-ai-fab.is-open svg {
-    transform: rotate(135deg);
-  }
-
-  .ho-ai-fab-badge {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #34d399;
-    border: 2px solid rgba(255, 255, 255, 0.9);
-    box-shadow: 0 0 0 rgba(52, 211, 153, 0.6);
-    animation: hoStatusPulse 2s ease-in-out infinite;
-  }
-
-  @keyframes hoStatusPulse {
-    0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.6); }
-    70% { box-shadow: 0 0 0 6px rgba(52, 211, 153, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
-  }
-
-  /* ---------- Glass panel ---------- */
+  /* ---------- THE GLASS CHAT PANEL ---------- */
   .ho-ai-panel {
-    position: absolute;
-    bottom: 84px;
-    right: 0;
-    width: 390px;
-    height: 620px;
-    max-height: calc(100vh - 120px);
-    background: rgba(255, 255, 255, 0.68);
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    border-radius: 28px;
-    box-shadow:
-      0 30px 70px rgba(11, 94, 85, 0.22),
-      0 2px 8px rgba(11, 94, 85, 0.08),
-      inset 0 1px 1px rgba(255, 255, 255, 0.9);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(24px) scale(0.93);
-    transform-origin: bottom right;
-    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                visibility 0.35s;
+    position: absolute; bottom: 85px; right: 0;
+    width: 420px; height: 680px; max-height: calc(100vh - 120px);
+    background: var(--ho-ai-glass-bg);
+    backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid var(--ho-ai-glass-border);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), var(--ho-ai-glass-shadow);
+    border-radius: 28px; display: flex; flex-direction: column; overflow: hidden;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transform: translateY(40px) scale(0.95); transform-origin: bottom right;
+    transition: all 0.5s var(--ho-ai-easing);
   }
-
-  .ho-ai-panel::before {
-    /* subtle glass sheen along the top edge */
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
-  }
-
-  .ho-ai-panel.open {
-    opacity: 1;
-    visibility: visible;
+  .ho-ai-widget-root.open .ho-ai-panel {
+    opacity: 1; visibility: visible; pointer-events: auto;
     transform: translateY(0) scale(1);
   }
 
-  /* ---------- Header ---------- */
+  /* ---------- HEADER & LOGO ---------- */
   .ho-ai-header {
-    position: relative;
-    background: linear-gradient(135deg, var(--ho-teal-900, #0b5e55), var(--ho-teal-700, #0d7a6e));
-    padding: 1.25rem 1.4rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: white;
-    flex-shrink: 0;
-    overflow: hidden;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.5rem; background: rgba(255, 255, 255, 0.5);
+    border-bottom: 1px solid rgba(13, 122, 110, 0.1); flex-shrink: 0;
   }
-
-  .ho-ai-header::after {
-    content: '';
-    position: absolute;
-    top: -60%;
-    right: -20%;
-    width: 60%;
-    height: 220%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.16), transparent 65%);
-    pointer-events: none;
-  }
-
-  .ho-ai-header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    position: relative;
-    z-index: 1;
-  }
-
-  .ho-ai-header-logo {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.14);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-  }
-
-  .ho-ai-header-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .ho-ai-header-title {
-    font-weight: 800;
-    font-size: 1.05rem;
-    font-family: 'Fraunces', serif;
-    letter-spacing: 0.01em;
-    line-height: 1;
-  }
-
-  .ho-ai-header-title span {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    color: var(--ho-coral, #e07a68);
-  }
-
-  .ho-ai-header-status {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.75);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .ho-ai-header-status-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #34d399;
-    box-shadow: 0 0 0 rgba(52, 211, 153, 0.6);
-    animation: hoStatusPulse 2s ease-in-out infinite;
-  }
+  
+  .ho-ai-brand { display: flex; align-items: center; gap: 0.8rem; }
+  
+  /* Animated 3-Ring Logo Integration */
+  .ho-ai-logo-box { width: 34px; height: 34px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ho-ai-ring-1 { position: absolute; inset: 0; border: 1.5px dashed var(--ho-ai-teal); border-radius: 50%; animation: hoAiSpin 12s linear infinite; }
+  .ho-ai-ring-2 { position: absolute; inset: -4px; border: 1.5px dashed var(--ho-ai-coral); border-radius: 50%; animation: hoAiSpinAnti 8s linear infinite; }
+  .ho-ai-nucleus { width: 8px; height: 8px; background: var(--ho-ai-teal-dark); border-radius: 50%; box-shadow: 0 0 10px var(--ho-ai-teal-light); }
+  
+  .ho-ai-brand-text { display: flex; flex-direction: column; gap: 2px; }
+  .ho-ai-brand-title { font-family: 'Fraunces', serif; font-size: 1.25rem; font-weight: 800; color: var(--ho-ai-teal-dark); line-height: 1; letter-spacing: -0.5px;}
+  .ho-ai-brand-title span { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--ho-ai-coral); font-weight: 700; }
+  .ho-ai-brand-status { font-size: 0.7rem; font-weight: 700; color: var(--ho-ai-teal); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 5px; }
+  .ho-ai-status-dot { width: 6px; height: 6px; border-radius: 50%; background: #27ae60; animation: hoAiPulseStatus 2s infinite; }
 
   .ho-ai-close {
-    position: relative;
-    z-index: 1;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.85);
-    cursor: pointer;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    width: 32px; height: 32px; border-radius: 50%; border: none;
+    background: rgba(13, 122, 110, 0.08); color: var(--ho-ai-teal-dark);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: 0.2s;
+  }
+  .ho-ai-close:hover { background: rgba(224, 122, 104, 0.15); color: var(--ho-ai-coral); transform: rotate(90deg); }
+
+  /* ---------- CHAT AREA ---------- */
+  .ho-ai-chat-body {
+    flex: 1; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;
+    overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(13, 122, 110, 0.2) transparent;
+  }
+  .ho-ai-chat-body::-webkit-scrollbar { width: 6px; }
+  .ho-ai-chat-body::-webkit-scrollbar-thumb { background: rgba(13, 122, 110, 0.2); border-radius: 999px; }
+
+  .ho-ai-msg-group { display: flex; gap: 0.8rem; opacity: 0; animation: hoMsgPop 0.4s var(--ho-ai-easing) forwards; }
+  .ho-ai-msg-group.user { flex-direction: row-reverse; }
+
+  .ho-ai-avatar {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--ho-ai-teal), var(--ho-ai-teal-dark));
+    display: flex; align-items: center; justify-content: center; color: #fff;
+    box-shadow: 0 4px 10px rgba(13,122,110,0.2);
+  }
+  .ho-ai-avatar svg { width: 16px; height: 16px; }
+
+  .ho-ai-bubble {
+    max-width: 78%; padding: 1rem 1.2rem; font-size: 0.95rem; line-height: 1.55; font-weight: 500;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03); position: relative;
+  }
+  .ho-ai-bubble.assistant {
+    background: rgba(255, 255, 255, 0.85); color: var(--ho-ai-text-main);
+    border-radius: 4px 20px 20px 20px; border: 1px solid rgba(13,122,110,0.1);
+  }
+  .ho-ai-bubble.assistant strong { color: var(--ho-ai-teal-dark); font-weight: 700; }
+  
+  .ho-ai-bubble.user {
+    background: linear-gradient(135deg, var(--ho-ai-teal), var(--ho-ai-teal-dark)); color: #fff;
+    border-radius: 20px 4px 20px 20px; border: 1px solid rgba(255,255,255,0.15);
   }
 
-  .ho-ai-close:hover {
-    background: rgba(255, 255, 255, 0.22);
-    color: white;
-    transform: rotate(90deg);
+  .ho-ai-bubble.error {
+    background: rgba(251, 228, 222, 0.9); color: #c0392b;
+    border-radius: 4px 20px 20px 20px; border: 1px solid rgba(224, 122, 104, 0.3);
   }
 
-  /* ---------- Chat area ---------- */
-  .ho-ai-chat-area {
-    flex: 1;
-    padding: 1.4rem;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 0.9rem;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(13, 122, 110, 0.3) transparent;
+  /* Typing Indicator */
+  .ho-ai-typing { display: none; padding: 1.2rem; background: rgba(255, 255, 255, 0.85); border-radius: 4px 20px 20px 20px; border: 1px solid rgba(13,122,110,0.1); align-items: center; gap: 0.4rem; width: fit-content; }
+  .ho-ai-dot { width: 6px; height: 6px; background: var(--ho-ai-teal-light); border-radius: 50%; animation: hoTypingBounce 1.4s infinite ease-in-out both; }
+  .ho-ai-dot:nth-child(1) { animation-delay: -0.32s; }
+  .ho-ai-dot:nth-child(2) { animation-delay: -0.16s; }
+
+  /* ---------- INPUT AREA ---------- */
+  .ho-ai-footer { padding: 1.2rem 1.5rem 1.5rem; background: rgba(255,255,255,0.6); border-top: 1px solid rgba(13,122,110,0.1); flex-shrink: 0; }
+  
+  .ho-ai-input-wrapper {
+    display: flex; align-items: center; gap: 0.6rem;
+    background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(13,122,110,0.2); border-radius: 999px;
+    padding: 0.4rem 0.4rem 0.4rem 1.4rem; transition: 0.3s var(--ho-ai-easing);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
   }
-
-  .ho-ai-chat-area::-webkit-scrollbar { width: 6px; }
-  .ho-ai-chat-area::-webkit-scrollbar-thumb { background: rgba(13, 122, 110, 0.25); border-radius: 999px; }
-  .ho-ai-chat-area::-webkit-scrollbar-track { background: transparent; }
-
-  @keyframes hoMsgIn {
-    from { opacity: 0; transform: translateY(10px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-
-  .ho-ai-msg {
-    max-width: 85%;
-    padding: 0.85rem 1.15rem;
-    border-radius: 18px;
-    font-size: 0.9rem;
-    line-height: 1.55;
-    word-wrap: break-word;
-    animation: hoMsgIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
-  .ho-ai-msg.user {
-    align-self: flex-end;
-    background: linear-gradient(135deg, var(--ho-teal-50, #e8f8f5), rgba(232, 248, 245, 0.7));
-    backdrop-filter: blur(6px);
-    color: var(--ho-teal-900, #0b5e55);
-    border-bottom-right-radius: 4px;
-    border: 1px solid rgba(13, 122, 110, 0.14);
-  }
-
-  .ho-ai-msg.assistant {
-    align-self: flex-start;
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(6px);
-    color: var(--ho-text-main, #0f1c1a);
-    border-bottom-left-radius: 4px;
-    border: 1px solid var(--ho-glass-border-subtle, rgba(13, 122, 110, 0.12));
-    box-shadow: 0 6px 18px rgba(11, 94, 85, 0.06);
-  }
-
-  .ho-ai-msg.assistant strong {
-    color: var(--ho-teal-900, #0b5e55);
-  }
-
-  .ho-ai-msg.error {
-    background: var(--ho-coral-soft, #fbe4de);
-    color: var(--ho-danger, #d94b4b);
-    border-color: rgba(217, 75, 75, 0.25);
-  }
-
-  .ho-ai-typing {
-    display: none;
-    align-self: flex-start;
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(6px);
-    padding: 0.85rem 1.15rem;
-    border-radius: 18px;
-    border-bottom-left-radius: 4px;
-    border: 1px solid rgba(13, 122, 110, 0.1);
-    align-items: center;
-    gap: 0.3rem;
-  }
-
-  .ho-ai-dot {
-    width: 6px;
-    height: 6px;
-    background: var(--ho-teal-600, #109485);
-    border-radius: 50%;
-    animation: hoAiBlink 1.4s infinite both;
-  }
-
-  .ho-ai-dot:nth-child(1) { animation-delay: 0.2s; }
-  .ho-ai-dot:nth-child(2) { animation-delay: 0.4s; }
-  .ho-ai-dot:nth-child(3) { animation-delay: 0.6s; }
-
-  @keyframes hoAiBlink {
-    0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
-    40% { opacity: 1; transform: scale(1.2); }
-  }
-
-  /* ---------- Input area ---------- */
-  .ho-ai-input-area {
-    position: relative;
-    padding: 1rem 1.25rem;
-    background: rgba(255, 255, 255, 0.55);
-    backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.6);
-    display: flex;
-    gap: 0.7rem;
-    flex-shrink: 0;
-  }
-
-  .ho-ai-input-wrap {
-    flex: 1;
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
+  .ho-ai-input-wrapper:focus-within { border-color: var(--ho-ai-teal); box-shadow: 0 0 0 4px rgba(13, 122, 110, 0.1); transform: translateY(-2px); }
 
   .ho-ai-input {
-    width: 100%;
-    background: rgba(237, 246, 244, 0.75);
-    backdrop-filter: blur(8px);
-    border: 1.5px solid rgba(13, 122, 110, 0.16);
-    border-radius: 999px;
-    padding: 0.8rem 1.2rem;
-    font-family: inherit;
-    font-size: 0.9rem;
-    color: var(--ho-text-main, #0f1c1a);
-    outline: none;
-    transition: border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+    flex: 1; border: none; background: transparent; font-family: inherit; font-size: 0.95rem; font-weight: 500;
+    color: var(--ho-ai-text-main); outline: none; padding: 0.5rem 0;
   }
-
-  .ho-ai-input::placeholder {
-    color: rgba(15, 28, 26, 0.4);
-  }
-
-  .ho-ai-input:focus {
-    border-color: var(--ho-teal-600, #109485);
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 0 0 4px rgba(16, 148, 133, 0.14);
-  }
+  .ho-ai-input::placeholder { color: #8ba8a4; }
 
   .ho-ai-send {
-    position: relative;
-    background: linear-gradient(135deg, var(--ho-teal-700, #0d7a6e), var(--ho-teal-900, #0b5e55));
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 6px 16px rgba(13, 122, 110, 0.35);
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, background 0.25s ease;
-    flex-shrink: 0;
+    width: 44px; height: 44px; border-radius: 50%; border: none;
+    background: var(--ho-ai-teal); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: 0.3s var(--ho-ai-easing); flex-shrink: 0;
   }
+  .ho-ai-send:hover:not(:disabled) { background: var(--ho-ai-teal-dark); transform: scale(1.05) rotate(-10deg); box-shadow: 0 6px 16px rgba(13,122,110,0.3); }
+  .ho-ai-send:active:not(:disabled) { transform: scale(0.95); }
+  .ho-ai-send:disabled { background: #d1e0de; color: #8ba8a4; cursor: not-allowed; }
+  .ho-ai-send svg { width: 18px; height: 18px; stroke-width: 2.5; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; margin-left: -2px; transition: transform 0.3s var(--ho-ai-easing); }
+  .ho-ai-send:hover:not(:disabled) svg { transform: translateX(2px) translateY(-2px); }
 
-  .ho-ai-send:hover:not(:disabled) {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 10px 22px rgba(13, 122, 110, 0.45);
-  }
+  /* ---------- ANIMATIONS ---------- */
+  @keyframes hoAiPulse { 0% { transform: scale(0.9); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 0; } 100% { transform: scale(0.9); opacity: 0; } }
+  @keyframes hoAiPulseStatus { 0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.6); } 70% { box-shadow: 0 0 0 5px rgba(39, 174, 96, 0); } 100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); } }
+  @keyframes hoMsgPop { 0% { opacity: 0; transform: translateY(15px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes hoTypingBounce { 0%, 80%, 100% { transform: translateY(0); opacity: 0.4; } 40% { transform: translateY(-4px); opacity: 1; } }
+  @keyframes hoAiSpin { 100% { transform: rotate(360deg); } }
+  @keyframes hoAiSpinAnti { 100% { transform: rotate(-360deg); } }
 
-  .ho-ai-send:active:not(:disabled) {
-    transform: scale(0.92);
-  }
-
-  .ho-ai-send:disabled {
-    background: #cbd5e1;
-    box-shadow: none;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  .ho-ai-send svg {
-    width: 18px;
-    height: 18px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    margin-left: -2px;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .ho-ai-send:hover:not(:disabled) svg {
-    transform: translateX(1px) translateY(-1px);
-  }
-
-  .ho-ai-send.is-sending svg {
-    animation: hoSendSpin 0.8s linear infinite;
-  }
-
-  @keyframes hoSendSpin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  /* ---------- Mobile responsiveness ---------- */
+  /* ---------- MOBILE ERGONOMICS ---------- */
   @media (max-width: 768px) {
-    .ho-ai-widget-root {
-      bottom: 1.5rem;
-      right: 1.5rem;
-    }
-    .ho-ai-panel {
-      position: fixed;
-      bottom: 0;
-      right: 0;
-      width: 100vw;
-      height: 100dvh;
-      max-height: 100dvh;
-      border-radius: 0;
-      border: none;
-    }
+    .ho-ai-widget-root { bottom: 1.5rem; right: 1.5rem; }
+    .ho-ai-panel { position: fixed; inset: 0; width: 100vw; height: 100dvh; max-height: 100dvh; border-radius: 0; border: none; transform: translateY(100%); }
+    .ho-ai-header { border-radius: 0; padding-top: calc(1.5rem + env(safe-area-inset-top)); }
+    .ho-ai-footer { padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); }
+    .ho-ai-input { font-size: 16px; /* Prevents iOS auto-zoom */ }
   }
 </style>
 
-<div class="ho-ai-widget-root" aria-label="AI Assistant Widget">
-  <button id="hoAiFab" class="ho-ai-fab" aria-label="Open AI Assistant" aria-expanded="false">
-    <span class="ho-ai-fab-badge" aria-hidden="true"></span>
-    <svg viewBox="0 0 24 24">
-      <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"></path>
-    </svg>
-  </button>
+<!-- ==========================================================================
+     HTML STRUCTURE
+     ========================================================================== -->
+<div class="ho-ai-widget-root" id="hoAiWidget">
+  
+  <!-- FAB -->
+  <div class="ho-ai-fab-container">
+    <div class="ho-ai-fab-ring"></div>
+    <button id="hoAiFabBtn" class="ho-ai-fab" aria-label="Open HealthOrbit AI">
+      <svg viewBox="0 0 24 24"><path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"></path></svg>
+    </button>
+  </div>
 
-  <div id="hoAiPanel" class="ho-ai-panel" role="dialog" aria-modal="false" aria-label="HealthOrbit AI Assistant">
-    <div class="ho-ai-header">
-      <div class="ho-ai-header-left">
-        <span class="ho-orbit-mark ho-ai-header-logo" aria-hidden="true">
-          <span class="ho-orbit-ring"></span>
-          <span class="ho-orbit-satellite"></span>
-          <span class="ho-orbit-core"></span>
-        </span>
-        <div class="ho-ai-header-text">
-          <div class="ho-ai-header-title">Health<span>Orbit</span> AI</div>
-          <div class="ho-ai-header-status"><span class="ho-ai-header-status-dot" aria-hidden="true"></span> Online &amp; ready</div>
+  <!-- PANEL -->
+  <div class="ho-ai-panel" id="hoAiPanel">
+    
+    <!-- HEADER -->
+    <header class="ho-ai-header">
+      <div class="ho-ai-brand">
+        <div class="ho-ai-logo-box" aria-hidden="true">
+          <div class="ho-ai-ring-1"></div>
+          <div class="ho-ai-ring-2"></div>
+          <div class="ho-ai-nucleus"></div>
+        </div>
+        <div class="ho-ai-brand-text">
+          <div class="ho-ai-brand-title">Health<span>Orbit</span></div>
+          <div class="ho-ai-brand-status"><span class="ho-ai-status-dot"></span> AI Online</div>
         </div>
       </div>
-      <button id="hoAiClose" class="ho-ai-close" aria-label="Close">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      <button id="hoAiCloseBtn" class="ho-ai-close" aria-label="Close Chat">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
+    </header>
+
+    <!-- CHAT AREA -->
+    <div class="ho-ai-chat-body" id="hoAiChatBody">
+      
+      <!-- Greeting -->
+      <div class="ho-ai-msg-group assistant">
+        <div class="ho-ai-avatar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"></path></svg>
+        </div>
+        <div class="ho-ai-bubble assistant">
+          Hello! I am your <strong>HealthOrbit AI</strong>. I can securely analyze your clinical dashboard, explain medical records, and track your health trends. How can I assist you today?
+        </div>
+      </div>
+
+      <!-- Typing Indicator -->
+      <div class="ho-ai-msg-group assistant" id="hoAiTypingWrapper" style="display: none;">
+        <div class="ho-ai-avatar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"></path></svg>
+        </div>
+        <div class="ho-ai-typing">
+          <div class="ho-ai-dot"></div><div class="ho-ai-dot"></div><div class="ho-ai-dot"></div>
+        </div>
+      </div>
+
     </div>
 
-    <div id="hoAiChatArea" class="ho-ai-chat-area">
-      <div class="ho-ai-msg assistant">
-        Hello! I am your <strong>HealthOrbit AI</strong>. I can analyze your dashboard, explain your medical reports, calculate your trends, and answer health questions based on your securely stored records. How can I help you today?
-      </div>
-      <div id="hoAiTyping" class="ho-ai-typing">
-        <div class="ho-ai-dot"></div>
-        <div class="ho-ai-dot"></div>
-        <div class="ho-ai-dot"></div>
-      </div>
-    </div>
+    <!-- INPUT AREA -->
+    <footer class="ho-ai-footer">
+      <form id="hoAiForm" class="ho-ai-input-wrapper">
+        <input type="text" id="hoAiInput" class="ho-ai-input" placeholder="Message HealthOrbit AI..." autocomplete="off">
+        <button type="submit" id="hoAiSendBtn" class="ho-ai-send" disabled aria-label="Send">
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </form>
+    </footer>
 
-    <form id="hoAiForm" class="ho-ai-input-area">
-      <div class="ho-ai-input-wrap">
-        <input type="text" id="hoAiInput" class="ho-ai-input" placeholder="Ask about your health data..." autocomplete="off">
-      </div>
-      <button type="submit" id="hoAiSend" class="ho-ai-send" aria-label="Send Message" disabled>
-        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-      </button>
-    </form>
   </div>
 </div>
 
+<!-- ==========================================================================
+     JAVASCRIPT ENGINE
+     ========================================================================== -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const fab = document.getElementById('hoAiFab');
-    const panel = document.getElementById('hoAiPanel');
-    const closeBtn = document.getElementById('hoAiClose');
+    const widgetRoot = document.getElementById('hoAiWidget');
+    const fabBtn = document.getElementById('hoAiFabBtn');
+    const closeBtn = document.getElementById('hoAiCloseBtn');
     const form = document.getElementById('hoAiForm');
     const input = document.getElementById('hoAiInput');
-    const sendBtn = document.getElementById('hoAiSend');
-    const chatArea = document.getElementById('hoAiChatArea');
-    const typingIndicator = document.getElementById('hoAiTyping');
+    const sendBtn = document.getElementById('hoAiSendBtn');
+    const chatBody = document.getElementById('hoAiChatBody');
+    const typingWrapper = document.getElementById('hoAiTypingWrapper');
 
-    // UI Toggles
-    const togglePanel = () => {
-      const isOpen = panel.classList.toggle('open');
-      fab.classList.toggle('is-open', isOpen);
-      fab.setAttribute('aria-expanded', String(isOpen));
+    // --- UI Controls ---
+    const toggleWidget = () => {
+      const isOpen = widgetRoot.classList.toggle('open');
       if (isOpen) {
         input.focus();
         scrollToBottom();
       }
     };
 
-    fab.addEventListener('click', togglePanel);
-    closeBtn.addEventListener('click', togglePanel);
+    fabBtn.addEventListener('click', toggleWidget);
+    closeBtn.addEventListener('click', toggleWidget);
 
-    // Close on Escape for keyboard users
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && panel.classList.contains('open')) {
-        togglePanel();
-      }
-    });
-
-    // Input Validation
     input.addEventListener('input', () => {
       sendBtn.disabled = input.value.trim() === '';
     });
 
     const scrollToBottom = () => {
-      chatArea.scrollTop = chatArea.scrollHeight;
+      chatBody.scrollTop = chatBody.scrollHeight;
     };
 
-    // SECURITY: XSS Sanitizer for AI responses
-    const escapeHTML = (str) => {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    };
-
-    const appendMessage = (text, sender) => {
-      const msgDiv = document.createElement('div');
-      msgDiv.className = `ho-ai-msg ${sender}`;
-
-      // Escape all HTML first to prevent XSS, then safely restore bold/newlines
-      let safeText = escapeHTML(text);
-      safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      safeText = safeText.replace(/\n/g, '<br>');
-
-      msgDiv.innerHTML = safeText;
-      chatArea.insertBefore(msgDiv, typingIndicator);
-      scrollToBottom();
-    };
-
-    // Extract Report ID securely for Context
+    // Extract Context Data for Server
     const getSelectedRecordId = () => {
       const urlParams = new URLSearchParams(window.location.search);
       let reportId = urlParams.get('reportId');
@@ -616,23 +305,57 @@
       return reportId || null;
     };
 
+    // Safe HTML Escaping & Markdown Parser
+    const escapeHTML = (str) => {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    };
+
+    const appendMessage = (text, sender, isError = false) => {
+      const group = document.createElement('div');
+      group.className = `ho-ai-msg-group ${sender}`;
+
+      let innerHTML = '';
+
+      // Avatar for AI
+      if (sender === 'assistant') {
+        innerHTML += `
+          <div class="ho-ai-avatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"></path></svg>
+          </div>
+        `;
+      }
+
+      // Format Text
+      let formattedText = escapeHTML(text);
+      formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+      
+      const bubbleClass = isError ? 'error' : sender;
+      innerHTML += `<div class="ho-ai-bubble ${bubbleClass}">${formattedText}</div>`;
+      group.innerHTML = innerHTML;
+
+      chatBody.insertBefore(group, typingWrapper);
+      scrollToBottom();
+    };
+
+    // --- Submission Engine ---
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-
+      
       const message = input.value.trim();
       if (!message) return;
 
       appendMessage(message, 'user');
       input.value = '';
       sendBtn.disabled = true;
-      sendBtn.classList.add('is-sending');
-      typingIndicator.style.display = 'flex';
+      
+      typingWrapper.style.display = 'flex';
       scrollToBottom();
 
       try {
-        // STRICT PAYLOAD: Only contextual hints, NO userId.
-        const payload = {
-          message: message,
+        const payload = { 
+          message: message, 
           currentPage: window.location.pathname,
           selectedRecordId: getSelectedRecordId()
         };
@@ -643,35 +366,24 @@
           body: JSON.stringify(payload)
         });
 
-        // FIXED: Detect if the server redirected us to the login page due to
-        // an expired session. An expired-session redirect usually comes back
-        // as a followed redirect to an HTML login page rather than JSON, so
-        // checking response.redirected / content-type catches it before we
-        // try (and fail) to parse it as JSON.
+        // Detect Session Expiration (Server redirecting to HTML login page)
         const contentType = response.headers.get("content-type");
-        if (response.redirected || (contentType && contentType.includes("text/html"))) {
+        if (response.status === 401 || response.redirected || (contentType && contentType.includes("text/html"))) {
           throw new Error("Your session has expired. Please refresh the page or log in again.");
         }
-
-        // Handle explicit JSON Auth errors
-        if (response.status === 401 || response.status === 403) {
-          throw new Error("Unauthorized request. Please log in again.");
-        }
-
+        
         const data = await response.json();
-
+        
         if (!response.ok) {
-          throw new Error(data.error || "Failed to process request.");
+          throw new Error(data.error || "Failed to process request. Please try again.");
         }
 
-        typingIndicator.style.display = 'none';
+        typingWrapper.style.display = 'none';
         appendMessage(data.reply, 'assistant');
 
       } catch (error) {
-        typingIndicator.style.display = 'none';
-        appendMessage(error.message || "An unexpected error occurred. Please try again.", 'error');
-      } finally {
-        sendBtn.classList.remove('is-sending');
+        typingWrapper.style.display = 'none';
+        appendMessage(error.message || "An unexpected error occurred connecting to HealthOrbit.", 'assistant', true);
       }
     });
   });

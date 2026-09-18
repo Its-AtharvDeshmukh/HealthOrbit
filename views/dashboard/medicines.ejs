@@ -3,7 +3,7 @@
 <head>
   <!-- Safely imports your universal header -->
   <%- include('../partials/header', { title: 'HealthOrbit — Medicines & Symptoms' }) %>
-<link rel="icon" href="/images/Logo.png">
+  <link rel="icon" href="/images/Logo.png">
 
   <style>
     /* 
@@ -28,13 +28,13 @@
       --ho-glass-clear: rgba(255, 255, 255, 0.55);
       --ho-glass-solid: rgba(255, 255, 255, 0.85);
       --ho-glass-border: rgba(255, 255, 255, 0.95);
-      --ho-glass-border-subtle: rgba(255, 255, 255, 0.5);
+      --ho-glass-border-subtle: rgba(13, 122, 110, 0.15);
       
       --ho-radius-xl: 32px;
       --ho-radius-lg: 20px;
-      --ho-radius-md: 12px;
+      --ho-radius-md: 14px;
       
-      --ho-shadow-glass: 0 30px 60px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
+      --ho-shadow-glass: 0 20px 50px rgba(13, 122, 110, 0.06), inset 0 1px 1px rgba(255, 255, 255, 1);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -56,28 +56,26 @@
     }
     .ho-main-content::-webkit-scrollbar { display: none; }
 
-    /* --- TOP NAVBAR --- */
+    /* --- TOP NAVBAR (Fixing the Double Navbar Issue) --- */
     .ho-topbar {
       display: flex; justify-content: space-between; align-items: center;
       padding: 2.2rem 3rem 1.2rem; flex-shrink: 0; background: transparent; z-index: 20;
     }
     .ho-topbar h1 { 
-      font-weight: 800; font-size: 1.8rem; color: var(--ho-teal-900); 
-      margin-bottom: 0.3rem; letter-spacing: -0.5px; 
-      display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+      font-family: 'Fraunces', serif; font-weight: 800; font-size: 2rem; color: var(--ho-teal-900); 
+      margin-bottom: 0.4rem; letter-spacing: -0.5px; 
     }
-    .ho-brand-text { display: inline-flex; align-items: center; white-space: nowrap; }
-    .ho-topbar p { font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 500; display: flex; align-items: center; gap: 0.5rem;}
+    .ho-topbar p { font-size: 0.95rem; color: var(--ho-text-muted); font-weight: 500; max-width: 600px; line-height: 1.4;}
     .ho-topbar-actions { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; }
 
     /* Buttons */
     .ho-btn-primary {
       background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); color: #fff;
       border: none; border-radius: 999px; padding: 0.8rem 1.6rem; font-weight: 700; font-size: 0.9rem;
-      cursor: pointer; box-shadow: 0 10px 25px rgba(13, 122, 110, 0.25); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer; box-shadow: 0 8px 20px rgba(13, 122, 110, 0.2); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap;
     }
-    .ho-btn-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 35px rgba(13, 122, 110, 0.35); }
+    .ho-btn-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 25px rgba(13, 122, 110, 0.3); }
     .ho-btn-primary:active { transform: scale(0.96); }
 
     .ho-btn-ghost {
@@ -89,6 +87,15 @@
     .ho-btn-ghost:hover { background: #fff; transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 25px rgba(13, 122, 110, 0.1); border-color: var(--ho-teal-600);}
     .ho-btn-ghost:active { transform: scale(0.96); }
 
+    /* Delete Icon Button */
+    .ho-btn-delete { 
+      background: rgba(217, 75, 75, 0.05); border: 1px solid rgba(217, 75, 75, 0.1); color: var(--ho-danger); 
+      cursor: pointer; padding: 8px; border-radius: 10px; transition: 0.2s; 
+      display: flex; align-items: center; justify-content: center; 
+    }
+    .ho-btn-delete:hover { background: var(--ho-danger); color: #fff; transform: scale(1.05); box-shadow: 0 4px 12px rgba(217, 75, 75, 0.2); border-color: var(--ho-danger); }
+    .ho-btn-delete svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;}
+
     /* --- MOSAIC GRID --- */
     .ho-workspace-grid {
       display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.8rem;
@@ -97,13 +104,13 @@
 
     .ho-panel {
       background: var(--ho-glass-clear);
-      backdrop-filter: blur(50px) saturate(200%); -webkit-backdrop-filter: blur(50px) saturate(200%);
+      backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
       border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
       padding: 2rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass);
       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
-    .ho-panel:hover { transform: translateY(-4px); box-shadow: 0 40px 80px rgba(13, 122, 110, 0.12); border-color: #fff; background: rgba(255, 255, 255, 0.65); }
+    .ho-panel:hover { transform: translateY(-4px); box-shadow: 0 30px 70px rgba(13, 122, 110, 0.12); border-color: #fff; background: rgba(255, 255, 255, 0.7); }
     @keyframes hoSlideUp { from { opacity: 0; transform: translateY(35px); } to { opacity: 1; transform: translateY(0); } }
 
     .ho-delay-1 { animation-delay: 0.1s; } .ho-delay-2 { animation-delay: 0.2s; } .ho-delay-3 { animation-delay: 0.3s; }
@@ -126,18 +133,18 @@
     .ho-med-card:hover::before { width: 8px; }
     .ho-med-card.as-needed::before { background: var(--ho-blue); }
 
-    .ho-mc-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .ho-mc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;}
     .ho-mc-info strong { font-size: 1.1rem; color: var(--ho-teal-900); font-weight: 800; display: block; margin-bottom: 0.2rem;}
     .ho-mc-info span { font-size: 0.8rem; color: var(--ho-text-muted); font-weight: 600; font-family: 'JetBrains Mono', monospace;}
-    .ho-mc-icon { width: 42px; height: 42px; background: rgba(13, 122, 110, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;}
+    .ho-mc-icon { width: 44px; height: 44px; background: rgba(13, 122, 110, 0.08); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;}
 
     .ho-mc-bot { display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; padding-top: 1rem; border-top: 1px dashed var(--ho-glass-border-subtle);}
     .ho-mc-freq { font-size: 0.75rem; font-weight: 700; color: var(--ho-text-muted); text-transform: uppercase;}
-    .ho-mc-pill { font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; background: var(--ho-bg-airy); color: var(--ho-teal-900); }
+    .ho-mc-pill { font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 8px; background: var(--ho-bg-airy); color: var(--ho-teal-900); border: 1px solid var(--ho-glass-border-subtle);}
 
     /* --- 2. QUICK SYMPTOM LOG (Spans 4) --- */
     .ho-symptom-quick { grid-column: span 4; background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(251, 228, 222, 0.4));}
-    .ho-sq-desc { font-size: 0.9rem; color: var(--ho-text-muted); margin-bottom: 1.5rem; font-weight: 500;}
+    .ho-sq-desc { font-size: 0.9rem; color: var(--ho-text-muted); margin-bottom: 1.5rem; font-weight: 500; line-height: 1.5;}
     .ho-sq-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
     
     .ho-sq-btn {
@@ -149,7 +156,7 @@
     .ho-sq-btn:active { transform: scale(0.95); }
     .ho-sq-icon { font-size: 1.8rem; transition: transform 0.2s;}
     .ho-sq-btn:hover .ho-sq-icon { transform: scale(1.1); }
-    .ho-sq-label { font-size: 0.85rem; font-weight: 700; color: var(--ho-teal-900); }
+    .ho-sq-label { font-size: 0.85rem; font-weight: 800; color: var(--ho-teal-900); }
 
     /* --- 3. TODAY'S SCHEDULE TIMELINE (Spans 8) --- */
     .ho-schedule-panel { grid-column: span 8; }
@@ -189,34 +196,34 @@
     .ho-history-panel { grid-column: span 4; }
     .ho-symptom-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem; }
     .ho-sym-card {
-      background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 14px;
+      background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px;
       padding: 1.2rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s;
     }
     .ho-sym-card:hover { transform: translateX(4px); border-color: var(--ho-coral); box-shadow: 0 6px 20px rgba(224, 122, 104, 0.08); }
     .ho-sym-left { display: flex; align-items: center; gap: 1rem; }
-    .ho-sym-icon { font-size: 1.6rem; }
+    .ho-sym-icon { font-size: 1.6rem; width: 44px; height: 44px; background: rgba(224, 122, 104, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
     .ho-sym-text strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.1rem;}
     .ho-sym-text span { font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600;}
-    .ho-sym-severity { font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; }
+    .ho-sym-severity { font-size: 0.75rem; font-weight: 800; padding: 6px 12px; border-radius: 8px; text-transform: uppercase; }
     .ho-sym-severity.mild { background: rgba(243, 156, 18, 0.15); color: #d35400; }
     .ho-sym-severity.high { background: var(--ho-coral-soft); color: var(--ho-danger); }
 
     /* --- MODALS & TOASTS --- */
-    .ho-modal { position: fixed; inset: 0; background: rgba(11, 94, 85, 0.45); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 1.2rem; opacity: 0; transition: opacity 0.3s ease; }
+    .ho-modal { position: fixed; inset: 0; background: rgba(11, 94, 85, 0.5); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 1.2rem; opacity: 0; transition: opacity 0.3s ease; }
     .ho-modal.active { display: flex; opacity: 1; }
     .ho-modal-box { background: #ffffff; border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl); padding: 2.5rem; width: 100%; max-width: 520px; box-shadow: 0 35px 70px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);}
     .ho-modal.active .ho-modal-box { transform: translateY(0); }
     .ho-modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.8rem; }
     .ho-modal-head h3 { font-size: 1.4rem; font-weight: 800; color: var(--ho-teal-900); }
-    .ho-modal-close { background: none; border: none; font-size: 2.2rem; color: var(--ho-text-muted); cursor: pointer; transition: 0.2s; line-height: 1;}
-    .ho-modal-close:hover { color: var(--ho-danger); }
+    .ho-modal-close { background: rgba(13, 122, 110, 0.05); border: none; font-size: 1.5rem; width: 36px; height: 36px; border-radius: 50%; color: var(--ho-text-muted); cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;}
+    .ho-modal-close:hover { color: var(--ho-danger); background: rgba(217, 75, 75, 0.1); transform: rotate(90deg);}
 
     .ho-form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.2rem; }
-    .ho-form-group label { font-size: 0.8rem; font-weight: 800; color: var(--ho-teal-900); text-transform: uppercase;}
+    .ho-form-group label { font-size: 0.8rem; font-weight: 800; color: var(--ho-teal-900); text-transform: uppercase; letter-spacing: 0.05em;}
     .ho-input { width: 100%; padding: 1rem 1.2rem; border: 1px solid #cbd5e1; border-radius: 16px; font-family: inherit; font-size: 1rem; color: var(--ho-text-main); font-weight: 500; outline: none; transition: 0.2s; background: #f8fcfb;}
     .ho-input:focus { border-color: var(--ho-teal-600); box-shadow: 0 0 0 4px rgba(16, 148, 133, 0.1); background: #fff;}
 
-    .ho-toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ho-teal-900); color: #fff; padding: 1rem 2rem; border-radius: 999px; font-weight: 700; font-size: 0.95rem; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 4000; opacity: 0; transition: all 0.4s cubic-bezier(0.16,1,0.3,1); pointer-events: none; }
+    .ho-toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ho-teal-900); color: #fff; padding: 1rem 2rem; border-radius: 999px; font-weight: 700; font-size: 0.95rem; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 4000; opacity: 0; transition: all 0.4s cubic-bezier(0.16,1,0.3,1); pointer-events: none; border: 1px solid rgba(255,255,255,0.1);}
     .ho-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     /* ==========================================================
@@ -229,18 +236,19 @@
     @media screen and (max-width: 768px) {
       body, html { height: auto !important; min-height: 100vh !important; overflow-x: hidden !important; background: var(--ho-bg-airy) !important; }
       
+      /* CLEARS THE MOBILE ISLAND PROPERLY */
       .ho-main-content { 
         height: auto !important; min-height: 100vh !important;
-        padding-top: 5.6rem !important; overflow-y: visible !important;
+        padding-top: 5.8rem !important; overflow-y: visible !important;
       }
       
       .ho-topbar {
         flex-direction: column; align-items: flex-start; padding: 0 1.25rem 0.5rem !important; gap: 0.8rem;
         position: static !important; background: transparent !important; backdrop-filter: none !important; border: none !important;
       }
-      .ho-topbar h1 { font-size: 1.6rem; }
-      .ho-topbar p { font-size: 0.85rem; line-height: 1.4;}
-      .ho-topbar-actions { width: 100%; display: flex; flex-direction: column; gap: 0.8rem; }
+      .ho-topbar h1 { font-size: 1.8rem; margin-bottom: 0.2rem;}
+      .ho-topbar p { font-size: 0.9rem; line-height: 1.4;}
+      .ho-topbar-actions { width: 100%; display: flex; flex-direction: column; gap: 0.8rem; margin-top: 0.5rem;}
       .ho-topbar-actions button { width: 100%; justify-content: center; }
 
       .ho-workspace-grid { 
@@ -251,6 +259,8 @@
       .ho-panel { height: auto !important; min-height: 0 !important; padding: 1.5rem !important; border-radius: 24px !important; flex: none !important; }
 
       .ho-med-grid { grid-template-columns: 1fr; }
+      .ho-mc-top { align-items: flex-start; }
+      
       .ho-sq-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem;}
       .ho-sq-btn { padding: 1rem; }
       
@@ -258,32 +268,13 @@
       .ho-tl-action { width: 100%; }
       .ho-btn-action { width: 100%; text-align: center; padding: 1rem;}
       
-      .ho-sym-card { padding: 1rem; }
+      .ho-sym-card { padding: 1rem; flex-direction: column; align-items: flex-start; gap: 1rem;}
+      .ho-sym-left { width: 100%; }
+      .ho-sym-actions-mobile { width: 100%; display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--ho-glass-border-subtle); padding-top: 0.8rem;}
 
       .ho-modal { padding: 1rem !important; }
       .ho-modal-box { padding: 2rem 1.5rem !important; max-width: 95% !important; border-radius: 24px !important; }
     }
-
-
-
-
-
-
-
-
-    @media (max-width: 1024px) {
-        /* Using 'body .ho-main-content' makes this rule stronger than the original */
-        body .ho-main-content {
-          margin-top: 5.5rem;
-            padding: 0 !important; 
-        }
-    }
-
-
-
-
-
-
   </style>
 </head>
 <body>
@@ -293,7 +284,7 @@
 
 <div class="ho-app-layout">
   
-  <!-- UNIVERSAL SIDEBAR IMPORT -->
+  <!-- UNIVERSAL SIDEBAR IMPORT (Handles Mobile Island Automatically) -->
   <%- include('../partials/sidebar') %>
 
   <!-- SCOPED MAIN CONTENT -->
@@ -301,10 +292,8 @@
     
     <header class="ho-topbar">
       <div>
-        <h1>
-          <span class="ho-brand-text">Health<span style="color:var(--ho-coral);">Orbit</span></span> 
-        </h1>
-        <p style="font-size: 1.2rem; font-weight: 800; color: var(--ho-teal-900); margin-bottom: 0.3rem;">Medicines & Symptoms</p>
+        <!-- FIX: Only Page Title here, avoiding "HealthOrbit" double navbar on mobile -->
+        <h1>Medicines & Symptoms</h1>
         <p>Manage your active prescriptions, daily schedule, and track recent health symptoms.</p>
       </div>
       <div class="ho-topbar-actions">
@@ -319,54 +308,39 @@
       <section class="ho-panel ho-med-panel ho-delay-1">
         <div class="ho-panel-header">
           <h2>Active Prescriptions</h2>
-          <span class="ho-badge">3 Ongoing</span>
+          <span class="ho-badge"><%= locals.medicines ? locals.medicines.length : 0 %> Ongoing</span>
         </div>
-
         <div class="ho-med-grid">
-          <!-- Medicine Card 1 -->
-          <div class="ho-med-card">
-            <div class="ho-mc-top">
-              <div class="ho-mc-info">
-                <strong>Levothyroxine</strong>
-                <span>50 mcg • Oral Tablet</span>
+          <% if (locals.medicines && locals.medicines.length > 0) { %>
+            <% locals.medicines.forEach(med => { %>
+              <div class="ho-med-card <%= med.frequency.toLowerCase().includes('need') ? 'as-needed' : '' %>">
+                <div class="ho-mc-top">
+                  <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div class="ho-mc-icon" <%- med.frequency.toLowerCase().includes('need') ? 'style="background: rgba(52, 152, 219, 0.1); color: var(--ho-blue);"' : '' %>>💊</div>
+                    <div class="ho-mc-info">
+                      <strong><%= med.name %></strong>
+                      <span><%= med.dosage %></span>
+                    </div>
+                  </div>
+                  <!-- Secure Delete Icon Form -->
+                  <form action="/medicines/delete/<%= med._id %>" method="POST" style="margin:0;" onsubmit="return confirm('Delete this medicine?');">
+                    <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
+                    <button type="submit" class="ho-btn-delete" title="Delete Medicine" aria-label="Delete">
+                      <svg viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                  </form>
+                </div>
+                <div class="ho-mc-bot">
+                  <span class="ho-mc-freq"><%= med.frequency %> • <%= med.instructions %></span>
+                  <span class="ho-mc-pill" <%- med.frequency.toLowerCase().includes('need') ? 'style="background: rgba(52, 152, 219, 0.1); border-color: rgba(52, 152, 219, 0.2); color: var(--ho-blue);"' : '' %>>
+                    <%= med.times && med.times.length > 0 ? med.times.join(', ') : 'PRN' %>
+                  </span>
+                </div>
               </div>
-              <div class="ho-mc-icon">💊</div>
-            </div>
-            <div class="ho-mc-bot">
-              <span class="ho-mc-freq">1x Daily • 60 Days</span>
-              <span class="ho-mc-pill">Morning</span>
-            </div>
-          </div>
-
-          <!-- Medicine Card 2 -->
-          <div class="ho-med-card">
-            <div class="ho-mc-top">
-              <div class="ho-mc-info">
-                <strong>Vitamin D3</strong>
-                <span>60,000 IU • Softgel</span>
-              </div>
-              <div class="ho-mc-icon">☀️</div>
-            </div>
-            <div class="ho-mc-bot">
-              <span class="ho-mc-freq">1x Weekly • 8 Weeks</span>
-              <span class="ho-mc-pill">Afternoon</span>
-            </div>
-          </div>
-
-          <!-- Medicine Card 3 (As needed) -->
-          <div class="ho-med-card as-needed">
-            <div class="ho-mc-top">
-              <div class="ho-mc-info">
-                <strong>Paracetamol</strong>
-                <span>500 mg • Tablet</span>
-              </div>
-              <div class="ho-mc-icon" style="background: rgba(52, 152, 219, 0.1);">🌡️</div>
-            </div>
-            <div class="ho-mc-bot">
-              <span class="ho-mc-freq">As Needed • For Fever</span>
-              <span class="ho-mc-pill" style="background: rgba(52, 152, 219, 0.1); color: var(--ho-blue);">PRN</span>
-            </div>
-          </div>
+            <% }) %>
+          <% } else { %>
+             <p style="color: var(--ho-text-muted); font-weight: 500; font-style: italic;">No active prescriptions found.</p>
+          <% } %>
         </div>
       </section>
 
@@ -402,37 +376,38 @@
         <div class="ho-panel-header">
           <h2>Today's Schedule</h2>
         </div>
-
         <div class="ho-timeline">
-          <!-- Timeline Item 1 (Completed) -->
-          <div class="ho-tl-item completed" id="tl-item-1">
-            <div class="ho-tl-dot"></div>
-            <span class="ho-tl-time">08:00 AM — Morning Dose</span>
-            <div class="ho-tl-card">
-              <div class="ho-tl-info">
-                <strong>Levothyroxine (50 mcg)</strong>
-                <span>Take empty stomach, 30 mins before food.</span>
+          <% if (locals.scheduleToday && locals.scheduleToday.length > 0) { %>
+            <% locals.scheduleToday.forEach((item, index) => { %>
+              <div class="ho-tl-item <%= item.status === 'Taken' ? 'completed' : 'upcoming' %>" id="tl-item-<%= index %>">
+                <div class="ho-tl-dot" <%- item.status === 'Missed' ? 'style="border-color: var(--ho-danger);"' : '' %>></div>
+                <span class="ho-tl-time"><%= item.time %> — <%= item.medicine.name %></span>
+                <div class="ho-tl-card">
+                  <div class="ho-tl-info">
+                    <strong><%= item.medicine.name %> (<%= item.medicine.dosage %>)</strong>
+                    <span><%= item.medicine.instructions || 'No special instructions.' %></span>
+                  </div>
+                  <div class="ho-tl-action" id="tl-action-<%= index %>">
+                    <% if (item.status === 'Taken') { %>
+                      <span class="ho-taken-badge">✅ Taken</span>
+                    <% } else if (item.status === 'Skipped') { %>
+                       <span class="ho-taken-badge" style="color: var(--ho-text-muted);">⏭️ Skipped</span>
+                    <% } else if (item.status === 'Missed') { %>
+                       <span class="ho-taken-badge" style="color: var(--ho-danger);">⚠️ Missed</span>
+                    <% } else { %>
+                      <form action="/medicines/log/<%= item.medicine._id %>" method="POST" style="display:inline;">
+                         <input type="hidden" name="time" value="<%= item.time %>">
+                         <input type="hidden" name="status" value="taken">
+                         <button type="submit" class="ho-btn-action">Mark as Taken</button>
+                      </form>
+                    <% } %>
+                  </div>
+                </div>
               </div>
-              <div class="ho-tl-action" id="tl-action-1">
-                <span class="ho-taken-badge">✓ Taken</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Timeline Item 2 (Upcoming) -->
-          <div class="ho-tl-item upcoming" id="tl-item-2">
-            <div class="ho-tl-dot"></div>
-            <span class="ho-tl-time">02:00 PM — Afternoon Dose</span>
-            <div class="ho-tl-card">
-              <div class="ho-tl-info">
-                <strong>Vitamin D3 (60,000 IU)</strong>
-                <span>Take with a fat-containing meal.</span>
-              </div>
-              <div class="ho-tl-action" id="tl-action-2">
-                <button class="ho-btn-action" onclick="markTaken(2)">Mark as Taken</button>
-              </div>
-            </div>
-          </div>
+            <% }) %>
+          <% } else { %>
+            <p style="color: var(--ho-text-muted); font-weight: 500; font-style: italic; margin-left: 1rem;">No medicines scheduled for today.</p>
+          <% } %>
         </div>
       </section>
 
@@ -443,38 +418,34 @@
         </div>
         
         <div class="ho-symptom-list">
-          <div class="ho-sym-card">
-            <div class="ho-sym-left">
-              <div class="ho-sym-icon">🤕</div>
-              <div class="ho-sym-text">
-                <strong>Headache</strong>
-                <span>Yesterday, 04:30 PM</span>
+          <% if (locals.symptoms && locals.symptoms.length > 0) { %>
+            <% locals.symptoms.forEach(symp => { %>
+              <div class="ho-sym-card">
+                <div class="ho-sym-left">
+                  <div class="ho-sym-icon">🤧</div>
+                  <div class="ho-sym-text">
+                    <strong><%= symp.symptom %></strong>
+                    <span><%= new Date(symp.recordedAt).toLocaleString() %></span>
+                    <% if(symp.notes) { %><span style="display:block; margin-top:0.3rem; font-style:italic;"><%= symp.notes %></span><% } %>
+                  </div>
+                </div>
+                
+                <!-- Mobile structural wrapper for buttons -->
+                <div class="ho-sym-actions-mobile">
+                  <span class="ho-sym-severity <%= symp.severity.toLowerCase() === 'mild' ? 'mild' : 'high' %>"><%= symp.severity %></span>
+                  <!-- Symptom Delete Icon Form -->
+                  <form action="/symptoms/delete/<%= symp._id %>" method="POST" style="margin:0;" onsubmit="return confirm('Delete this symptom log?');">
+                    <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
+                    <button type="submit" class="ho-btn-delete" title="Delete Log" aria-label="Delete">
+                      <svg viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                  </form>
+                </div>
               </div>
-            </div>
-            <span class="ho-sym-severity mild">Mild</span>
-          </div>
-
-          <div class="ho-sym-card">
-            <div class="ho-sym-left">
-              <div class="ho-sym-icon">🥱</div>
-              <div class="ho-sym-text">
-                <strong>Fatigue</strong>
-                <span>Aug 18, 2026</span>
-              </div>
-            </div>
-            <span class="ho-sym-severity mild">Mild</span>
-          </div>
-
-          <div class="ho-sym-card">
-            <div class="ho-sym-left">
-              <div class="ho-sym-icon">🌡️</div>
-              <div class="ho-sym-text">
-                <strong>Fever (101°F)</strong>
-                <span>Aug 12, 2026</span>
-              </div>
-            </div>
-            <span class="ho-sym-severity high">High</span>
-          </div>
+            <% }) %>
+          <% } else { %>
+            <p style="color: var(--ho-text-muted); font-size: 0.85rem; font-style: italic;">No symptoms logged recently.</p>
+          <% } %>
         </div>
       </section>
 
@@ -500,29 +471,31 @@
       <h3>Add New Medicine</h3>
       <button class="ho-modal-close" type="button" onclick="closeModal('medicineModal')">×</button>
     </div>
-    <form onsubmit="event.preventDefault(); submitMedicine();">
+    <form action="/medicines/add" method="POST">
       <div class="ho-form-group">
         <label>Medicine Name</label>
-        <input type="text" class="ho-input" placeholder="e.g. Paracetamol" required>
+        <input type="text" name="name" class="ho-input" placeholder="e.g. Paracetamol" required>
       </div>
       <div class="ho-form-group">
         <label>Dosage</label>
-        <input type="text" class="ho-input" placeholder="e.g. 500 mg" required>
+        <input type="text" name="dosage" class="ho-input" placeholder="e.g. 500 mg" required>
       </div>
       <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
         <div class="ho-form-group" style="flex: 1; min-width: 150px;">
           <label>Frequency</label>
-          <select class="ho-input">
-            <option>1x Daily</option>
-            <option>2x Daily</option>
-            <option>Weekly</option>
-            <option>As Needed (PRN)</option>
+          <select name="frequency" class="ho-input">
+            <option value="Daily">Daily</option>
+            <option value="As Needed (PRN)">As Needed (PRN)</option>
           </select>
         </div>
         <div class="ho-form-group" style="flex: 1; min-width: 150px;">
-          <label>Duration</label>
-          <input type="text" class="ho-input" placeholder="e.g. 7 Days">
+          <label>Scheduled Time</label>
+          <input type="time" name="times" class="ho-input">
         </div>
+      </div>
+      <div class="ho-form-group">
+        <label>Instructions</label>
+        <input type="text" name="duration" class="ho-input" placeholder="e.g. After meals">
       </div>
       <button type="submit" class="ho-btn-primary" style="width: 100%; margin-top: 1rem; padding: 1.2rem; font-size: 1.05rem; border-radius: 16px;">Save Medicine</button>
     </form>
@@ -536,29 +509,23 @@
       <h3>Log Symptom</h3>
       <button class="ho-modal-close" type="button" onclick="closeModal('symptomModal')">×</button>
     </div>
-    <form onsubmit="event.preventDefault(); submitSymptom();">
+    <form action="/symptoms/add" method="POST">
       <div class="ho-form-group">
         <label>Symptom Type</label>
-        <select class="ho-input">
-          <option>Fever</option>
-          <option>Headache</option>
-          <option>Cough</option>
-          <option>Pain</option>
-          <option>Fatigue</option>
-          <option>Other...</option>
-        </select>
+        <input type="text" name="symptomType" class="ho-input" placeholder="e.g. Headache" required>
       </div>
       <div class="ho-form-group">
         <label>Severity</label>
-        <select class="ho-input">
-          <option>Mild</option>
-          <option>Moderate</option>
-          <option>Severe</option>
+        <select name="severity" class="ho-input">
+          <option value="Mild">Mild</option>
+          <option value="Moderate">Moderate</option>
+          <option value="Severe">Severe</option>
+          <option value="High">High</option>
         </select>
       </div>
       <div class="ho-form-group">
         <label>Additional Notes</label>
-        <textarea class="ho-input" rows="3" placeholder="When did it start? What does it feel like?" style="resize: vertical; line-height: 1.5;"></textarea>
+        <textarea name="notes" class="ho-input" rows="3" placeholder="When did it start? What does it feel like?" style="resize: vertical; line-height: 1.5;"></textarea>
       </div>
       <button type="submit" class="ho-btn-primary" style="width: 100%; margin-top: 1rem; padding: 1.2rem; font-size: 1.05rem; border-radius: 16px;">Save to Timeline</button>
     </form>
@@ -588,33 +555,21 @@
     }
   }
 
-  // Frontend Interaction Handlers
-  function quickLogSymptom(name) {
-    showToast(`✅ ${name} logged to your health timeline.`);
-  }
-
-  function submitMedicine() {
-    closeModal('medicineModal');
-    showToast('💊 Medicine schedule saved successfully!');
-  }
-
-  function submitSymptom() {
-    closeModal('symptomModal');
-    showToast('🤒 Symptom logged to your health timeline!');
-  }
-
-  // Interactive Timeline Logic
-  function markTaken(itemId) {
-    const tlItem = document.getElementById(`tl-item-${itemId}`);
-    const actionContainer = document.getElementById(`tl-action-${itemId}`);
-    
-    // Change classes for animation & styling
-    tlItem.classList.remove('upcoming');
-    tlItem.classList.add('completed');
-    
-    // Replace button with animated checkmark
-    actionContainer.innerHTML = `<span class="ho-taken-badge">✓ Taken</span>`;
-    showToast('✅ Dose marked as taken. Good job!');
+  // Connect Quick Symptom Buttons to Backend
+  async function quickLogSymptom(name) {
+    try {
+      const response = await fetch('/symptoms/quick', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symptomName: name })
+      });
+      if(response.ok) {
+        showToast(`✅ ${name} logged securely to your health timeline.`);
+        setTimeout(() => window.location.reload(), 1000); 
+      }
+    } catch (e) {
+      showToast('⚠️ Failed to log symptom.');
+    }
   }
 </script>
 

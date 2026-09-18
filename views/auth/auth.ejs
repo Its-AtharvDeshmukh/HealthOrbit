@@ -18,6 +18,9 @@
   were causing the components to separate on mobile screens.
 ================================================================== 
 */
+
+
+
 @media screen and (max-width: 768px) {
   /* 1. Reset Body to Natural Scroll */
   body, html {
@@ -225,6 +228,15 @@
   .switch-prompt { text-align: center !important; font-size: 0.9rem !important; margin-top: 1.5rem !important; }
   .legal-disclaimer { text-align: center !important; font-size: 0.75rem !important; margin-top: 1.5rem !important; color: #4e6b63 !important; }
 }
+
+
+.ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
+.ho-orb-1 { width: 550px; height: 550px; background: #76d7c4 !important; top: -100px; left: -100px; }
+.ho-orb-2 { width: 600px; height: 600px; background: #fadbd8 !important; bottom: -150px; right: -100px; animation-delay: -5s; }
+.ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 35%; left: 35%; opacity: 0.3; animation-delay: -10s; }
+@keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 60px) scale(1.15); } }
+
 </style>
 </head>
 <body>

@@ -2,563 +2,667 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<!-- CRITICAL FOR MOBILE: Prevents unwanted zooming and handles safe areas -->
+<!-- CRITICAL: Disables mobile input auto-zoom and locks viewport for true native app feel -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <link rel="icon" href="/images/Logo.png">
-<title>HealthOrbit — AI Health Assistant</title> 
+<title>HealthOrbit — AI Assistant</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Shared Sidebar Styles -->
 <link rel="stylesheet" href="/css/sidebar.css">
 
 <style>
 /* ==================================================================
-   HEALTHORBIT AI ASSISTANT — PREMIUM DESKTOP & NATIVE MOBILE UI
+   DESIGN TOKENS & SYSTEM VARIABLES
+   (Same structure as before — values swapped for a liquid-glass theme)
 ================================================================== */
 :root {
-  --ho-bg-airy: #edf6f4;
+  --ho-bg-page: #e7f3f0;
   --ho-teal-900: #0b5e55;
   --ho-teal-800: #0c6b61;
-  --ho-teal-700: #0d7a6e;
   --ho-teal-600: #109485;
-  --ho-mint-400: #42b89d;
   --ho-coral: #e07a68;
-  --ho-coral-soft: #fbe4de;
-  --ho-text-main: #0f1c1a;
-  --ho-text-muted: #4e6b63;
+  --ho-text-main: #1e293b;
+  --ho-text-muted: #5a716c;
   --ho-danger: #d94b4b;
 
-  --ho-glass-clear: rgba(255, 255, 255, 0.55);
-  --ho-glass-solid: rgba(255, 255, 255, 0.95);
-  --ho-glass-border: rgba(255, 255, 255, 0.95);
-  --ho-glass-border-subtle: rgba(13, 122, 110, 0.15);
-
-  --ho-radius-xl: 32px;
-  --ho-radius-lg: 20px;
-  --ho-radius-md: 12px;
-
-  --ho-shadow-glass: 0 30px 60px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
-  --ho-shadow-card: 0 8px 24px rgba(13, 122, 110, 0.05);
+  /* Glass surface tokens */
+  --ho-panel-bg: rgba(255, 255, 255, 0.42);
+  --ho-panel-bg-strong: rgba(255, 255, 255, 0.6);
+  --ho-btn-bg: rgba(255, 255, 255, 0.35);
+  --ho-border-color: rgba(255, 255, 255, 0.55);
+  --ho-glass-shadow: 0 10px 40px rgba(11, 94, 85, 0.10), inset 0 1px 1px rgba(255,255,255,0.6);
+  --ho-blur: blur(28px) saturate(180%);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+:focus-visible { outline: 2px solid var(--ho-teal-600); outline-offset: 2px; }
 
-body {
-  min-height: 100vh;
-  min-height: 100dvh;
-  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-  background-color: var(--ho-bg-airy);
-  color: var(--ho-text-main);
-  overflow: hidden; 
-  -webkit-font-smoothing: antialiased;
-}
 
-/* ---------- AMBIENT BACKGROUND ---------- */
+
 .ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
 .ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
 .ho-orb-1 { width: 550px; height: 550px; background: #76d7c4; top: -100px; left: -100px; }
 .ho-orb-2 { width: 600px; height: 600px; background: #fadbd8; bottom: -150px; right: -100px; animation-delay: -5s; }
+.ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 35%; left: 35%; opacity: 0.3; animation-delay: -10s; }
 @keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 60px) scale(1.15); } }
 
-/* ---------- BASE LAYOUT ---------- */
-.ho-app-layout { display: flex; width: 100vw; height: 100vh; height: 100dvh; position: relative; z-index: 10; }
-.ho-main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 
-/* ---------- DESKTOP TOPBAR ---------- */
-.ho-topbar {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 2.2rem 3rem 1.2rem; flex-shrink: 0; background: transparent; z-index: 20;
-}
-.ho-topbar-left { display: flex; align-items: center; gap: 1rem; }
-.ho-topbar-text h1 { font-family: 'Fraunces', serif; font-weight: 800; font-size: 1.8rem; color: var(--ho-teal-900); margin-bottom: 0.2rem; letter-spacing: -0.5px; display: flex; align-items: center; gap: 0.8rem;}
-.ho-topbar-text p { font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 500; display: flex; align-items: center; gap: 0.5rem; margin: 0;}
 
-.ho-ai-core-mini {
-  width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--ho-coral), #d94b4b);
-  position: relative; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(224, 122, 104, 0.4); flex-shrink: 0;
+
+
+
+/* Strict Viewport Locking */
+body, html { 
+  height: 100%; width: 100%;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; 
+  color: var(--ho-text-main); 
+  overflow: hidden; -webkit-font-smoothing: antialiased; 
+
+  /* Ambient colored background the glass panels float over */
+  background-color: var(--ho-bg-page);
+  background-image:
+    radial-gradient(600px 500px at 8% 12%, rgba(16, 148, 133, 0.28), transparent 60%),
+    radial-gradient(650px 550px at 92% 18%, rgba(224, 122, 104, 0.22), transparent 60%),
+    radial-gradient(700px 600px at 20% 95%, rgba(66, 184, 157, 0.22), transparent 60%),
+    radial-gradient(600px 500px at 90% 92%, rgba(11, 94, 85, 0.18), transparent 60%);
+  background-attachment: fixed;
 }
-.ho-ai-core-mini::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 1.5px dashed var(--ho-coral); animation: hoSpin 4s linear infinite; }
+
+/* App Shell */
+.ho-app-layout { position: absolute; inset: 0; display: flex; z-index: 10; overflow: hidden; height: 100dvh; }
+.ho-main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%; position: relative; }
+
+/* Visibility Classes */
+.mobile-only { display: none !important; }
+.desktop-only { display: flex !important; }
+
+/* ==================================================================
+   BRAND LOGO (Coral Target)
+================================================================== */
+.ho-brand-logo {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--ho-coral);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(224, 122, 104, 0.45);
+}
+.ho-brand-logo::before {
+  content: ''; position: absolute; inset: -4px;
+  border: 1.5px dashed var(--ho-coral); border-radius: 50%;
+  animation: hoSpin 10s linear infinite;
+}
+.ho-logo-inner {
+  width: 12px; height: 12px; background: #ffffff; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.ho-logo-dot { width: 4px; height: 4px; background: var(--ho-coral); border-radius: 50%; }
+
 @keyframes hoSpin { 100% { transform: rotate(360deg); } }
 
-.ho-pulse-dot { width: 8px; height: 8px; background: var(--ho-coral); border-radius: 50%; box-shadow: 0 0 10px var(--ho-coral); animation: hoPulse 2s infinite; }
-@keyframes hoPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.5); } }
+/* ==================================================================
+   DESKTOP LAYOUT (Matches Screenshot 4)
+================================================================== */
+.ho-d-header {
+  display: flex; align-items: center; gap: 1.2rem;
+  padding: 2rem 3rem 1.5rem; flex-shrink: 0;
+}
+.ho-d-titles h1 {
+  font-family: 'Fraunces', serif; font-size: 1.6rem; font-weight: 800;
+  color: var(--ho-teal-900); margin-bottom: 0.2rem;
+}
+.ho-d-titles p { font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 500; }
 
-/* ---------- MAIN WORKSPACE GRID ---------- */
-.ho-workspace-grid {
-  display: grid; grid-template-columns: 1fr 360px; gap: 1.5rem;
+.ho-workspace {
+  display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem;
   padding: 0 3rem 2rem; flex: 1; min-height: 0;
 }
 
-.ho-panel {
-  background: var(--ho-glass-clear);
-  backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
-  border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
-  display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass);
-  overflow: hidden; opacity: 0; animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* Chat Panel — liquid glass */
+.ho-chat-panel {
+  background: var(--ho-panel-bg);
+  backdrop-filter: var(--ho-blur); -webkit-backdrop-filter: var(--ho-blur);
+  border-radius: 24px;
+  box-shadow: var(--ho-glass-shadow);
+  display: flex; flex-direction: column; overflow: hidden;
+  border: 1px solid var(--ho-border-color);
 }
-@keyframes hoSlideUp { from { opacity: 0; transform: translateY(35px); } to { opacity: 1; transform: translateY(0); } }
-
-/* ==========================================================
-   1. CHAT INTERFACE (LEFT PANEL)
-========================================================== */
-.ho-chat-panel { background: rgba(255,255,255,0.75); }
-
-/* The Mobile Trigger Pill (Hidden on Desktop) */
-.ho-mobile-context-trigger { display: none; }
 
 .ho-chat-window {
   flex: 1; overflow-y: auto; padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; scroll-behavior: smooth;
 }
 .ho-chat-window::-webkit-scrollbar { width: 6px; }
-.ho-chat-window::-webkit-scrollbar-thumb { background: rgba(13, 122, 110, 0.2); border-radius: 10px; }
+.ho-chat-window::-webkit-scrollbar-thumb { background: rgba(13, 122, 110, 0.2); border-radius: 999px; }
 
-/* Chat Messages & Animations */
-.ho-msg-row { display: flex; max-width: 85%; align-items: flex-end; opacity: 0; animation: hoPopIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-@keyframes hoPopIn { from { opacity: 0; transform: translateY(15px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.ho-msg-row.ai { align-self: flex-start; }
+/* Desktop Message Bubbles */
+.ho-msg-row { display: flex; max-width: 85%; align-items: flex-start; gap: 1rem; }
 .ho-msg-row.user { align-self: flex-end; flex-direction: row-reverse; }
+.ho-msg-row.ai { align-self: flex-start; }
 
+/* AI Avatar (Teal Target) */
 .ho-msg-av {
-  width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  font-size: 0.9rem; font-weight: 800; flex-shrink: 0; margin: 0 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--ho-teal-900); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 4px;
+  box-shadow: 0 4px 12px rgba(197, 149, 112, 0.35);
 }
-.ai .ho-msg-av { background: linear-gradient(135deg, var(--ho-teal-600), var(--ho-teal-900)); color: #fff; }
-.ai .ho-msg-av svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
-.user .ho-msg-av { background: var(--ho-coral); color: #fff; font-family: 'Fraunces', serif; }
+.ho-msg-av .ho-av-inner {
+  width: 14px; height: 14px; border: 2px solid #fff; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.ho-msg-av .ho-av-dot { width: 4px; height: 4px; background: #fff; border-radius: 50%; }
 
-.ho-msg-body { display: flex; flex-direction: column; gap: 6px; max-width: 100%; min-width: 0; }
-.ho-msg-bubble { padding: 1.1rem 1.4rem; font-size: 0.95rem; line-height: 1.6; font-weight: 500; word-wrap: break-word; }
-.ai .ho-msg-bubble { background: #fff; color: var(--ho-text-main); border: 1px solid var(--ho-glass-border-subtle); border-radius: 4px 20px 20px 20px; box-shadow: var(--ho-shadow-card); }
-.user .ho-msg-bubble { background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); color: #fff; border-radius: 20px 4px 20px 20px; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.15); }
-.ai .ho-msg-bubble.error-msg { background: rgba(217, 75, 75, 0.05); border-color: rgba(217, 75, 75, 0.2); color: var(--ho-danger); }
-
-/* Formatted Text */
-.ho-msg-bubble p { margin-bottom: 0.7rem; }
+.ho-msg-bubble {
+  padding: 1.25rem 1.5rem; font-size: 0.95rem; line-height: 1.6; font-weight: 500;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  backdrop-filter: var(--ho-blur); -webkit-backdrop-filter: var(--ho-blur);
+}
+.ai .ho-msg-bubble {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: var(--ho-text-main);
+  border-radius: 4px 20px 20px 20px; /* Sharp top-left */
+}
+.user .ho-msg-bubble {
+  background: rgba(11, 94, 85, 0.82);
+  color: #fff;
+  border: 1px solid rgba(212, 22, 22, 0.15);
+  border-radius: 20px 4px 20px 20px; /* Sharp top-right */
+}
+.ai .ho-msg-bubble strong { color: var(--ho-teal-900); font-weight: 700; }
+.ho-msg-bubble p { margin-bottom: 0.8rem; }
 .ho-msg-bubble p:last-child { margin-bottom: 0; }
-.ho-msg-bubble strong { font-weight: 700; color: inherit; }
-.ai .ho-msg-bubble strong { color: var(--ho-teal-900); }
-.ho-msg-bubble ul { margin-left: 1.5rem; margin-bottom: 0.7rem; }
 
-/* AI Action Buttons (Fixed exact sizing) */
-.ho-msg-actions { display: flex; gap: 8px; margin-left: 4px; opacity: 0; transition: opacity 0.2s; align-items: center;}
-.ho-msg-row:hover .ho-msg-actions { opacity: 1; }
-.ho-action-btn { 
-  background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 8px; 
-  color: var(--ho-text-muted); padding: 6px 10px; font-size: 0.75rem; font-weight: 600; 
-  cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; 
-  box-shadow: 0 2px 6px rgba(0,0,0,0.02); font-family: inherit;
+/* Typing Indicator */
+.ho-typing-bubble {
+  display: flex; align-items: center; gap: 6px; padding: 1.25rem 1.5rem;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 4px 20px 20px 20px; width: fit-content;
+  backdrop-filter: var(--ho-blur); -webkit-backdrop-filter: var(--ho-blur);
 }
-.ho-action-btn:hover { color: var(--ho-teal-900); border-color: var(--ho-teal-600); box-shadow: 0 4px 10px rgba(13,122,110,0.08);}
-.ho-action-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
-
-/* Typing Dots */
-.ho-typing-bubble { display: flex; align-items: center; gap: 6px; padding: 0.5rem 0;}
-.ho-typing-bubble span { width: 8px; height: 8px; background: var(--ho-teal-600); border-radius: 50%; animation: hoBlinkDots 1.4s infinite ease-in-out both; }
+.ho-typing-bubble span { width: 6px; height: 6px; background: var(--ho-teal-600); border-radius: 50%; animation: hoBlink 1.4s infinite both; }
 .ho-typing-bubble span:nth-child(1) { animation-delay: -0.32s; }
 .ho-typing-bubble span:nth-child(2) { animation-delay: -0.16s; }
-@keyframes hoBlinkDots { 0%, 80%, 100% { transform: scale(0.5); opacity: 0.3; } 40% { transform: scale(1); opacity: 1; } }
+@keyframes hoBlink { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
 
-/* Chat Input Dock */
-.ho-chat-bottom-dock { 
-  padding: 1.5rem 2.5rem 2rem; background: linear-gradient(to top, rgba(255,255,255,0.95) 60%, transparent); 
-  border-bottom-left-radius: var(--ho-radius-xl); border-bottom-right-radius: var(--ho-radius-xl); flex-shrink: 0; 
-}
-.ho-suggestions { display: flex; gap: 0.8rem; margin-bottom: 1.2rem; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+/* Desktop Input Dock */
+.ho-chat-dock { padding: 1rem 2rem 2rem; background: transparent; flex-shrink: 0; }
+.ho-suggestions { display: flex; gap: 0.8rem; margin-bottom: 1rem; overflow-x: auto; scrollbar-width: none; }
 .ho-suggestions::-webkit-scrollbar { display: none; }
-.ho-suggest-chip { 
-  background: var(--ho-bg-airy); border: 1px solid rgba(13, 122, 110, 0.15); color: var(--ho-teal-900); 
-  padding: 0.6rem 1.2rem; border-radius: 999px; font-size: 0.82rem; font-weight: 700; 
-  cursor: pointer; transition: 0.2s; white-space: nowrap; font-family: inherit;
+.ho-suggest-chip {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--ho-border-color);
+  color: var(--ho-teal-900);
+  padding: 0.6rem 1.2rem; border-radius: 999px; font-size: 0.85rem; font-weight: 700;
+  cursor: pointer; transition: 0.2s; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+  backdrop-filter: var(--ho-blur); -webkit-backdrop-filter: var(--ho-blur);
 }
-.ho-suggest-chip:hover { background: #fff; border-color: var(--ho-teal-600); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(13, 122, 110, 0.08); }
+.ho-suggest-chip:hover { border-color: var(--ho-teal-600); background: rgba(255, 255, 255, 0.75); }
 
-.ho-input-wrapper { 
-  display: flex; gap: 1rem; align-items: flex-end; background: #fff; 
-  border: 1px solid var(--ho-glass-border-subtle); border-radius: 24px; padding: 0.6rem 0.6rem 0.6rem 1.5rem; 
-  box-shadow: 0 10px 30px rgba(13, 122, 110, 0.08); transition: 0.2s; 
+.ho-input-wrapper {
+  display: flex; align-items: center; gap: 0.8rem;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--ho-border-color); border-radius: 24px;
+  padding: 0.5rem 0.5rem 0.5rem 1.5rem; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  backdrop-filter: var(--ho-blur); -webkit-backdrop-filter: var(--ho-blur);
 }
-.ho-input-wrapper:focus-within { border-color: var(--ho-teal-600); box-shadow: 0 10px 35px rgba(13, 122, 110, 0.15); transform: translateY(-1px);}
-.ho-chat-textarea { 
-  flex: 1; border: none; background: transparent; padding: 0.6rem 0; font-family: inherit; 
-  font-size: 0.95rem; font-weight: 500; color: var(--ho-text-main); resize: none; 
-  max-height: 120px; outline: none; line-height: 1.5; margin:0;
+.ho-input-wrapper:focus-within { border-color: var(--ho-teal-600); background: rgba(255, 255, 255, 0.75); }
+
+.ho-chat-textarea {
+  flex: 1; border: none; background: transparent; padding: 0.5rem 0; font-family: inherit;
+  font-size: 0.95rem; font-weight: 500; color: var(--ho-text-main); outline: none; line-height: 1.4;
 }
-.ho-chat-textarea::placeholder { color: #a4c9c3; font-weight: 600; }
+.ho-chat-textarea::placeholder { color: #6b8681; }
 
-.ho-send-btn { 
-  width: 44px; height: 44px; border-radius: 50%; background: var(--ho-bg-airy); color: var(--ho-teal-900); 
-  border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; 
+.ho-send-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  color: #6b8681; border: 1px solid var(--ho-border-color); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: 0.2s; flex-shrink: 0;
 }
-.ho-send-btn:not(:disabled) { background: linear-gradient(135deg, var(--ho-coral), var(--ho-danger)); color: white; box-shadow: 0 4px 15px rgba(224, 122, 104, 0.3); }
-.ho-send-btn:not(:disabled):hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(224, 122, 104, 0.4); }
-.ho-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.ho-send-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;}
+.ho-send-btn:not(:disabled) { background: var(--ho-teal-900); color: white; border-color: var(--ho-teal-900); }
+.ho-send-btn:not(:disabled):hover { transform: scale(1.05); }
+.ho-send-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; margin-left: -2px;}
 
-/* ==========================================================
-   2. CONTEXT / HISTORY PANEL (RIGHT)
-========================================================== */
-.ho-side-panel { display: flex; flex-direction: column; padding: 0; }
+/* Desktop Right Side Panel — liquid glass */
+.ho-right-panel {
+  background: var(--ho-panel-bg);
+  backdrop-filter: var(--ho-blur); -webkit-backdrop-filter: var(--ho-blur);
+  border-radius: 24px; padding: 1.5rem; border: 1px solid var(--ho-border-color);
+  box-shadow: var(--ho-glass-shadow); display: flex; flex-direction: column; position: relative;
+}
+.ho-seg-control {
+  display: flex; background: rgba(255, 255, 255, 0.35); border-radius: 12px; padding: 4px; margin-bottom: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.ho-seg-btn {
+  flex: 1; border: none; background: transparent; padding: 0.6rem 0; font-size: 0.85rem;
+  font-weight: 700; color: var(--ho-text-muted); cursor: pointer; border-radius: 8px; transition: 0.3s;
+}
+.ho-seg-btn.active { background: rgba(255, 255, 255, 0.85); color: var(--ho-teal-900); box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
 
-/* Top Segmented Control */
-.ho-panel-head { padding: 1.5rem 1.5rem 0.5rem; background: transparent; z-index: 5; border-bottom: 1px solid var(--ho-glass-border-subtle);}
-.ho-segmented-control { display: flex; background: rgba(13, 122, 110, 0.08); border-radius: 14px; padding: 5px; position: relative; width: 100%;}
-.ho-seg-btn { flex: 1; border: none; background: transparent; padding: 0.6rem 0; font-size: 0.85rem; font-weight: 800; color: var(--ho-text-muted); cursor: pointer; border-radius: 10px; transition: 0.3s; z-index: 2; position: relative; font-family: inherit; }
-.ho-seg-btn.active { color: var(--ho-teal-900); }
-.ho-seg-slider { position: absolute; top: 5px; bottom: 5px; left: 5px; width: calc(50% - 5px); background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 1; }
-.ho-segmented-control[data-active="history"] .ho-seg-slider { transform: translateX(100%); }
+.ho-view { display: none; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+.ho-view.active { display: flex; }
 
-/* Tab Views */
-.ho-panel-body { flex: 1; position: relative; overflow: hidden; }
-.ho-view-section { position: absolute; inset: 0; padding: 1.5rem; opacity: 0; pointer-events: none; transition: 0.3s ease; overflow-y: auto; scrollbar-width: none; }
-.ho-view-section::-webkit-scrollbar { display: none; }
-.ho-view-section.active { opacity: 1; pointer-events: auto; }
+.ho-new-chat-btn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.45); border: 1px solid var(--ho-border-color); color: var(--ho-teal-900);
+  padding: 0.85rem; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; margin-bottom: 2rem; transition: 0.2s;
+  backdrop-filter: var(--ho-blur); -webkit-backdrop-filter: var(--ho-blur);
+}
+.ho-new-chat-btn:hover { border-color: var(--ho-teal-600); background: rgba(255, 255, 255, 0.7); }
 
-/* Context Cards */
-.ho-ctx-group { margin-bottom: 1.5rem; }
-.ho-ctx-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--ho-teal-700); margin-bottom: 0.8rem; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem;}
-.ho-ctx-card { background: rgba(255,255,255,0.85); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; padding: 1.2rem; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);}
+.ho-recent-title { font-size: 11px; font-weight: 800; color: var(--ho-teal-900); letter-spacing: 0.5px; margin-bottom: 1rem; text-transform: uppercase;}
+.ho-history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; }
+.ho-empty-hist { font-size: 13px; color: #6b8681; font-style: italic; margin-bottom: 1rem; }
 
-.ho-ctx-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px dashed var(--ho-glass-border-subtle);}
-.ho-ctx-item:last-child { border-bottom: none; padding-bottom: 0; }
-.ho-ctx-item span:first-child { color: var(--ho-text-muted); font-weight: 600; font-size: 0.85rem;}
-.ho-ctx-item strong { color: var(--ho-teal-900); font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 0.88rem; text-align: right;}
+.ho-history-item {
+  display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.4); border: 1px solid var(--ho-border-color); border-radius: 12px; cursor: pointer; transition: 0.2s;
+  backdrop-filter: var(--ho-blur); -webkit-backdrop-filter: var(--ho-blur);
+}
+.ho-history-item:hover, .ho-history-item.active { border-color: var(--ho-teal-600); background: rgba(255, 255, 255, 0.65); box-shadow: 0 2px 10px rgba(13, 122, 110, 0.08); }
+.ho-history-content { display: flex; flex-direction: column; gap: 4px; overflow: hidden; flex: 1;}
+.ho-history-content h4 { font-size: 0.85rem; color: var(--ho-teal-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; margin: 0; }
+.ho-history-content p { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--ho-text-muted); margin: 0; }
 
-.ho-empty-state { font-size: 0.85rem; color: var(--ho-text-muted); font-style: italic; text-align: center; }
+/* The New Delete Icon Styling */
+.ho-delete-chat { 
+  background: none; border: none; color: var(--ho-text-muted); 
+  cursor: pointer; padding: 6px; border-radius: 8px; transition: 0.2s; 
+  display: flex; align-items: center; justify-content: center;
+}
+.ho-delete-chat:hover { color: var(--ho-danger); background: rgba(217, 75, 75, 0.12); }
+.ho-delete-chat svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;}
 
-/* History Content */
-.ho-new-chat-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: var(--ho-bg-airy); border: 1.5px dashed var(--ho-teal-600); color: var(--ho-teal-900); padding: 0.9rem; border-radius: 14px; font-weight: 800; font-size: 0.9rem; cursor: pointer; margin-bottom: 1.5rem; transition: 0.2s; font-family: inherit; }
-.ho-new-chat-btn:hover { background: var(--ho-teal-900); color: #fff; border-style: solid; }
+.ho-clear-divider { height: 1px; background: rgba(255, 255, 255, 0.6); margin: 1.5rem 0; }
+.ho-clear-btn { background: none; border: none; color: var(--ho-danger); font-size: 13px; font-weight: 700; text-decoration: underline; cursor: pointer; text-align: left; padding: 0;}
 
-.ho-history-group { font-size: 0.75rem; font-weight: 800; color: var(--ho-text-muted); text-transform: uppercase; margin: 1rem 0 0.5rem 0.5rem; letter-spacing: 0.05em;}
-.ho-history-item { padding: 1rem; border-radius: 12px; cursor: pointer; transition: 0.2s; margin-bottom: 0.5rem; display: flex; flex-direction: column; gap: 4px; text-align: left; background: transparent; border: 1px solid transparent; width: 100%;}
-.ho-history-item:hover { background: #fff; border-color: var(--ho-glass-border-subtle); box-shadow: 0 4px 15px rgba(0,0,0,0.02); transform: translateX(3px);}
-.ho-history-item h4 { font-size: 0.9rem; color: var(--ho-teal-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; margin: 0;}
-.ho-history-item p { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--ho-text-muted); margin: 0; font-weight: 600;}
+/* Context Info inside Drawer — liquid glass cards */
+.ho-ctx-card {
+  background: rgba(255, 255, 255, 0.45); border: 1px solid var(--ho-border-color); border-radius: 12px;
+  padding: 1rem; margin-bottom: 1rem;
+  backdrop-filter: var(--ho-blur); -webkit-backdrop-filter: var(--ho-blur);
+}
+.ho-ctx-card p { font-size: 0.8rem; color: var(--ho-text-muted); margin-bottom: 0.5rem;}
+.ho-ctx-card strong { font-size: 0.85rem; color: var(--ho-teal-900); }
 
 
 /* ==================================================================
-   3. PERFECT NATIVE-APP MOBILE OPTIMIZATION (< 768px)
+   MOBILE LAYOUT (Matches Screenshot 3 - Original Navbar Preserved)
 ================================================================== */
-.ho-mobile-backdrop { display: none; }
-
 @media (max-width: 1024px) {
-  .ho-workspace-grid { grid-template-columns: 1fr 300px; padding: 0 1.5rem 1.5rem; gap: 1rem; }
+  .ho-workspace { grid-template-columns: 1fr 300px; padding: 0 1.5rem 1.5rem; gap: 1rem; }
 }
 
 @media (max-width: 768px) {
-  /* Lock viewport so content never jumps */
-  body, html { height: 100dvh !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important; }
-  .ho-app-layout { flex-direction: column !important; height: 100dvh !important; }
-  
-  /* Clears the standard sidebar's floating island */
-  .ho-main-content { padding-top: 4.8rem !important; height: 100dvh !important; display: flex; flex-direction: column;}
-  .ho-topbar { display: none; }
+  /* Enforce native app layout */
+  body, html { overflow: hidden !important; position: fixed; inset: 0; }
 
-  /* Mobile Grid Override: Just the chat panel takes full space */
-  .ho-workspace-grid { 
-    display: flex; flex-direction: column; padding: 0 !important; gap: 0 !important; 
-    flex: 1; height: calc(100dvh - 4.8rem); 
+  /* 
+     CRITICAL FIX: 
+     We hide the *desktop* topbar and sidebar. 
+     We DO NOT hide the global mobile island from `sidebar.ejs` so it remains exactly as it normally does. 
+  */
+  #sidebar, .ho-sidebar-root, .ho-d-header { display: none !important; }
+  .desktop-only { display: none !important; }
+  .mobile-only { display: flex !important; }
+
+  /* Soft ambient glass gradient behind the mobile chat, matching the desktop palette */
+  .ho-app-layout {
+    flex-direction: column !important; padding: 0 !important;
+    background-image:
+      radial-gradient(500px 420px at 10% 0%, rgba(16, 148, 133, 0.30), transparent 60%),
+      radial-gradient(520px 440px at 100% 20%, rgba(224, 122, 104, 0.26), transparent 60%),
+      radial-gradient(600px 500px at 30% 100%, rgba(66, 184, 157, 0.24), transparent 60%);
+    background-color: var(--ho-bg-page);
+  }
+
+  /* 
+     The main content area must NOT have padding that pushes everything down. 
+     We let the chat window handle the padding so the gradient flows beautifully behind the transparent original navbar.
+  */
+  .ho-main-content { padding: 0 !important; margin: 0 !important; height: 100dvh !important; background: transparent !important; }
+  .ho-workspace { display: flex !important; flex-direction: column !important; padding: 0 !important; gap: 0 !important; height: 100% !important; margin-top: 0 !important;}
+  
+  /* Remove desktop panel styling on mobile, keep it transparent so ambient glow shows through */
+  .ho-chat-panel { border-radius: 0; border: none; box-shadow: none; margin: 0; background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; flex: 1; position: relative;}
+  
+  /* -----------------------------------------------------
+     MOBILE CHAT AREA
+     ----------------------------------------------------- */
+  .ho-chat-window { 
+    /* Push content below the standard #hoIsland navbar (approx 80px) */
+    padding: 5.5rem 1.25rem 140px 1.25rem !important; 
+    gap: 1rem; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+
+  /* Mobile Message Bubbles */
+  .ho-msg-row { max-width: 90% !important; gap: 0 !important;}
+  .ho-msg-av { display: none !important; }
+  
+  .ho-msg-bubble { 
+    padding: 1.1rem 1.25rem !important; 
+    font-size: 0.95rem !important; 
+    line-height: 1.5 !important; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important; 
+    backdrop-filter: var(--ho-blur) !important; -webkit-backdrop-filter: var(--ho-blur) !important;
   }
   
-  .ho-panel { border-radius: 0; border: none; box-shadow: none; margin: 0; }
-  
-  /* Chat Area is the primary view */
-  .ho-chat-panel { flex: 1; border-top: 1px solid var(--ho-glass-border-subtle); display: flex; flex-direction: column; background: #fff;}
-  
-  /* Mobile Context Trigger Pill */
-  .ho-mobile-context-trigger {
-    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-    background: var(--ho-bg-airy); padding: 0.8rem; font-size: 0.85rem; font-weight: 800; color: var(--ho-teal-900);
-    border-bottom: 1px solid var(--ho-glass-border-subtle); cursor: pointer; flex-shrink: 0; z-index: 5;
+  /* On mobile, BOTH bubbles are fully rounded (20px) per screenshot — now glassy */
+  .ai .ho-msg-bubble { 
+    border-radius: 20px !important; 
+    background: rgba(255, 255, 255, 0.55) !important; border: 1px solid rgba(255,255,255,0.6) !important; 
   }
-  .ho-mobile-context-trigger svg { transition: 0.3s; width: 16px; height: 16px; }
-  .ho-mobile-context-trigger.open svg { transform: rotate(180deg); }
+  .user .ho-msg-bubble { 
+    border-radius: 20px !important; 
+    background: rgba(11, 94, 85, 0.82) !important; color: #ffffff !important; border: 1px solid rgba(255,255,255,0.15) !important;
+  }
 
-  /* Chat Feed & Bubbles */
-  .ho-chat-window { padding: 1.2rem 1rem 120px 1rem; gap: 1.2rem; }
-  .ho-msg-row { max-width: 95%; gap: 8px;}
-  .ho-msg-av { display: none; } /* Hide avatars to maximize text space on phones */
-  .ho-msg-bubble { padding: 0.9rem 1.2rem; font-size: 0.95rem; border-radius: 16px; }
-  .ai .ho-msg-bubble { border-radius: 4px 16px 16px 16px; }
-  .user .ho-msg-bubble { border-radius: 16px 4px 16px 16px; }
-  
-  /* Sticky Keyboard-Safe Input Area */
-  .ho-chat-bottom-dock { 
+  /* -----------------------------------------------------
+     MOBILE INPUT DOCK (Matches Screenshot 3)
+     ----------------------------------------------------- */
+  .ho-chat-dock { 
     position: absolute; bottom: 0; left: 0; right: 0; 
-    padding: 0.8rem 1rem calc(0.8rem + env(safe-area-inset-bottom, 0px)); 
-    background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid var(--ho-glass-border-subtle); z-index: 50;
+    padding: 0 1.25rem 1rem !important; 
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+    background: linear-gradient(to top, rgba(231, 243, 240, 0.65) 40%, rgba(231, 243, 240, 0)) !important;
+    backdrop-filter: blur(6px);
+    z-index: 100;
   }
-  .ho-suggestions { margin-bottom: 0.8rem; }
-  .ho-suggest-chip { font-size: 0.8rem; padding: 0.5rem 0.8rem; }
-  .ho-input-wrapper { border-radius: 20px; padding: 0.4rem 0.4rem 0.4rem 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05);}
-  .ho-chat-textarea { font-size: 16px; padding: 0.4rem 0;} /* 16px prevents iOS Auto-Zoom */
-  .ho-send-btn { width: 38px; height: 38px; border-radius: 12px; }
-  .ho-send-btn svg { width: 16px !important; height: 16px !important; }
 
-  /* Transform Side Panel into a Native-style Bottom Sheet */
-  .ho-side-panel {
-    position: absolute; top: 100%; left: 0; right: 0; width: 100%; height: 85dvh;
-    border-radius: 24px 24px 0 0; border: none; box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
-    background: #fff; z-index: 100; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  .ho-suggestions { margin-bottom: 0.8rem; padding-bottom: 4px; display: flex; gap: 0.8rem;}
+  .ho-suggest-chip { 
+    font-size: 0.85rem; padding: 0.6rem 1.1rem; border-radius: 999px; 
+    background: rgba(255, 255, 255, 0.55) !important; border: 1px solid rgba(255,255,255,0.6) !important; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03); font-weight: 700; color: var(--ho-teal-900); white-space: nowrap;
   }
-  .ho-side-panel.open { transform: translateY(-100%); }
   
-  .ho-mobile-backdrop { position: absolute; inset: 0; background: rgba(15, 28, 26, 0.4); backdrop-filter: blur(4px); z-index: 90; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: block;}
-  .ho-mobile-backdrop.show { opacity: 1; pointer-events: auto; }
+  /* History Button embedded in suggestions for mobile access */
+  .ho-m-history-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-size: 0.85rem; padding: 0.6rem 1.1rem; border-radius: 999px; 
+    background: rgba(13, 122, 110, 0.16) !important; color: var(--ho-teal-900);
+    border: 1px solid rgba(255,255,255,0.5); font-weight: 800; cursor: pointer; flex-shrink: 0;
+    backdrop-filter: var(--ho-blur); -webkit-backdrop-filter: var(--ho-blur);
+  }
+  .ho-m-history-btn svg { width: 16px; height: 16px; stroke-width: 2.5; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round;}
+
+  .ho-input-wrapper { 
+    border-radius: 999px !important; 
+    padding: 0.4rem 0.4rem 0.4rem 1.25rem !important; 
+    background: rgba(255, 255, 255, 0.6) !important; border: 1px solid rgba(255,255,255,0.6) !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06) !important; 
+    align-items: center !important; gap: 0.5rem !important;
+    backdrop-filter: var(--ho-blur) !important; -webkit-backdrop-filter: var(--ho-blur) !important;
+  }
+
+  .ho-chat-textarea { 
+    font-size: 16px !important; /* CRITICAL: Prevents iOS zoom */
+    padding: 0.6rem 0 !important; height: 42px !important; 
+    line-height: 1.4 !important; white-space: nowrap !important; overflow-x: hidden !important;
+  }
+
+  /* Exact Mobile Send Button (Paper Plane Icon) */
+  .ho-send-btn { 
+    width: 38px !important; height: 38px !important; 
+    border-radius: 50% !important; background: rgba(255,255,255,0.55) !important; 
+    color: #6b8681 !important; border: 1px solid rgba(255,255,255,0.5) !important;
+  }
+  .ho-send-btn svg { width: 18px; height: 18px; stroke-width: 2; }
+  .ho-send-btn:not(:disabled) { color: var(--ho-teal-900) !important; background: rgba(255,255,255,0.75) !important;}
+
+  /* -----------------------------------------------------
+     MOBILE DRAWER (Slides from Right) — liquid glass
+     ----------------------------------------------------- */
+  .ho-right-panel { 
+    position: fixed !important; top: 0 !important; right: -100%; bottom: 0 !important; left: auto !important; 
+    width: 85vw !important; max-width: 340px !important; height: 100dvh !important; 
+    border-radius: 24px 0 0 24px !important; 
+    background: rgba(255, 255, 255, 0.6) !important; 
+    backdrop-filter: var(--ho-blur) !important; -webkit-backdrop-filter: var(--ho-blur) !important;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.12) !important; 
+    z-index: 3000 !important; transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important; 
+    display: flex !important; flex-direction: column !important; border: 1px solid rgba(255,255,255,0.6) !important;
+  }
+  .ho-right-panel.open { right: 0; }
+  .ho-panel-head { padding: max(2rem, env(safe-area-inset-top)) 1.5rem 1rem !important; }
+  .ho-panel-body { padding: 0 1.5rem 1.5rem !important; flex: 1; overflow-y: auto; }
+  
+  .ho-drawer-backdrop { 
+    position: fixed; inset: 0; background: rgba(11, 94, 85, 0.3); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+    z-index: 2900; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: block;
+  }
+  .ho-drawer-backdrop.show { opacity: 1; pointer-events: auto; }
 }
+
+
+
+
+
+.ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
+.ho-orb-1 { width: 550px; height: 550px; background: #76d7c4 !important; top: -100px; left: -100px; }
+.ho-orb-2 { width: 600px; height: 600px; background: #fadbd8 !important; bottom: -150px; right: -100px; animation-delay: -5s; }
+.ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 35%; left: 35%; opacity: 0.3; animation-delay: -10s; }
+@keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 60px) scale(1.15); } }
+
+
+
+
+
+
 </style>
 </head>
 <body>
 
-<!-- Ambient Background -->
-<%- include('../partials/ambient') %>
+<% 
+  // Safely extract EJS variables to prevent crashes
+  const safeUserName = typeof userName !== 'undefined' && userName ? userName.split(' ')[0] : 'User';
+  const safeReports = typeof reports !== 'undefined' && reports ? reports : [];
+  const safeVitals = typeof vitals !== 'undefined' && vitals ? vitals : {};
+  const safeCsrf = typeof csrfToken !== 'undefined' ? csrfToken : '';
+%>
 
 <div class="ho-app-layout">
-  
-  <!-- EXISTING SIDEBAR PARTIAL (Untouched) -->
+
+  <!-- Universal Sidebar (Includes the original mobile navbar) -->
   <%- include('../partials/sidebar') %>
 
   <main class="ho-main-content">
-    
-    <!-- DESKTOP HEADER -->
-    <header class="ho-topbar">
-      <div class="ho-topbar-left">
-        <div class="ho-ai-core-mini"></div>
-        <div class="ho-topbar-text">
-          <h1>Health<span style="color:var(--ho-coral);">Orbit</span> AI Assistant</h1>
-          <p><span class="ho-pulse-dot"></span> Conversational interface connected to your authorized records.</p>
-        </div>
+
+    <!-- ==========================================
+         DESKTOP HEADER (Hidden on Mobile)
+    =========================================== -->
+    <header class="ho-d-header desktop-only">
+      <div class="ho-brand-logo">
+        <div class="ho-logo-inner"><div class="ho-logo-dot"></div></div>
+      </div>
+      <div class="ho-d-titles">
+        <h1>HealthOrbit AI</h1>
+        <p>Secure, conversational intelligence connected to your clinical records.</p>
       </div>
     </header>
 
-    <div class="ho-workspace-grid">
-      
-      <!-- ==========================================
-           1. MAIN CHAT PANEL
-      =========================================== -->
-      <section class="ho-panel ho-chat-panel">
-        
-        <!-- Mobile Trigger for Context/History Bottom Sheet -->
-        <div class="ho-mobile-context-trigger" id="mobileSheetTrigger" role="button" tabindex="0">
-          Health Context & History
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </div>
+    <!-- ==========================================
+         WORKSPACE GRID
+    =========================================== -->
+    <div class="ho-workspace">
 
+      <!-- MAIN CHAT PANEL -->
+      <section class="ho-chat-panel">
+        
         <div class="ho-chat-window" id="chatWindow" role="log" aria-live="polite">
-          
-          <!-- Default AI Welcome Message -->
-          <div class="ho-msg-row ai ho-welcome-msg">
-            <div class="ho-msg-av" aria-hidden="true">
-              <!-- Clean Sparkle SVG for AI -->
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-            </div>
+          <!-- Initial AI Message -->
+          <div class="ho-msg-row ai ho-welcome-msg" id="welcomeState">
+            
+
+
+             <div class="ho-brand-logo">
+        <div class="ho-logo-inner"><div class="ho-logo-dot"></div></div>
+      </div>
+
+
+      
             <div class="ho-msg-body">
               <div class="ho-msg-bubble">
-                <p>Hello <strong><%= locals.userName ? locals.userName.split(' ')[0] : 'there' %></strong> 👋</p>
-                <p>I am your HealthOrbit AI Assistant. I can help you understand your authorized medical reports, vitals, and health trends.</p>
-                <p>What would you like to know today?</p>
+                <p>Hello <strong><%= safeUserName %></strong> 👋</p>
+                <p>I am your HealthOrbit AI Assistant. I can securely analyze your dashboard, explain complex medical reports, and track your health trends.</p>
+                <p>How can I help you today?</p>
               </div>
             </div>
           </div>
-
         </div>
 
-        <!-- Chat Input Zone -->
-        <div class="ho-chat-bottom-dock">
+        <!-- Input Dock -->
+        <div class="ho-chat-dock">
           <div class="ho-suggestions" aria-label="Suggested prompts">
-            <button class="ho-suggest-chip">Explain my latest medical report</button>
-            <button class="ho-suggest-chip">Summarize my recent sleep</button>
-            <button class="ho-suggest-chip">What medicines are recorded?</button>
-            <button class="ho-suggest-chip">Show my health trends</button>
-          </div>
-          
-          <div class="ho-input-wrapper">
-            <textarea class="ho-chat-textarea" id="chatInput" rows="1" placeholder="Ask HealthOrbit AI..." aria-label="Message input"></textarea>
-            <button class="ho-send-btn" id="sendBtn" aria-label="Send message" disabled>
-              <!-- Clean Send SVG -->
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            <!-- Mobile History Toggle embedded in suggestions for easy thumb access -->
+            <button type="button" class="ho-m-history-btn mobile-only" id="mobileDrawerTrigger" aria-label="Open History">
+              <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+              History & Context
             </button>
+            <button type="button" class="ho-suggest-chip">Explain my latest report</button>
+            <button type="button" class="ho-suggest-chip">Summarize my recent vitals</button>
+            <button type="button" class="ho-suggest-chip desktop-only">What medicines am I on?</button>
           </div>
+
+          <form class="ho-input-wrapper" id="chatForm">
+            <textarea class="ho-chat-textarea" id="chatInput" rows="1" placeholder="Message HealthOrbit AI..." aria-label="Message input"></textarea>
+            <button type="submit" class="ho-send-btn" id="sendBtn" aria-label="Send message" disabled>
+              <!-- Paper Plane Icon (Matches Screenshot 3) -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+          </form>
         </div>
       </section>
 
-      <!-- ==========================================
-           2. CONTEXT / HISTORY PANEL
-      =========================================== -->
-      <aside class="ho-panel ho-side-panel" id="contextSheet">
-        
-        <!-- TOP SEGMENTED TOGGLE -->
+      <!-- CONTEXT / HISTORY SIDEBAR -->
+      <aside class="ho-right-panel" id="contextDrawer">
         <div class="ho-panel-head">
-          <div class="ho-segmented-control" id="segmentedControl" data-active="context" role="tablist">
-            <div class="ho-seg-slider"></div>
-            <button class="ho-seg-btn active" role="tab" aria-selected="true" data-target="contextView">Health Context</button>
-            <button class="ho-seg-btn" role="tab" aria-selected="false" data-target="historyView">History</button>
+          <div class="ho-seg-control" id="segmentedControl" role="tablist">
+            <button type="button" class="ho-seg-btn active" role="tab" aria-selected="true" data-target="contextView">Health Context</button>
+            <button type="button" class="ho-seg-btn" role="tab" aria-selected="false" data-target="historyView">History</button>
           </div>
         </div>
 
         <div class="ho-panel-body">
-          
           <!-- VIEW 1: HEALTH CONTEXT -->
-          <div class="ho-view-section active" id="contextView" role="tabpanel">
-            
-            <div class="ho-ctx-group">
-              <div class="ho-ctx-title">🔒 AI Data Access</div>
-              <div class="ho-ctx-card" style="background: rgba(13, 122, 110, 0.04); border-color: rgba(13, 122, 110, 0.15);">
-                <p style="font-size: 0.75rem; color: var(--ho-teal-900); margin-bottom: 0.8rem; line-height: 1.4; font-weight: 600;">HealthOrbit AI only uses information explicitly authorized in your account.</p>
-                <ul style="list-style: none; font-size: 0.75rem; color: var(--ho-teal-700); font-weight: 700;">
-                  <li>✓ Medical Reports</li>
-                  <li>✓ Health Measurements</li>
-                  <li>✓ Medicines</li>
-                </ul>
-              </div>
+          <div class="ho-view active" id="contextView" role="tabpanel">
+            <button type="button" class="ho-new-chat-btn" id="newChatBtnContext">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Start New Conversation
+            </button>
+            <div class="ho-ctx-card">
+              <strong>🔒 AI Security Protocol</strong>
+              <p style="margin-top: 0.5rem;">HealthOrbit AI operates within a strict sandbox. It only accesses data you explicitly authorize.</p>
             </div>
-
-            <div class="ho-ctx-group">
-              <div class="ho-ctx-title">📄 Medical Reports</div>
-              <div class="ho-ctx-card">
-                <% if (locals.reports && locals.reports.length > 0) { %>
-                  <div class="ho-ctx-item"><span>Latest</span> <strong><%= locals.reports[0].originalFileName || locals.reports[0].name %></strong></div>
-                  <div class="ho-ctx-item"><span>Processed</span> <strong><small><%= new Date(locals.reports[0].createdAt || locals.reports[0].date).toLocaleDateString() %></small></strong></div>
-                <% } else { %>
-                  <div class="ho-empty-state">No medical reports uploaded yet.</div>
-                <% } %>
-              </div>
+            <div class="ho-ctx-card">
+              <strong>📄 Active Reports</strong>
+              <% if (safeReports.length > 0) { %>
+                <p style="margin-top: 0.5rem;"><%= safeReports[0].originalFileName || safeReports[0].name %></p>
+              <% } else { %>
+                <p style="margin-top: 0.5rem; font-style: italic;">No medical reports found.</p>
+              <% } %>
             </div>
-
-            <div class="ho-ctx-group">
-              <div class="ho-ctx-title">⌚ Health Data</div>
-              <div class="ho-ctx-card">
-                <% if (locals.vitals && Object.keys(locals.vitals).length > 0) { %>
-                  <div class="ho-ctx-item"><span>Heart Rate</span> <strong><%= locals.vitals.heartRate || '--' %> <small>bpm</small></strong></div>
-                  <div class="ho-ctx-item"><span>SpO₂</span> <strong><%= locals.vitals.spo2 || '--' %> <small>%</small></strong></div>
-                  <div class="ho-ctx-item"><span>Sleep</span> <strong><%= locals.vitals.sleepHours || '--' %> <small>h</small></strong></div>
-                <% } else { %>
-                  <div class="ho-empty-state">No wearable data connected.</div>
-                <% } %>
-              </div>
+            <div class="ho-ctx-card">
+              <strong>⌚ Vitals Overview</strong>
+              <% if (Object.keys(safeVitals).length > 0) { %>
+                <p style="margin-top: 0.5rem;">Heart Rate: <%= safeVitals.heartRate || '--' %> bpm</p>
+              <% } else { %>
+                <p style="margin-top: 0.5rem; font-style: italic;">No recent wearable data.</p>
+              <% } %>
             </div>
-
-            <div class="ho-ctx-group">
-              <div class="ho-ctx-title">💊 Medicines</div>
-              <div class="ho-ctx-card">
-                <% if (locals.medicines && locals.medicines.length > 0) { %>
-                  <% locals.medicines.forEach(function(med) { %>
-                    <div class="ho-ctx-item"><span><%= med.name %></span> <strong><small><%= med.dosage || med.dose %></small></strong></div>
-                  <% }); %>
-                <% } else { %>
-                  <div class="ho-empty-state">No active medicines recorded.</div>
-                <% } %>
-              </div>
-            </div>
-
           </div>
 
           <!-- VIEW 2: HISTORY -->
-          <div class="ho-view-section" id="historyView" role="tabpanel">
-            <button class="ho-new-chat-btn" id="newChatBtn">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              Start New Chat
+          <div class="ho-view" id="historyView" role="tabpanel">
+            <button type="button" class="ho-new-chat-btn" id="newChatBtnHistory">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Start New Conversation
             </button>
             
-            <% if (locals.chatHistory && locals.chatHistory.length > 0) { %>
-              <div class="ho-history-group">Recent</div>
-              <% locals.chatHistory.forEach(function(chat) { %>
-                <button class="ho-history-item">
-                  <h4><%= chat.title %></h4>
-                  <p><%= new Date(chat.updatedAt || chat.date).toLocaleDateString() %></p>
-                </button>
-              <% }); %>
-            <% } else { %>
-              <div class="ho-empty-state" style="margin-top: 1rem;">
-                No previous conversations yet.
-              </div>
-            <% } %>
+            <h3 class="ho-recent-title">RECENT THREADS</h3>
+            
+            <div class="ho-history-list" id="historyList">
+              <p class="ho-empty-hist">Loading history...</p>
+            </div>
+            
+            <div class="ho-clear-divider"></div>
+            <form action="/api/chat/reset" method="POST" onsubmit="return confirm('Permanently delete ALL AI conversation history?');">
+                <input type="hidden" name="_csrf" value="<%= safeCsrf %>">
+                <button type="submit" class="ho-clear-btn">Clear All History</button>
+            </form>
           </div>
-
         </div>
       </aside>
+
+      <!-- Mobile Backdrop for Drawer -->
+      <div class="ho-drawer-backdrop mobile-only" id="mobileBackdrop"></div>
 
     </div>
   </main>
 </div>
 
-<!-- Mobile Backdrop -->
-<div class="ho-mobile-backdrop" id="mobileBackdrop"></div>
-
 <!-- ==========================================
-     FRONTEND CHAT & UI LOGIC
+     FRONTEND CHAT ENGINE
 =========================================== -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  
   const chatInput = document.getElementById('chatInput');
+  const chatForm = document.getElementById('chatForm');
   const sendBtn = document.getElementById('sendBtn');
   const chatWindow = document.getElementById('chatWindow');
   const suggestChips = document.querySelectorAll('.ho-suggest-chip');
-  const newChatBtn = document.getElementById('newChatBtn');
-  
-  // Segment Elements
-  const segControl = document.getElementById('segmentedControl');
+  const newChatBtnContext = document.getElementById('newChatBtnContext');
+  const newChatBtnHistory = document.getElementById('newChatBtnHistory');
+  const historyList = document.getElementById('historyList');
+
+  // Segments & Mobile Drawer
   const segBtns = document.querySelectorAll('.ho-seg-btn');
-  const viewSections = document.querySelectorAll('.ho-view-section');
-  
-  // Mobile Sheet Elements
-  const mobileSheetTrigger = document.getElementById('mobileSheetTrigger');
-  const contextSheet = document.getElementById('contextSheet');
+  const views = document.querySelectorAll('.ho-view');
+  const mobileDrawerTrigger = document.getElementById('mobileDrawerTrigger');
+  const contextDrawer = document.getElementById('contextDrawer');
   const mobileBackdrop = document.getElementById('mobileBackdrop');
 
   let isWaitingForResponse = false;
+  let activeChatId = null;
 
-  // --- 1. Segmented Control Logic ---
-  if (segBtns && segControl) {
-    segBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        segBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
-        btn.classList.add('active');
-        btn.setAttribute('aria-selected', 'true');
-        
-        const targetId = btn.getAttribute('data-target');
-        const isHistory = targetId === 'historyView';
-        
-        segControl.setAttribute('data-active', isHistory ? 'history' : 'context');
-        
-        viewSections.forEach(sec => sec.classList.remove('active'));
-        const targetView = document.getElementById(targetId);
-        if (targetView) targetView.classList.add('active');
-      });
+  // --- 1. Segmented Control Switcher ---
+  segBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      segBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+
+      const targetId = btn.getAttribute('data-target');
+      views.forEach(sec => sec.classList.remove('active'));
+      const targetView = document.getElementById(targetId);
+      if (targetView) targetView.classList.add('active');
     });
-  }
+  });
 
-  // --- 2. Mobile Bottom Sheet Logic ---
-  function toggleMobileSheet() {
-    if (!contextSheet) return;
-    const isOpen = contextSheet.classList.toggle('open');
-    if (mobileSheetTrigger) {
-      mobileSheetTrigger.classList.toggle('open', isOpen);
-      mobileSheetTrigger.setAttribute('aria-expanded', isOpen);
-    }
+  // --- 2. Mobile Drawer Toggle ---
+  function toggleMobileDrawer() {
+    if (!contextDrawer) return;
+    const isOpen = contextDrawer.classList.toggle('open');
     if (mobileBackdrop) {
       isOpen ? mobileBackdrop.classList.add('show') : mobileBackdrop.classList.remove('show');
     }
   }
+  if (mobileDrawerTrigger) mobileDrawerTrigger.addEventListener('click', toggleMobileDrawer);
+  if (mobileBackdrop) mobileBackdrop.addEventListener('click', toggleMobileDrawer);
 
-  if (mobileSheetTrigger) mobileSheetTrigger.addEventListener('click', toggleMobileSheet);
-  if (mobileBackdrop) mobileBackdrop.addEventListener('click', toggleMobileSheet);
-
-  document.addEventListener('click', (e) => {
-    if (window.innerWidth <= 768 && contextSheet && contextSheet.classList.contains('open')) {
-      if (!contextSheet.contains(e.target) && mobileSheetTrigger && !mobileSheetTrigger.contains(e.target)) {
-        toggleMobileSheet();
-      }
-    }
-  });
-
-  // --- 3. Input Auto-resize ---
+  // --- 3. Input Handling ---
   if (chatInput) {
     chatInput.addEventListener('input', () => {
-      chatInput.style.height = 'auto';
-      chatInput.style.height = Math.min(chatInput.scrollHeight, 150) + 'px';
+      if (window.innerWidth > 768) {
+        chatInput.style.height = 'auto';
+        chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+      }
       if (sendBtn) sendBtn.disabled = chatInput.value.trim().length === 0;
     });
 
@@ -570,7 +674,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  if (sendBtn) sendBtn.addEventListener('click', handleSend);
+  if (chatForm) chatForm.addEventListener('submit', (e) => { e.preventDefault(); handleSend(); });
 
   if (suggestChips) {
     suggestChips.forEach(chip => {
@@ -578,12 +682,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (chatInput) chatInput.value = chip.textContent;
         if (sendBtn) sendBtn.disabled = false;
         handleSend();
-        if (contextSheet && contextSheet.classList.contains('open')) toggleMobileSheet();
       });
     });
   }
 
-  // --- 4. SECURE Markdown Parsing (XSS Protection) ---
+  // --- 4. Chat UI Helpers ---
   function escapeHTML(str) {
     if (!str) return '';
     return str.replace(/[&<>'"]/g, tag => ({
@@ -593,159 +696,195 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function formatSafeMarkdown(text) {
     let safeText = escapeHTML(text);
-    safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
-    safeText = safeText.replace(/\n/g, '<br>'); 
+    safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    safeText = safeText.replace(/\n/g, '<br>');
     return `<p>${safeText}</p>`;
   }
 
-  // --- 5. Chat Rendering Logic ---
   function addMessage(text, sender, isHTML = false) {
     if (!chatWindow) return null;
 
     const welcomeState = document.getElementById('welcomeState');
     if (welcomeState && welcomeState.style.display !== 'none') {
-        welcomeState.style.display = 'none';
+      welcomeState.style.display = 'none';
     }
 
     const row = document.createElement('div');
     row.className = `ho-msg-row ${sender}`;
 
     const av = document.createElement('div');
-    av.className = 'ho-msg-av';
+    av.className = 'ho-msg-av desktop-only ho-brand-logo ho-logo-inner ho-logo-dot';
     av.setAttribute('aria-hidden', 'true');
-    // Using EJS securely. If it fails, default to 'U'
     if (sender === 'user') {
       av.textContent = '<%= locals.userName ? locals.userName.substring(0, 1).toUpperCase() : "U" %>';
     } else {
-      av.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>'; 
+      av.innerHTML = '<div class="ho-av-inner"><div class="ho-av-dot"></div></div>';
     }
-
-    const bodyContainer = document.createElement('div');
-    bodyContainer.className = 'ho-msg-content';
 
     const bubble = document.createElement('div');
     bubble.className = 'ho-msg-bubble';
     
     if (sender === 'ai' && !isHTML) {
-        bubble.innerHTML = formatSafeMarkdown(text);
+      bubble.innerHTML = formatSafeMarkdown(text);
     } else if (isHTML) {
-        bubble.innerHTML = text; // Used strictly for internal UI loading states
+      bubble.innerHTML = text; 
     } else {
-        bubble.textContent = text;
+      bubble.textContent = text;
     }
-
-    bodyContainer.appendChild(bubble);
-
-    // AI Message Action Buttons
-    if (sender === 'ai' && !isHTML) {
-        const actions = document.createElement('div');
-        actions.className = 'ho-msg-actions';
-        
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'ho-action-btn';
-        copyBtn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy';
-        copyBtn.onclick = () => {
-            navigator.clipboard.writeText(text);
-            copyBtn.innerHTML = '✓ Copied';
-            setTimeout(() => copyBtn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy', 2000);
-        };
-
-        const regenBtn = document.createElement('button');
-        regenBtn.className = 'ho-action-btn';
-        regenBtn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg> Regenerate';
-        regenBtn.onclick = () => alert("Backend history support required to regenerate prompt.");
-
-        actions.appendChild(copyBtn);
-        actions.appendChild(regenBtn);
-        bodyContainer.appendChild(actions);
-    }
-
+    
     row.appendChild(av);
-    row.appendChild(bodyContainer);
+    row.appendChild(bubble);
     chatWindow.appendChild(row);
     
     requestAnimationFrame(() => {
-        chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
+      chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
     });
-    
     return row;
   }
 
   function showTypingIndicator() {
-    const html = `
-      <div class="ho-typing-bubble">
-        <span class="ho-dot"></span><span class="ho-dot"></span><span class="ho-dot"></span>
-      </div>
-    `;
+    const html = `<div class="ho-typing-bubble"><span></span><span></span></div>`;
     return addMessage(html, 'ai', true);
   }
 
-  // --- 6. API Call & Handling ---
+  // --- 5. Network Dispatch ---
   async function handleSend() {
     if (!chatInput) return;
     const message = chatInput.value.trim();
     if (!message || isWaitingForResponse) return;
 
     isWaitingForResponse = true;
-
-    // UI Cleanup
     chatInput.value = '';
-    chatInput.style.height = 'auto';
-    if(sendBtn) sendBtn.disabled = true;
+    if (window.innerWidth > 768) chatInput.style.height = 'auto';
+    if (sendBtn) sendBtn.disabled = true;
 
-    // Add User Message
     addMessage(message, 'user');
-
-    // Add Loading Indicator
     const loadingRow = showTypingIndicator();
 
     try {
-        const response = await fetch('/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: message })
-        });
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message, conversationId: activeChatId, currentPage: window.location.pathname })
+      });
+      
+      if (loadingRow) loadingRow.remove();
 
-        if (loadingRow) loadingRow.remove();
+      const contentType = response.headers.get("content-type");
+      if (response.redirected || (contentType && contentType.includes("text/html"))) {
+        throw new Error("Your session has expired. Please log in again.");
+      }
 
-        if (response.ok) {
-            const data = await response.json();
-            if (data.reply) {
-              addMessage(data.reply, 'ai');
-            } else {
-              addMessage("I received an empty response from the server.", 'ai');
-            }
-        } else {
-            addMessage("Sorry, I couldn't connect to HealthOrbit AI right now. Please try again.", 'ai');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.reply) addMessage(data.reply, 'ai');
+        if (!activeChatId && data.conversationId) {
+          activeChatId = data.conversationId;
+          fetchConversations();
         }
+      } else {
+        addMessage("Sorry, I couldn't connect to HealthOrbit AI. Please try again.", 'ai');
+      }
     } catch (error) {
-        console.error("Chat Error:", error);
-        if (loadingRow) loadingRow.remove();
-        addMessage("Network error. Please check your connection and try again.", 'ai');
+      if (loadingRow) loadingRow.remove();
+      addMessage(`⚠️ ${error.message || "Network error."}`, 'ai');
     } finally {
-        isWaitingForResponse = false;
-        if (window.innerWidth > 768) chatInput.focus();
+      isWaitingForResponse = false;
+      if (window.innerWidth > 768) chatInput.focus();
     }
   }
 
-  // --- 7. Global New Chat Function ---
-  if (newChatBtn) {
-    newChatBtn.addEventListener('click', () => {
-      if (!chatWindow) return;
-      const messages = chatWindow.querySelectorAll('.ho-msg-row:not(.ho-welcome-msg)');
-      messages.forEach(msg => msg.remove());
-      
-      const welcomeState = document.getElementById('welcomeState');
-      if (welcomeState) {
-          welcomeState.style.display = 'block';
-      }
+  // --- 6. Conversation Sync ---
+  async function fetchConversations() {
+    try {
+      const res = await fetch('/api/conversations');
+      const data = await res.json();
+      renderSidebar(data);
+    } catch (err) {
+      if (historyList) historyList.innerHTML = '<p class="ho-empty-hist">Failed to load history.</p>';
+    }
+  }
 
-      if (contextSheet && contextSheet.classList.contains('open')) {
-          toggleMobileSheet();
-      }
+  function renderSidebar(conversations) {
+    if (!historyList) return;
+    historyList.innerHTML = '';
+    if (!conversations || conversations.length === 0) {
+      historyList.innerHTML = '<p class="ho-empty-hist">No previous conversations.</p>';
+      return;
+    }
+
+    conversations.forEach(conv => {
+      const item = document.createElement('div');
+      item.className = `ho-history-item ${conv._id === activeChatId ? 'active' : ''}`;
+      item.dataset.chatId = conv._id;
+
+      item.innerHTML = `
+        <div class="ho-history-content" onclick="document.dispatchEvent(new CustomEvent('openChat', {detail: '${conv._id}'}))">
+          <h4>${escapeHTML(conv.title)}</h4>
+          <p>${new Date(conv.updatedAt).toLocaleDateString()}</p>
+        </div>
+        <button class="ho-delete-chat" onclick="document.dispatchEvent(new CustomEvent('deleteChat', {detail: {id: '${conv._id}', el: this.parentElement}}))" aria-label="Delete">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+        </button>
+      `;
+      historyList.appendChild(item);
     });
   }
+
+  // --- 7. History Actions ---
+  function initNewChat() {
+      chatWindow.querySelectorAll('.ho-msg-row:not(.ho-welcome-msg)').forEach(msg => msg.remove());
+      const welcomeState = document.getElementById('welcomeState');
+      if (welcomeState) welcomeState.style.display = 'flex';
+      activeChatId = null;
+      if (historyList) historyList.querySelectorAll('.ho-history-item').forEach(el => el.classList.remove('active'));
+      if (window.innerWidth <= 768 && contextDrawer && contextDrawer.classList.contains('open')) toggleMobileDrawer();
+  }
   
+  if (newChatBtnContext) newChatBtnContext.addEventListener('click', initNewChat);
+  if (newChatBtnHistory) newChatBtnHistory.addEventListener('click', initNewChat);
+
+  document.addEventListener('openChat', async (e) => {
+    const chatId = e.detail;
+    activeChatId = chatId;
+    if (historyList) historyList.querySelectorAll('.ho-history-item').forEach(el => el.classList.toggle('active', el.dataset.chatId === String(chatId)));
+    const welcomeState = document.getElementById('welcomeState');
+    if (welcomeState) welcomeState.style.display = 'none';
+    
+    chatWindow.querySelectorAll('.ho-msg-row:not(.ho-welcome-msg)').forEach(m => m.remove());
+    const loadingRow = showTypingIndicator();
+    
+    if (window.innerWidth <= 768 && contextDrawer && contextDrawer.classList.contains('open')) toggleMobileDrawer();
+
+    try {
+      const response = await fetch(`/api/conversations/${chatId}/messages`);
+      if (loadingRow) loadingRow.remove();
+      if (response.ok) {
+        const data = await response.json();
+        const msgs = data.messages || [];
+        if (msgs.length > 0) msgs.forEach(m => addMessage(m.content, m.role === 'user' ? 'user' : 'ai'));
+      }
+    } catch (err) {
+      if (loadingRow) loadingRow.remove();
+      addMessage("⚠️ Network error while loading thread.", 'ai');
+    }
+  });
+
+  document.addEventListener('deleteChat', async (e) => {
+    const { id, el } = e.detail;
+    if (confirm('Delete this conversation?')) {
+      try {
+        const response = await fetch(`/api/conversations/${encodeURIComponent(id)}/delete`, { method: 'POST' });
+        if (response.ok) {
+          el.remove();
+          if (activeChatId === id) initNewChat();
+          fetchConversations();
+        }
+      } catch (err) { console.error('Delete failed', err); }
+    }
+  });
+
+  fetchConversations();
 });
 </script>
 
