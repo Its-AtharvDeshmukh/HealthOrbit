@@ -1,15 +1,16 @@
 <!-- views/partials/footer.ejs -->
+
+
 <style>
 /* ==========================================================
    HEALTHORBIT - PERFECTLY ALIGNED TRANSPARENT FOOTER
    ========================================================== */
-
 .ho-footer-wrapper {
   width: 100%;
-  margin-top: 4rem; /* Breathing room from the last dashboard card */
+  margin-top: 4rem; 
   padding-top: 2.5rem;
   padding-bottom: 2rem;
-  border-top: 1px solid rgba(13, 122, 110, 0.15); /* Clean top separator */
+  border-top: 1px solid rgba(13, 122, 110, 0.15); 
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -18,10 +19,8 @@
   z-index: 10;
 }
 
-/* 
-  THIS IS THE FIX FOR THE SIDEBAR OVERLAP 
-  We push the content past the floating desktop sidebar to align perfectly with your dashboard cards.
-*/
+/* THIS IS THE FIX FOR THE SIDEBAR OVERLAP
+   We push the content past the floating desktop sidebar to align perfectly with your dashboard cards. */
 @media (min-width: 1025px) {
   .ho-footer-wrapper {
     padding-left: 110px; 
@@ -66,11 +65,11 @@
   text-decoration: none;
 }
 
-/* EXACT EXISTING HEALTHORBIT LOGO - STRICTLY UNTOUCHED */
 .ho-foot-logo-box { width: 34px; height: 34px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .ho-foot-ring-1 { position: absolute; inset: 0; border: 1.5px dashed #0d7a6e; border-radius: 50%; animation: hoFootSpinSlow 12s linear infinite; }
 .ho-foot-ring-2 { position: absolute; inset: -4px; border: 1.5px dashed #e07a68; border-radius: 50%; animation: hoFootSpinFast 8s linear infinite reverse; }
 .ho-foot-nucleus { width: 8px; height: 8px; background: #0b5e55; border-radius: 50%; box-shadow: 0 0 10px #42b89d; }
+
 @keyframes hoFootSpinSlow { 100% { transform: rotate(360deg); } }
 @keyframes hoFootSpinFast { 100% { transform: rotate(360deg); } }
 
@@ -81,6 +80,7 @@
   color: #0b5e55;
   letter-spacing: -0.02em;
 }
+
 .ho-footer-brand-title span { color: #e07a68; }
 
 .ho-footer-mission {
@@ -90,7 +90,6 @@
   line-height: 1.5;
 }
 
-/* Safety Card */
 .ho-footer-safety-card {
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(10px);
@@ -102,6 +101,7 @@
   gap: 0.85rem;
   align-items: flex-start;
 }
+
 .ho-safety-icon {
   width: 20px;
   height: 20px;
@@ -109,11 +109,13 @@
   flex-shrink: 0;
   margin-top: 2px;
 }
+
 .ho-safety-text {
   font-size: 0.75rem;
   color: #4e6b63;
   line-height: 1.5;
 }
+
 .ho-safety-text strong { color: #0b5e55; display: block; margin-bottom: 0.2rem; }
 
 /* RIGHT SIDE: Navigation Grid */
@@ -148,8 +150,7 @@
   width: fit-content;
 }
 
-.ho-footer-nav-group a:hover,
-.ho-footer-nav-group a:focus-visible {
+.ho-footer-nav-group a:hover, .ho-footer-nav-group a:focus-visible {
   color: #0d7a6e;
   transform: translateX(4px);
   outline: none;
@@ -187,6 +188,7 @@
   box-shadow: 0 0 0 rgba(13, 122, 110, 0.6);
   animation: hoStatusPulse 2s infinite;
 }
+
 @keyframes hoStatusPulse {
   0% { box-shadow: 0 0 0 0 rgba(13, 122, 110, 0.4); }
   70% { box-shadow: 0 0 0 5px rgba(13, 122, 110, 0); }
@@ -199,6 +201,7 @@
   line-height: 1.5;
   text-align: right;
 }
+
 .ho-footer-copyright strong { color: #0b5e55; }
 
 /* ==========================================================
@@ -209,15 +212,17 @@
 }
 
 @media (max-width: 768px) {
-  .ho-footer-wrapper {
-    margin-top: 2.5rem;
-    padding-top: 2rem;
-  }
+  .ho-footer-wrapper { margin-top: 2.5rem; padding-top: 2rem; }
   .ho-footer-nav-col { grid-template-columns: 1fr 1fr; gap: 2rem 1rem; }
   .ho-footer-bottom { flex-direction: column; align-items: flex-start; }
   .ho-footer-copyright { text-align: left; }
 }
 </style>
+
+
+
+
+
 
 <footer class="ho-footer-wrapper" aria-label="Site Footer">
   <div class="ho-footer-container">

@@ -96,7 +96,7 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 .ho-sec-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 1.2rem; border-radius: 14px; border: 1px solid var(--ho-glass-border-subtle); transition: 0.2s;}
 .ho-sec-item:hover { transform: translateX(3px); border-color: var(--ho-teal-600);}
 .ho-sec-info strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.2rem;}
-.ho-sec-info span { font-size: 0.8rem; color: var(--ho-text-muted); font-weight: 500; display: flex; align-items: center; gap: 0.4rem;}
+.ho-sec-info span { font-size: 0.8rem; font-weight: 500;  align-items: center; gap: 0.4rem;}
 .ho-verified { color: #27ae60; font-weight: 800; font-size: 0.75rem; background: rgba(46, 204, 113, 0.15); padding: 2px 8px; border-radius: 6px;}
 .ho-unverified { color: var(--ho-warning); font-weight: 800; font-size: 0.75rem; background: rgba(243, 156, 18, 0.15); padding: 2px 8px; border-radius: 6px;}
 .ho-sessions-panel { grid-column: span 6; }
@@ -136,7 +136,7 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 .ho-af-icon { font-size: 1.2rem; }
 .ho-af-text { font-size: 0.9rem; color: var(--ho-teal-900); font-weight: 600;}
 .ho-af-time { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 700;}
-.ho-account-actions { grid-column: span 12; background: transparent; border: none; box-shadow: none; flex-direction: row; justify-content: center; gap: 1.5rem; padding: 1rem 0 0 0;}
+.ho-account-actions { grid-column: span 12; background: transparent; border: none; box-shadow: none; flex-direction: row; justify-content: center; gap: 1.5rem; }
 .ho-modal { position: fixed; inset: 0; background: rgba(11, 94, 85, 0.45); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 1.2rem; opacity: 0; transition: opacity 0.3s ease; }
 .ho-modal.active { display: flex; opacity: 1; }
 .ho-modal-box { background: #ffffff; border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl); padding: 2.5rem; width: 100%; max-width: 600px; box-shadow: 0 35px 70px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);}

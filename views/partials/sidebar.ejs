@@ -8,15 +8,18 @@
   --ho-sidebar-bg: rgba(255, 255, 255, 0.68);
   --ho-sidebar-bg-hover: rgba(255, 255, 255, 0.97);
   --ho-sidebar-border: rgba(255, 255, 255, 0.9);
+  
   --ho-primary: #0b5e55;
   --ho-primary-dim: #0d7a6e;
   --ho-primary-hover: rgba(13, 122, 110, 0.09);
+  
   --ho-mint: #42b89d;
   --ho-coral: #e07a68;
   --ho-coral-deep: #d1604c;
   --ho-amber: #d97706;
   --ho-alert: #d94b4b;
   --ho-alert-hover: rgba(217, 75, 75, 0.1);
+  
   --ho-text: #4e6b63;
   --ho-text-dim: #8aa39c;
 }
@@ -120,7 +123,7 @@
 @media (max-width: 1024px) { .ho-sidebar-root { display: none !important; } }
 
 /* ==================================================================
-   MOBILE FLOATING ISLAND
+   MOBILE FLOATING ISLAND (REDESIGNED SYNC HEADER)
 ================================================================== */
 .ho-m-island, .ho-m-backdrop { display: none; }
 
@@ -134,28 +137,54 @@
     display: flex; position: fixed; top: 0.85rem; left: 0.85rem; right: 0.85rem; z-index: 2000;
     background: rgba(255, 255, 255, 0.86); backdrop-filter: blur(32px) saturate(200%); -webkit-backdrop-filter: blur(32px) saturate(200%);
     border: 1px solid rgba(255, 255, 255, 0.95); border-radius: 24px; box-shadow: 0 6px 24px rgba(11,94,85,0.07);
-    flex-direction: column; overflow: hidden; max-height: 54px;
+    flex-direction: column; overflow: hidden; max-height: 60px; /* Increased slightly to fit new pills */
     transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, background 0.3s ease;
   }
   .ho-m-island.open { max-height: 85vh; background: rgba(255, 255, 255, 0.98); box-shadow: 0 20px 54px rgba(11,94,85,0.18); overflow-y: auto; }
 
-  .ho-m-collapsed-row { display: flex; align-items: center; justify-content: space-between; height: 52px; padding: 0 0.85rem; flex-shrink: 0; }
+  .ho-m-collapsed-row { display: flex; align-items: center; justify-content: space-between; height: 58px; padding: 0 0.85rem; flex-shrink: 0; }
+  
   .ho-m-brand { display: flex; align-items: center; gap: 0.55rem; text-decoration: none; }
-  .ho-m-brand .ho-logo-box { transform: scale(0.82); }
-  .ho-m-brand-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.05rem; color: var(--ho-primary); letter-spacing: -0.3px; }
+  .ho-m-brand .ho-logo-box { transform: scale(0.85); }
+  .ho-m-brand-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--ho-primary); letter-spacing: -0.3px; }
   .ho-m-brand-title .hl { color: var(--ho-coral); }
 
-  .ho-m-right-actions { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
-  .ho-m-quick-btn { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 11px; text-decoration: none; transition: transform 0.15s ease, filter 0.15s ease; }
-  .ho-m-quick-btn:active { transform: scale(0.9); }
-  .ho-m-emergency-btn { color: var(--ho-alert); background: var(--ho-alert-hover); }
-  .ho-m-ai-btn { color: var(--ho-amber); background: rgba(217, 119, 6, 0.13); }
-  .ho-m-quick-btn svg { width: 18px; height: 18px; stroke-width: 2.5; stroke: currentColor; fill: none; }
+  /* REPLACED QUICK ACTIONS WITH SYNC PILL & MENU BUTTON */
+  .ho-m-right-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 
-  .ho-m-toggle { width: 34px; height: 34px; border-radius: 11px; border: none; background: rgba(13, 122, 110, 0.07); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ho-primary); transition: transform 0.3s ease, background 0.2s ease; }
-  .ho-m-island.open .ho-m-toggle { transform: rotate(180deg); background: rgba(13, 122, 110, 0.14); }
+  .ho-m-sync-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: #ebf5f3; /* Lightest mint/teal */
+    border: 1px solid rgba(13, 122, 110, 0.15);
+    padding: 0 12px; height: 36px;
+    border-radius: 999px;
+  }
+  .ho-m-sync-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #27ae60; box-shadow: 0 0 0 rgba(39, 174, 96, 0.4);
+    animation: hoMobileSyncPulse 2s infinite;
+  }
+  .ho-m-sync-text {
+    font-size: 0.75rem; font-weight: 800; color: var(--ho-primary-dim);
+    letter-spacing: 0.06em;
+  }
 
-  /* Grouped "card" sections instead of one long flat list — easier to scan */
+  @keyframes hoMobileSyncPulse {
+    0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.4); }
+    70% { box-shadow: 0 0 0 5px rgba(39, 174, 96, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
+  }
+
+  /* Squircle Menu Toggle */
+  .ho-m-menu-toggle { 
+    width: 36px; height: 36px; border-radius: 12px; border: none; 
+    background: #ebf5f3; display: flex; align-items: center; justify-content: center; 
+    cursor: pointer; color: var(--ho-primary-dim); 
+    transition: transform 0.3s ease, background 0.2s ease; 
+  }
+  .ho-m-island.open .ho-m-menu-toggle { transform: rotate(180deg); background: rgba(13, 122, 110, 0.14); }
+
+  /* Grouped "card" sections */
   .ho-m-full-links { display: flex; flex-direction: column; gap: 0.9rem; padding: 0.5rem 0.85rem 0.9rem; }
   .ho-m-group { background: rgba(13, 122, 110, 0.035); border: 1px solid rgba(13, 122, 110, 0.08); border-radius: 16px; padding: 0.4rem; }
   .ho-m-category { font-size: 0.68rem; font-weight: 800; color: var(--ho-text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin: 0.45rem 0 0.35rem 0.55rem; }
@@ -293,16 +322,15 @@
     </a>
 
     <div class="ho-m-right-actions">
-      <a href="/emergency" class="ho-m-quick-btn ho-m-emergency-btn" title="Emergency" aria-label="Emergency">
-        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-      </a>
+      <!-- THE NEW SYNC PILL -->
+      <div class="ho-m-sync-pill">
+        <span class="ho-m-sync-dot"></span>
+        <span class="ho-m-sync-text">SYNCED</span>
+      </div>
 
-      <a href="/ai-assistant" class="ho-m-quick-btn ho-m-ai-btn" title="AI Health Assistant" aria-label="Ask AI">
-        <svg viewBox="0 0 24 24"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
-      </a>
-
-      <button class="ho-m-toggle" id="hoIslandToggle" aria-label="Toggle menu" aria-expanded="false" onclick="toggleMobileIsland()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      <!-- THE SQUIRCLE TOGGLE BUTTON -->
+      <button class="ho-m-menu-toggle" id="hoIslandToggle" aria-label="Toggle menu" aria-expanded="false" onclick="toggleMobileIsland()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
       </button>
     </div>
   </div>
