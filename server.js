@@ -33,6 +33,7 @@ if (!process.env.SESSION_SECRET) {
     process.exit(1);
 }
 
+
 // 6. EXPRESS INITIALIZATION
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -41,10 +42,13 @@ const PORT = process.env.PORT || 3000;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('trust proxy', 1);
-
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+// app.use(express.json());
+
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '50mb' }));
+
 
 // 8. SESSION CONFIGURATION
 app.use(session({
@@ -92,6 +96,16 @@ async function startServer() {
         // Step 1: Establish Database Connection
         await connectDB();
         
+        // --- BUG FIX: FORCE DROP THE LINGERING MONGODB INDEX ---
+        try {
+            const mongoose = require('mongoose');
+            await mongoose.connection.collection('digitalhealthids').dropIndex('userId_1');
+            console.log('[HealthOrbit] Successfully dropped legacy userId_1 unique index');
+        } catch (err) {
+            console.log('[HealthOrbit] Unique index already removed or not found');
+        }
+        // --------------------------------------------------------
+
         // Step 2: Initialize Background Workers Once
         initScheduler();
 
@@ -99,7 +113,6 @@ async function startServer() {
         app.listen(PORT, '0.0.0.0', () => {
             console.log(`[HealthOrbit] Server running on port ${PORT}`);
         });
-
     } catch (error) {
         console.error('[HealthOrbit] Server startup failed:', error.message);
         process.exit(1);

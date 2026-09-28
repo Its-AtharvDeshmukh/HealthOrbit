@@ -56,7 +56,11 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 
 /* ---------- MAIN WORKSPACE LAYOUT ---------- */
 .ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
-.ho-main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; scrollbar-width: none; margin-left: 82px; transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);}
+.ho-main-content { 
+  flex: 1; min-width: 0; display: flex; flex-direction: column; 
+  height: 100vh; overflow-y: auto; scrollbar-width: none;
+  margin-left: 0 !important; padding-left: 0 !important;
+}
 .ho-main-content::-webkit-scrollbar { display: none; }
 
 /* TOP NAVBAR */
@@ -69,7 +73,7 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 }
 .ho-topbar-text h1 { font-family: 'Fraunces', serif; font-weight: 800; font-size: 2.2rem; color: var(--ho-teal-900); margin-bottom: 0.3rem; letter-spacing: -1px;}
 .ho-topbar-text p { font-size: 0.95rem; color: var(--ho-text-muted); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;}
-.ho-pulse-dot { width: 8px; height: 8px; background: var(--hc-blue); border-radius: 50%; box-shadow: 0 0 10px var(--hc-blue); animation: hoPulse 2s infinite; }
+.ho-pulse-dot { width: 8px; height: 8px; background: var(--hc-green); border-radius: 50%; box-shadow: 0 0 10px var(--hc-green); animation: hoPulse 2s infinite; }
 @keyframes hoPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.5); } }
 
 .ho-btn-ghost { padding: 0.85rem 1.8rem; background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border); border-radius: 999px; color: var(--ho-teal-900); font-weight: 700; font-size: 0.95rem; cursor: pointer; text-decoration: none; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: inline-block; }
@@ -91,9 +95,6 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 @keyframes hoSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-.ho-panel:nth-child(1) { animation-delay: 0.05s; } .ho-panel:nth-child(2) { animation-delay: 0.1s; }
-.ho-panel:nth-child(3) { animation-delay: 0.15s; } .ho-panel:nth-child(4) { animation-delay: 0.2s; }
-.ho-panel:nth-child(5) { animation-delay: 0.25s; }
 
 .ho-panel:not(.ho-dark-panel):hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(13, 122, 110, 0.1); border-color: var(--ho-teal-600); background: rgba(255,255,255,0.7);}
 .ho-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; z-index: 2;}
@@ -145,7 +146,7 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 .ho-spark-path { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: hoDrawSpark 2s ease forwards;}
 @keyframes hoDrawSpark { to { stroke-dashoffset: 0; } }
 
-/* --- 4. RECENT WORKOUTS & SESSIONS (Spans 4) --- */
+/* --- 4. RECENT SESSIONS LIST (Spans 4) --- */
 .ho-workouts { grid-column: span 4; }
 .ho-workout-feed { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; overflow-y: auto;}
 .ho-workout-item { display: flex; align-items: flex-start; justify-content: space-between; padding: 1rem; background: rgba(255,255,255,0.7); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; transition: 0.2s;}
@@ -159,9 +160,7 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 .ho-wo-metrics strong { display: block; font-family: 'JetBrains Mono', monospace; font-size: 1rem; color: var(--ho-teal-900); font-weight: 700;}
 .ho-wo-metrics span { font-size: 0.7rem; color: var(--ho-text-muted); font-weight: 600;}
 
-/* ==========================================================
-   DYNAMIC POPUP MODAL (Google Health Connect Style)
-   ========================================================== */
+/* MODAL OVERLAY */
 .ho-modal-overlay {
   position: fixed; inset: 0;
   background: rgba(11, 94, 85, 0.4);
@@ -196,28 +195,23 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 .ho-modal-value-large { font-family: 'JetBrains Mono', monospace; font-size: 3.5rem; font-weight: 800; color: var(--ho-text-main); display: flex; align-items: baseline; gap: 0.5rem; line-height: 1;}
 .ho-modal-value-large small { font-size: 1.2rem; font-weight: 600; color: var(--ho-text-muted); font-family: 'Plus Jakarta Sans', sans-serif;}
 
-/* Reference Range Badge */
 .ho-modal-range { 
   display: inline-flex; align-items: center; gap: 0.4rem;
   padding: 6px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; width: fit-content;
 }
 .range-optimal { background: rgba(46, 204, 113, 0.15); color: #27ae60; }
-.range-warning { background: rgba(243, 156, 18, 0.15); color: #d35400; }
 
-/* Modal Chart Area */
 .ho-modal-chart-area { height: 140px; width: 100%; position: relative; border-bottom: 1px solid var(--ho-glass-border-subtle); padding-bottom: 1rem;}
 .ho-mc-svg { width: 100%; height: 100%; overflow: visible; }
 .ho-mc-path { fill: none; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.15)); stroke-dasharray: 1000; stroke-dashoffset: 1000; }
 .ho-modal-overlay.active .ho-mc-path { animation: hoDrawModalChart 1.5s ease-out forwards; animation-delay: 0.2s;}
 @keyframes hoDrawModalChart { to { stroke-dashoffset: 0; } }
 
-/* Modal Detail List */
 .ho-modal-details { display: flex; flex-direction: column; gap: 0.8rem; }
 .ho-detail-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--ho-bg-airy); border-radius: 12px; }
 .ho-dr-label { font-size: 0.9rem; font-weight: 700; color: var(--ho-text-muted); }
 .ho-dr-val { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 800; color: var(--ho-teal-900); }
 
-/* ---------- RESPONSIVE ---------- */
 @media (max-width: 1400px) {
   .ho-hero, .ho-vitals-matrix { grid-column: span 8; }
   .ho-sync-hub, .ho-workouts { grid-column: span 4; }
@@ -226,6 +220,7 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 @media (max-width: 1024px) {
   .ho-mosaic-grid { grid-template-columns: repeat(6, 1fr); }
   .ho-hero, .ho-sync-hub, .ho-vitals-matrix, .ho-workouts { grid-column: span 6; }
+  body .ho-main-content { margin-top: 5.5rem; padding: 0 !important; }
 }
 @media (max-width: 768px) {
   .ho-topbar { flex-direction: column; align-items: flex-start; padding: 1.5rem; gap: 1rem;}
@@ -236,39 +231,6 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   .ho-matrix-grid { grid-template-columns: 1fr; }
   .ho-modal-panel { position: absolute; bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; transform: translateY(100%); padding: 2rem 1.5rem; max-width: 100%;}
 }
-
-.ho-main-content { 
-  flex: 1; min-width: 0; display: flex; flex-direction: column; 
-  height: 100vh; overflow-y: auto;
-  /* CRITICAL FIX: Removes the gap next to the sticky sidebar */
-  margin-left: 0 !important; 
-  padding-left: 0 !important;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-    @media (max-width: 1024px) {
-        /* Using 'body .ho-main-content' makes this rule stronger than the original */
-        body .ho-main-content {
-          margin-top: 5.5rem;
-            padding: 0 !important; 
-        }
-    }
-
-
-
-
-
-
 </style>
 </head>
 <body>
@@ -289,10 +251,10 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
     <header class="ho-topbar">
       <div class="ho-topbar-text">
         <h1><b style="color: #e07a68;">Health Connect</b> Telemetry</h1>
-        <p><span class="ho-pulse-dot"></span> Real-time data pipeline from all your connected wearables.</p>
+        <p><span class="ho-pulse-dot"></span> Ingested live via HealthOrbit Android Companion App</p>
       </div>
       <div class="ho-topbar-actions">
-        <a href="#" class="ho-btn-ghost">Manage Devices</a>
+        <a href="/timeline" class="ho-btn-ghost">View Full Timeline</a>
       </div>
     </header>
 
@@ -303,35 +265,42 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
         <div class="ho-hero-text">
           <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--hc-blue); font-weight: 800; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-            Health Connect Unified
+            Health Connect Unified Pipeline
           </span>
-          <h2>You're crushing your daily targets.</h2>
-          <p>HealthOrbit is actively merging telemetry from Google Fit, Samsung Health, and Garmin into your centralized profile. Your heart points and active energy are optimal.</p>
+          <h2>Telemetry Synchronized.</h2>
+          <p>HealthOrbit is actively merging telemetry from Google Fit, Samsung Health, and connected smartwatches into your centralized health orbit.</p>
           
           <div class="ho-hc-metrics">
-            <div class="ho-hc-stat" style="cursor: pointer;" onclick="openMetricModal('heartPoints')">
-              <span>Heart Points</span>
-              <strong style="color: var(--hc-blue);">45 <small>pts</small></strong>
+            <div class="ho-hc-stat" style="cursor: pointer;" onclick="openMetricModal('heart_rate')">
+              <span>Heart Rate</span>
+              <strong style="color: var(--hc-red);">
+                <%= latestMetrics['heart_rate'] ? Math.round(latestMetrics['heart_rate'].numericValue || latestMetrics['heart_rate'].value) : '--' %> 
+                <small>bpm</small>
+              </strong>
             </div>
             <div class="ho-hc-stat" style="cursor: pointer;" onclick="openMetricModal('steps')">
               <span>Steps</span>
-              <strong style="color: var(--hc-green);">8,420 <small>steps</small></strong>
+              <strong style="color: var(--hc-green);">
+                <%= latestMetrics['steps'] ? Number(latestMetrics['steps'].numericValue || latestMetrics['steps'].value).toLocaleString() : '--' %> 
+                <small>steps</small>
+              </strong>
             </div>
-            <div class="ho-hc-stat" style="cursor: pointer;" onclick="openMetricModal('energy')">
+            <div class="ho-hc-stat" style="cursor: pointer;" onclick="openMetricModal('calories')">
               <span>Active Energy</span>
-              <strong style="color: var(--ho-coral);">580 <small>kcal</small></strong>
+              <strong style="color: var(--ho-coral);">
+                <%= latestMetrics['calories'] ? Math.round(latestMetrics['calories'].numericValue || latestMetrics['calories'].value) : '--' %> 
+                <small>kcal</small>
+              </strong>
             </div>
           </div>
         </div>
 
         <div class="ho-ring-container">
           <svg class="ho-svg-rings" viewBox="0 0 160 160">
-            <!-- Background Rings -->
             <circle class="ho-ring-bg" cx="80" cy="80" r="65"></circle>
             <circle class="ho-ring-bg" cx="80" cy="80" r="48"></circle>
-            <!-- Foreground Fills (Google Fit Colors) -->
-            <circle class="ho-ring-fill" cx="80" cy="80" r="65" stroke="var(--hc-green)" stroke-dasharray="408" style="stroke-dashoffset: 80;"></circle>
-            <circle class="ho-ring-fill" cx="80" cy="80" r="48" stroke="var(--hc-blue)" stroke-dasharray="301" style="stroke-dashoffset: 120; animation-delay: 0.2s;"></circle>
+            <circle class="ho-ring-fill" cx="80" cy="80" r="65" stroke="var(--hc-green)" stroke-dasharray="408" style="stroke-dashoffset: 120;"></circle>
+            <circle class="ho-ring-fill" cx="80" cy="80" r="48" stroke="var(--hc-blue)" stroke-dasharray="301" style="stroke-dashoffset: 90; animation-delay: 0.2s;"></circle>
           </svg>
         </div>
       </div>
@@ -339,7 +308,7 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
       <!-- 2. DATA SOURCES HUB (Span 4) -->
       <div class="ho-panel ho-sync-hub">
         <div class="ho-panel-head">
-          <h3><span>📡</span> Connected Sources</h3>
+          <h3><span>📡</span> Hardware Sources</h3>
         </div>
         
         <div class="ho-device-list">
@@ -347,19 +316,8 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
             <div class="ho-device-left">
               <div class="ho-device-icon">📱</div>
               <div class="ho-device-info">
-                <strong>Google Fit</strong>
-                <span>Syncing: Steps, Heart Points</span>
-              </div>
-            </div>
-            <div class="ho-sync-status status-active"></div>
-          </div>
-
-          <div class="ho-device-card">
-            <div class="ho-device-left">
-              <div class="ho-device-icon">⌚</div>
-              <div class="ho-device-info">
-                <strong>Samsung Health</strong>
-                <span>Syncing: Sleep, SpO₂, HR</span>
+                <strong>Android Health Connect</strong>
+                <span>Status: Connected & Streaming</span>
               </div>
             </div>
             <div class="ho-sync-status status-active"></div>
@@ -369,8 +327,19 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
             <div class="ho-device-left">
               <div class="ho-device-icon">🏃</div>
               <div class="ho-device-info">
-                <strong>Garmin Connect</strong>
-                <span>Syncing: Workouts, GPS</span>
+                <strong>Google Fit Subsystem</strong>
+                <span>Syncing: Steps, Calories, Distance</span>
+              </div>
+            </div>
+            <div class="ho-sync-status status-active"></div>
+          </div>
+
+          <div class="ho-device-card">
+            <div class="ho-device-left">
+              <div class="ho-device-icon">⌚</div>
+              <div class="ho-device-info">
+                <strong>Smartwatch Telemetry</strong>
+                <span>Syncing: Heart Rate, Blood Pressure</span>
               </div>
             </div>
             <div class="ho-sync-status status-active"></div>
@@ -381,89 +350,103 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
       <!-- 3. DEEP VITALS MATRIX (Span 8) -->
       <div class="ho-panel ho-vitals-matrix">
         <div class="ho-panel-head">
-          <h3><span>🔬</span> Deep Biometric Matrix</h3>
+          <h3><span>🔬</span> Verified Biometric Matrix</h3>
         </div>
         
         <div class="ho-matrix-grid">
           
           <!-- Blood Pressure -->
-          <div class="ho-matrix-card" onclick="openMetricModal('bloodPressure')">
+          <div class="ho-matrix-card" onclick="openMetricModal('blood_pressure')">
             <div>
               <div class="ho-mc-top">
                 <span class="ho-mc-label">Blood Pressure</span>
                 <span style="color: var(--ho-coral);">❤️</span>
               </div>
-              <div class="ho-mc-val">118/76<small>mmHg</small></div>
+              <div class="ho-mc-val">
+                <% if (latestMetrics['blood_pressure_systolic'] && latestMetrics['blood_pressure_diastolic']) { %>
+                  <%= Math.round(latestMetrics['blood_pressure_systolic'].numericValue || latestMetrics['blood_pressure_systolic'].value) %>/<%= Math.round(latestMetrics['blood_pressure_diastolic'].numericValue || latestMetrics['blood_pressure_diastolic'].value) %><small>mmHg</small>
+                <% } else { %>
+                  --<small>mmHg</small>
+                <% } %>
+              </div>
             </div>
             <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
               <path class="ho-spark-path" stroke="var(--ho-coral)" d="M 0,20 C 20,22 40,5 50,15 C 60,25 80,10 100,15" />
             </svg>
           </div>
 
-          <!-- Respiratory Rate -->
-          <div class="ho-matrix-card" onclick="openMetricModal('respRate')">
+          <!-- Heart Rate -->
+          <div class="ho-matrix-card" onclick="openMetricModal('heart_rate')">
             <div>
               <div class="ho-mc-top">
-                <span class="ho-mc-label">Respiratory Rate</span>
-                <span style="color: var(--hc-blue);">🫁</span>
+                <span class="ho-mc-label">Heart Rate</span>
+                <span style="color: var(--hc-red);">💓</span>
               </div>
-              <div class="ho-mc-val">14.2<small>rpm</small></div>
+              <div class="ho-mc-val">
+                <%= latestMetrics['heart_rate'] ? Math.round(latestMetrics['heart_rate'].numericValue || latestMetrics['heart_rate'].value) : '--' %><small>bpm</small>
+              </div>
             </div>
             <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
-              <path class="ho-spark-path" stroke="var(--hc-blue)" d="M 0,15 C 20,10 30,25 50,15 C 70,5 80,20 100,15" style="animation-delay: 0.1s;" />
+              <path class="ho-spark-path" stroke="var(--hc-red)" d="M 0,15 C 20,10 30,25 50,15 C 70,5 80,20 100,15" style="animation-delay: 0.1s;" />
             </svg>
           </div>
 
-          <!-- Body Temperature -->
-          <div class="ho-matrix-card" onclick="openMetricModal('bodyTemp')">
+          <!-- Steps -->
+          <div class="ho-matrix-card" onclick="openMetricModal('steps')">
             <div>
               <div class="ho-mc-top">
-                <span class="ho-mc-label">Body Temp</span>
-                <span style="color: var(--hc-yellow);">🌡️</span>
+                <span class="ho-mc-label">Physical Steps</span>
+                <span style="color: var(--hc-green);">👟</span>
               </div>
-              <div class="ho-mc-val">36.6<small>°C</small></div>
+              <div class="ho-mc-val">
+                <%= latestMetrics['steps'] ? Number(latestMetrics['steps'].numericValue || latestMetrics['steps'].value).toLocaleString() : '--' %><small>steps</small>
+              </div>
             </div>
             <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
-              <path class="ho-spark-path" stroke="var(--hc-yellow)" d="M 0,15 L 20,14 L 40,16 L 60,15 L 80,15 L 100,16" style="animation-delay: 0.2s;" />
+              <path class="ho-spark-path" stroke="var(--hc-green)" d="M 0,15 L 20,14 L 40,16 L 60,15 L 80,15 L 100,16" style="animation-delay: 0.2s;" />
             </svg>
           </div>
 
-          <!-- SpO2 -->
-          <div class="ho-matrix-card" onclick="openMetricModal('spo2')">
+          <!-- Calories Burned -->
+          <div class="ho-matrix-card" onclick="openMetricModal('calories')">
             <div>
               <div class="ho-mc-top">
-                <span class="ho-mc-label">Blood Oxygen</span>
-                <span style="color: var(--hc-blue);">💧</span>
+                <span class="ho-mc-label">Active Calories</span>
+                <span style="color: var(--ho-coral);">🔥</span>
               </div>
-              <div class="ho-mc-val">98<small>%</small></div>
+              <div class="ho-mc-val">
+                <%= latestMetrics['calories'] ? Math.round(latestMetrics['calories'].numericValue || latestMetrics['calories'].value) : '--' %><small>kcal</small>
+              </div>
             </div>
             <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
-              <path class="ho-spark-path" stroke="var(--hc-blue)" d="M 0,10 C 30,12 60,8 100,10" style="animation-delay: 0.3s;" />
+              <path class="ho-spark-path" stroke="var(--ho-coral)" d="M 0,10 C 30,12 60,8 100,10" style="animation-delay: 0.3s;" />
             </svg>
           </div>
 
-          <!-- Deep Sleep -->
-          <div class="ho-matrix-card" onclick="openMetricModal('deepSleep')">
+          <!-- Distance Traveled -->
+          <div class="ho-matrix-card" onclick="openMetricModal('distance')">
             <div>
               <div class="ho-mc-top">
-                <span class="ho-mc-label">Deep Sleep</span>
-                <span style="color: var(--hc-purple);">🌙</span>
+                <span class="ho-mc-label">Distance</span>
+                <span style="color: var(--hc-blue);">📍</span>
               </div>
-              <div class="ho-mc-val">2<small>h</small> 15<small>m</small></div>
+              <div class="ho-mc-val">
+                <%= latestMetrics['distance'] ? Number(latestMetrics['distance'].numericValue || latestMetrics['distance'].value).toFixed(1) : '--' %><small>km</small>
+              </div>
             </div>
-            <div style="margin-top: 1rem; width: 100%; height: 6px; background: rgba(155, 89, 182, 0.15); border-radius: 10px;">
-              <div style="width: 80%; height: 100%; background: var(--hc-purple); border-radius: 10px;"></div>
+            <div style="margin-top: 1rem; width: 100%; height: 6px; background: rgba(66, 133, 244, 0.15); border-radius: 10px;">
+              <div style="width: 80%; height: 100%; background: var(--hc-blue); border-radius: 10px;"></div>
             </div>
           </div>
 
-          <!-- Stress Score -->
-          <div class="ho-matrix-card" onclick="openMetricModal('stress')">
+          <!-- Ingestion Count -->
+          <div class="ho-matrix-card">
             <div>
               <div class="ho-mc-top">
-                <span class="ho-mc-label">Stress Index</span>
-                <span style="color: var(--ho-teal-600);">🧠</span>
+                <span class="ho-mc-label">Total Syncs</span>
+                <span style="color: var(--ho-teal-600);">🔄</span>
               </div>
-              <div class="ho-mc-val">34<small>/100</small></div>
+              <div class="ho-mc-val"><%= wearables ? wearables.length : 0 %><small>records</small></div>
             </div>
             <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
               <path class="ho-spark-path" stroke="var(--ho-teal-600)" d="M 0,25 C 20,20 40,30 60,15 C 80,0 90,10 100,20" style="animation-delay: 0.4s;" />
@@ -473,71 +456,52 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
         </div>
       </div>
 
-      <!-- 4. RECENT WORKOUTS (Span 4) -->
+      <!-- 4. RECENT SESSIONS LIST (Span 4) -->
       <div class="ho-panel ho-workouts">
         <div class="ho-panel-head">
-          <h3><span>🏃</span> Activity Logs</h3>
+          <h3><span>📋</span> Ingestion Stream</h3>
         </div>
         
         <div class="ho-workout-feed">
-          <div class="ho-workout-item">
-            <div class="ho-wo-left">
-              <div class="ho-wo-icon">🚴</div>
-              <div class="ho-wo-details">
-                <strong>Morning Cycling</strong>
-                <span>Today • 07:15 AM</span>
-                <div class="ho-wo-source">Samsung Health</div>
+          <% if (wearables && wearables.length > 0) { %>
+            <% wearables.slice(0, 5).forEach(item => { %>
+              <div class="ho-workout-item">
+                <div class="ho-wo-left">
+                  <div class="ho-wo-icon">
+                    <% if (item.metricKey.includes('heart')) { %>💓
+                    <% } else if (item.metricKey.includes('step')) { %>👟
+                    <% } else if (item.metricKey.includes('pressure')) { %>🩺
+                    <% } else if (item.metricKey.includes('calorie')) { %>🔥
+                    <% } else { %>📊<% } %>
+                  </div>
+                  <div class="ho-wo-details">
+                    <strong><%= item.metricName %></strong>
+                    <span><%= new Date(item.recordedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
+                    <div class="ho-wo-source">Health Connect • <%= item.provider %></div>
+                  </div>
+                </div>
+                <div class="ho-wo-metrics">
+                  <strong><%= item.value %> <%= item.unit %></strong>
+                  <span>Verified</span>
+                </div>
               </div>
+            <% }) %>
+          <% } else { %>
+            <div style="padding: 2rem; text-align: center; color: var(--ho-text-muted); font-size: 0.9rem;">
+              No wearable records ingested yet. Open the Android companion app and tap <strong>Sync Health Records Now</strong>.
             </div>
-            <div class="ho-wo-metrics">
-              <strong>420 kcal</strong>
-              <span>45 min</span>
-            </div>
-          </div>
-
-          <div class="ho-workout-item">
-            <div class="ho-wo-left">
-              <div class="ho-wo-icon">🚶</div>
-              <div class="ho-wo-details">
-                <strong>Evening Walk</strong>
-                <span>Yesterday • 06:30 PM</span>
-                <div class="ho-wo-source">Google Fit</div>
-              </div>
-            </div>
-            <div class="ho-wo-metrics">
-              <strong>180 kcal</strong>
-              <span>30 min</span>
-            </div>
-          </div>
-
-          <div class="ho-workout-item">
-            <div class="ho-wo-left">
-              <div class="ho-wo-icon">🧘</div>
-              <div class="ho-wo-details">
-                <strong>Yoga Session</strong>
-                <span>Mon • 08:00 AM</span>
-                <div class="ho-wo-source">Garmin Connect</div>
-              </div>
-            </div>
-            <div class="ho-wo-metrics">
-              <strong>95 kcal</strong>
-              <span>20 min</span>
-            </div>
-          </div>
+          <% } %>
         </div>
       </div>
 
     </div>
 
-
-     <%- include('../partials/footer') %>
+    <%- include('../partials/footer') %>
 
   </main>
 </div>
 
-<!-- ==========================================
-     DYNAMIC METRIC MODAL WITH REFERENCE RANGES
-     ========================================== -->
+<!-- DYNAMIC METRIC MODAL -->
 <div class="ho-modal-overlay" id="metricModal" onclick="closeMetricModal(event)">
   <div class="ho-modal-panel" onclick="event.stopPropagation()">
     
@@ -546,7 +510,7 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
         <div class="ho-modal-icon" id="modalIcon">❤️</div>
         <div>
           <h3 class="ho-modal-title" id="modalTitle">Metric</h3>
-          <span class="ho-modal-date">Today, 10:45 AM</span>
+          <span class="ho-modal-date">Synchronized Telemetry</span>
         </div>
       </div>
       <button class="ho-modal-close" onclick="closeMetricModal()">✕</button>
@@ -556,152 +520,100 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
       <div class="ho-modal-value-large">
         <span id="modalValue">0</span><small id="modalUnit">unit</small>
       </div>
-      <!-- Enhanced Reference Range Badge -->
       <div class="ho-modal-range range-optimal" id="modalRangeBadge">
-        <span id="modalRangeText">Normal Range: 60 - 100</span>
+        <span id="modalRangeText">Verified Observation</span>
       </div>
     </div>
 
-    <!-- SVG Chart Injection Area -->
     <div class="ho-modal-chart-area">
       <svg class="ho-mc-svg" viewBox="0 0 400 120" preserveAspectRatio="none">
         <path id="modalChartPath" class="ho-mc-path" stroke="var(--hc-red)" d="M 0,60 C 50,70 100,20 150,40 C 200,60 250,-10 300,30 C 350,70 380,50 400,60" />
       </svg>
     </div>
 
-    <div class="ho-modal-details" id="modalDetailsList">
-      <!-- Injected via JS -->
-    </div>
+    <div class="ho-modal-details" id="modalDetailsList"></div>
 
   </div>
 </div>
 
 <script>
-  // Comprehensive Data Dictionary with Clinical Reference Ranges
-  const metricData = {
-    heartPoints: {
-      title: "Heart Points", icon: "💙", value: "45", unit: "pts", color: "var(--hc-blue)", bgColor: "rgba(66, 133, 244, 0.1)",
-      range: "Goal: 150 pts/week", rangeClass: "range-optimal",
-      chartPath: "M 0,100 C 40,85 80,40 120,60 C 160,80 200,20 240,40 C 280,60 320,10 360,50 C 380,70 400,20 400,20",
-      details: [
-        { label: "Weekly Total", val: "112 pts" },
-        { label: "AHA Recommendation", val: "On Track" }
-      ]
+  const liveMetrics = <%- JSON.stringify(latestMetrics || {}) %>;
+
+  const metricMeta = {
+    heart_rate: {
+      title: "Heart Rate", icon: "💓", unit: "bpm", color: "var(--hc-red)", bgColor: "rgba(234, 67, 53, 0.1)",
+      range: "Baseline: 60 - 100 bpm",
+      chartPath: "M 0,60 C 50,70 100,20 150,40 C 200,60 250,-10 300,30 C 350,70 380,50 400,60"
     },
     steps: {
-      title: "Daily Steps", icon: "👟", value: "8,420", unit: "steps", color: "var(--hc-green)", bgColor: "rgba(52, 168, 83, 0.1)",
-      range: "Goal: 10,000 steps/day", rangeClass: "range-optimal",
-      chartPath: "M 0,110 C 50,110 80,80 120,80 C 160,80 180,50 220,50 C 260,50 300,20 340,20 C 380,20 400,10 400,10",
-      details: [
-        { label: "Distance", val: "5.8 km" },
-        { label: "Flights Climbed", val: "12 floors" }
-      ]
+      title: "Physical Steps", icon: "👟", unit: "steps", color: "var(--hc-green)", bgColor: "rgba(52, 168, 83, 0.1)",
+      range: "Target: 10,000 steps/day",
+      chartPath: "M 0,110 C 50,110 80,80 120,80 C 160,80 180,50 220,50 C 260,50 300,20 340,20 C 380,20 400,10 400,10"
     },
-    energy: {
-      title: "Active Energy", icon: "🔥", value: "580", unit: "kcal", color: "var(--ho-coral)", bgColor: "rgba(234, 67, 53, 0.1)",
-      range: "Goal: 650 kcal/day", rangeClass: "range-optimal",
-      chartPath: "M 0,120 L 50,110 L 100,90 L 150,95 L 200,70 L 250,50 L 300,40 L 350,20 L 400,10",
-      details: [
-        { label: "Resting Energy", val: "1,450 kcal" },
-        { label: "Total Burn", val: "2,030 kcal" }
-      ]
+    calories: {
+      title: "Active Energy Burned", icon: "🔥", unit: "kcal", color: "var(--ho-coral)", bgColor: "rgba(224, 122, 104, 0.1)",
+      range: "Target: 500 kcal/day",
+      chartPath: "M 0,120 L 50,110 L 100,90 L 150,95 L 200,70 L 250,50 L 300,40 L 350,20 L 400,10"
     },
-    bloodPressure: {
-      title: "Blood Pressure", icon: "❤️", value: "118/76", unit: "mmHg", color: "var(--ho-coral)", bgColor: "rgba(234, 67, 53, 0.1)",
-      range: "Normal: 90/60 - 120/80 mmHg", rangeClass: "range-optimal",
-      chartPath: "M 0,60 C 50,70 100,20 150,40 C 200,60 250,-10 300,30 C 350,70 380,50 400,60",
-      details: [
-        { label: "Systolic Average", val: "115 mmHg" },
-        { label: "Diastolic Average", val: "75 mmHg" },
-        { label: "Status", val: "Healthy" }
-      ]
+    distance: {
+      title: "Distance Covered", icon: "📍", unit: "km", color: "var(--hc-blue)", bgColor: "rgba(66, 133, 244, 0.1)",
+      range: "Physical Mobility Telemetry",
+      chartPath: "M 0,100 C 40,85 80,40 120,60 C 160,80 200,20 240,40 C 280,60 320,10 360,50 C 380,70 400,20 400,20"
     },
-    respRate: {
-      title: "Respiratory Rate", icon: "🫁", value: "14.2", unit: "rpm", color: "var(--hc-blue)", bgColor: "rgba(66, 133, 244, 0.1)",
-      range: "Normal: 12.0 - 20.0 rpm", rangeClass: "range-optimal",
-      chartPath: "M 0,50 C 40,30 80,70 120,40 C 160,20 200,80 240,50 C 280,30 320,60 360,40 C 380,30 400,50 400,50",
-      details: [
-        { label: "Sleeping Average", val: "13.5 rpm" },
-        { label: "Awake Average", val: "15.1 rpm" }
-      ]
-    },
-    bodyTemp: {
-      title: "Body Temperature", icon: "🌡️", value: "36.6", unit: "°C", color: "var(--hc-yellow)", bgColor: "rgba(251, 188, 5, 0.1)",
-      range: "Normal: 36.1 - 37.2 °C", rangeClass: "range-optimal",
-      chartPath: "M 0,50 L 80,45 L 160,55 L 240,48 L 320,52 L 400,50",
-      details: [
-        { label: "Wrist Temp Deviation", val: "-0.2 °C" },
-        { label: "Measurement Context", val: "During Sleep" }
-      ]
-    },
-    spo2: {
-      title: "Blood Oxygen (SpO₂)", icon: "💧", value: "98", unit: "%", color: "var(--hc-blue)", bgColor: "rgba(66, 133, 244, 0.1)",
-      range: "Normal: 95% - 100%", rangeClass: "range-optimal",
-      chartPath: "M 0,20 C 100,25 200,15 300,20 C 350,22 400,18 400,20",
-      details: [
-        { label: "Daily Average", val: "97.5%" },
-        { label: "Lowest Point", val: "95%" }
-      ]
-    },
-    deepSleep: {
-      title: "Deep Sleep Phase", icon: "🌙", value: "2h 15m", unit: "", color: "var(--hc-purple)", bgColor: "rgba(155, 89, 182, 0.1)",
-      range: "Normal: 1.5 - 2.5 hours", rangeClass: "range-optimal",
-      chartPath: "M 0,100 L 50,100 L 80,20 L 150,20 L 180,80 L 250,80 L 280,40 L 350,40 L 380,100 L 400,100",
-      details: [
-        { label: "Percentage of Total", val: "22% (Optimal)" },
-        { label: "REM Sleep", val: "1h 45m" }
-      ]
-    },
-    stress: {
-      title: "Stress Index", icon: "🧠", value: "34", unit: "/100", color: "var(--ho-teal-600)", bgColor: "rgba(16, 148, 133, 0.1)",
-      range: "Normal: 0 - 50 (Low Stress)", rangeClass: "range-optimal",
-      chartPath: "M 0,80 C 40,60 80,100 120,50 C 160,10 200,40 240,80 C 280,110 320,70 360,90 C 380,100 400,80 400,80",
-      details: [
-        { label: "Peak Stress Time", val: "11:30 AM" },
-        { label: "HRV Correlation", val: "High" }
-      ]
+    blood_pressure: {
+      title: "Blood Pressure", icon: "🩺", unit: "mmHg", color: "var(--hc-blue)", bgColor: "rgba(66, 133, 244, 0.1)",
+      range: "Clinical Target: <120/80 mmHg",
+      chartPath: "M 0,50 C 40,30 80,70 120,40 C 160,20 200,80 240,50 C 280,30 320,60 360,40 C 380,30 400,50 400,50"
     }
   };
 
   const modal = document.getElementById('metricModal');
-  
+
   function openMetricModal(key) {
-    const data = metricData[key];
-    if(!data) return;
+    const meta = metricMeta[key];
+    if (!meta) return;
 
-    // Populate Modal Header
+    let val = '--';
+    let unit = meta.unit;
+
+    if (key === 'blood_pressure') {
+      const sys = liveMetrics['blood_pressure_systolic'];
+      const dia = liveMetrics['blood_pressure_diastolic'];
+      if (sys && dia) {
+        val = `${Math.round(sys.numericValue || sys.value)}/${Math.round(dia.numericValue || dia.value)}`;
+      }
+    } else if (liveMetrics[key]) {
+      val = liveMetrics[key].value;
+      if (liveMetrics[key].unit) unit = liveMetrics[key].unit;
+    }
+
     const iconEl = document.getElementById('modalIcon');
-    iconEl.innerHTML = data.icon;
-    iconEl.style.background = data.bgColor;
-    iconEl.style.color = data.color;
+    iconEl.innerHTML = meta.icon;
+    iconEl.style.background = meta.bgColor;
+    iconEl.style.color = meta.color;
 
-    document.getElementById('modalTitle').innerText = data.title;
-    document.getElementById('modalValue').innerText = data.value;
-    document.getElementById('modalUnit').innerText = data.unit;
+    document.getElementById('modalTitle').innerText = meta.title;
+    document.getElementById('modalValue').innerText = val;
+    document.getElementById('modalUnit').innerText = unit;
 
-    // Populate Reference Range Badge
-    const rangeBadge = document.getElementById('modalRangeBadge');
-    document.getElementById('modalRangeText').innerText = data.range;
-    rangeBadge.className = `ho-modal-range ${data.rangeClass}`;
+    document.getElementById('modalRangeText').innerText = meta.range;
 
-    // Update Chart Path and Color
     const pathEl = document.getElementById('modalChartPath');
-    pathEl.setAttribute('d', data.chartPath);
-    pathEl.style.stroke = data.color;
+    pathEl.setAttribute('d', meta.chartPath);
+    pathEl.style.stroke = meta.color;
 
-    // Populate Details List
     const detailsContainer = document.getElementById('modalDetailsList');
-    detailsContainer.innerHTML = ''; 
-    data.details.forEach(detail => {
-      detailsContainer.innerHTML += `
-        <div class="ho-detail-row">
-          <span class="ho-dr-label">${detail.label}</span>
-          <span class="ho-dr-val">${detail.val}</span>
-        </div>
-      `;
-    });
+    detailsContainer.innerHTML = `
+      <div class="ho-detail-row">
+        <span class="ho-dr-label">Ingestion Provider</span>
+        <span class="ho-dr-val">Android Health Connect</span>
+      </div>
+      <div class="ho-detail-row">
+        <span class="ho-dr-label">Deduplication Status</span>
+        <span class="ho-dr-val">Verified Sparse Index</span>
+      </div>
+    `;
 
-    // Show Modal
     modal.classList.add('active');
   }
 

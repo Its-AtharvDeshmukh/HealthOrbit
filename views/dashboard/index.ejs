@@ -3,7 +3,6 @@
 <head>
 <%- include('../partials/header', { title: 'HealthOrbit — Executive Summary Dashboard' }) %>
 <link rel="icon" href="/images/Logo.png">
- 
 
 <style>
 /* 
@@ -40,13 +39,6 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: var(--ho-bg-airy); color: var(--ho-text-main); overflow-x: hidden; -webkit-font-smoothing: antialiased; display: flex; }
-
-/* ---------- AMBIENT ORBS & ANIMATIONS ---------- */
-/* .ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
-.ho-orb-1 { width: 600px; height: 600px; background: #76d7c4; top: -150px; left: -100px; }
-.ho-orb-2 { width: 700px; height: 700px; background: #a9dfbf; bottom: -200px; right: -150px; animation-delay: -5s; }
-@keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(60px, 70px) scale(1.15); } } */
 
 @keyframes hoSlideUp { 
   from { opacity: 0; transform: translateY(35px); } 
@@ -91,6 +83,9 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 .ho-btn-ghost:hover { background: #fff; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.1); transform: translateY(-2px); }
 .ho-btn-ghost:active { transform: scale(0.96); }
 
+/* ---------- DYNAMIC TELEMETRY ROW ---------- */
+.ho-dynamic-telemetry { padding: 0 3rem; margin-bottom: -0.5rem; z-index: 15; position: relative; }
+
 /* ---------- MOSAIC GRID ---------- */
 .ho-mosaic-grid {
   display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem;
@@ -113,7 +108,6 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   transform: translateY(-4px) scale(1.005); 
   box-shadow: 0 25px 50px rgba(13, 122, 110, 0.14); 
   border-color: var(--ho-teal-600); 
-  /* background: rgba(255,255,255,0.78);  */
 }
 .ho-panel:active { transform: scale(0.98); }
 
@@ -259,6 +253,8 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 
 /* SMART PHONES EXCLUSIVE RULES */
 @media (max-width: 768px) {
+  .ho-dynamic-telemetry { padding: 0 1rem !important; margin-top: 1rem; }
+  
   .ho-main-content {
     padding-top: 5.4rem !important; /* Clears floating navbar perfectly */
     padding-left: 1rem !important;
@@ -441,7 +437,6 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 </head>
 <body>
 
-
   <!-- PWA Animated Splash Screen Overlay -->
 <div id="ho-pwa-splash" class="ho-pwa-splash-container" role="alert" aria-busy="true" aria-label="Loading HealthOrbit">
   <div class="ho-pwa-logo-stage">
@@ -463,7 +458,6 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   <div class="ho-pwa-brand">Health<span>Orbit</span></div>
 </div>
 
-
 <div class="ho-ambient-canvas">
   <div class="ho-glow-orb ho-orb-1"></div>
   <div class="ho-glow-orb ho-orb-2"></div>
@@ -477,15 +471,72 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   <!-- SCOPED MAIN CONTENT -->
   <main class="ho-main-content">
     
-<header class="ho-topbar">
-  <div class="ho-topbar-text">
-    <h1>Health<span style="color: var(--ho-coral);">Orbit</span> Executive Summary</h1>
-    <p><span class="ho-pulse-dot"></span> All Modules Synced • Telemetry Live</p>
-  </div>
-  <div class="ho-topbar-actions">
-    <a href="/ai-assistant" class="ho-btn-ghost">Ask AI Assistant</a>
-  </div>
-</header>
+    <header class="ho-topbar">
+      <div class="ho-topbar-text">
+        <h1>Health<span style="color: var(--ho-coral);">Orbit</span> Executive Summary</h1>
+        <p><span class="ho-pulse-dot"></span> All Modules Synced • Telemetry Live</p>
+      </div>
+      <div class="ho-topbar-actions">
+        <a href="/ai-assistant" class="ho-btn-ghost">Ask AI Assistant</a>
+      </div>
+    </header>
+
+    <!-- LIVE WEARABLE TELEMETRY ROW (DYNAMIC) -->
+    <% if (typeof wearableRecords !== 'undefined' && wearableRecords && wearableRecords.length > 0) { %>
+      <div class="ho-dynamic-telemetry">
+        <div style="background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem;"><span>⚡</span> Connected Wearable Telemetry</h3>
+            <span style="background: rgba(66, 184, 157, 0.15); color: var(--ho-teal-700); padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 800;">Live Health Connect Sync</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <% wearableRecords.slice(0, 4).forEach(item => { %>
+              <div style="background: var(--ho-bg-airy); padding: 1rem; border-radius: 12px; border: 1px solid var(--ho-glass-border-subtle);">
+                <p style="font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;"><%= item.metricName %></p>
+                <p style="font-size: 1.6rem; font-weight: 800; color: var(--ho-teal-900); font-family: 'JetBrains Mono', monospace; margin-top: 0.3rem;"><%= item.value %> <span style="font-size: 0.8rem; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;"><%= item.unit %></span></p>
+                <p style="font-size: 0.7rem; color: var(--ho-teal-700); font-weight: 700; margin-top: 0.4rem;">Recorded at <%= new Date(item.recordedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %></p>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    <% } else if (typeof latestWearables !== 'undefined' && Object.keys(latestWearables).length > 0) { %>
+      <div class="ho-dynamic-telemetry">
+        <div style="background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem;"><span>⚡</span> Wearable Clinical Telemetry</h3>
+            <span style="background: rgba(66, 184, 157, 0.15); color: var(--ho-teal-700); padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 800;">Live Stream Active</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <!-- Steps -->
+            <div style="background: var(--ho-bg-airy); padding: 1rem; border-radius: 12px; border: 1px solid var(--ho-glass-border-subtle);">
+              <p style="font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 800; text-transform: uppercase;">Physical Steps</p>
+              <p style="font-size: 1.6rem; font-weight: 800; color: var(--ho-teal-900); font-family: 'JetBrains Mono', monospace; margin-top: 0.3rem;"><%= latestWearables['steps'] ? Number(latestWearables['steps'].numericValue || latestWearables['steps'].value).toLocaleString() : '--' %> <span style="font-size: 0.8rem; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;">steps</span></p>
+            </div>
+            <!-- Heart Rate -->
+            <div style="background: var(--ho-bg-airy); padding: 1rem; border-radius: 12px; border: 1px solid var(--ho-glass-border-subtle);">
+              <p style="font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 800; text-transform: uppercase;">Heart Rate</p>
+              <p style="font-size: 1.6rem; font-weight: 800; color: var(--ho-danger); font-family: 'JetBrains Mono', monospace; margin-top: 0.3rem;"><%= latestWearables['heart_rate'] ? Math.round(latestWearables['heart_rate'].numericValue || latestWearables['heart_rate'].value) : '--' %> <span style="font-size: 0.8rem; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; color: var(--ho-teal-900);">bpm</span></p>
+            </div>
+            <!-- BP -->
+            <div style="background: var(--ho-bg-airy); padding: 1rem; border-radius: 12px; border: 1px solid var(--ho-glass-border-subtle);">
+              <p style="font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 800; text-transform: uppercase;">Blood Pressure</p>
+              <p style="font-size: 1.6rem; font-weight: 800; color: var(--ho-teal-900); font-family: 'JetBrains Mono', monospace; margin-top: 0.3rem;">
+                <% if (latestWearables['blood_pressure_systolic'] && latestWearables['blood_pressure_diastolic']) { %>
+                  <%= Math.round(latestWearables['blood_pressure_systolic'].numericValue || latestWearables['blood_pressure_systolic'].value) %>/<%= Math.round(latestWearables['blood_pressure_diastolic'].numericValue || latestWearables['blood_pressure_diastolic'].value) %>
+                <% } else { %>--<% } %>
+                <span style="font-size: 0.8rem; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;">mmHg</span>
+              </p>
+            </div>
+            <!-- Calories -->
+            <div style="background: var(--ho-bg-airy); padding: 1rem; border-radius: 12px; border: 1px solid var(--ho-glass-border-subtle);">
+              <p style="font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 800; text-transform: uppercase;">Active Calories</p>
+              <p style="font-size: 1.6rem; font-weight: 800; color: var(--ho-warning); font-family: 'JetBrains Mono', monospace; margin-top: 0.3rem;"><%= latestWearables['calories'] ? Math.round(latestWearables['calories'].numericValue || latestWearables['calories'].value) : '--' %> <span style="font-size: 0.8rem; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; color: var(--ho-teal-900);">kcal</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% } %>
 
     <div class="ho-mosaic-grid">
       
@@ -676,21 +727,15 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 
   </main>
 </div>
+
 <script>
   // Wait for the entire window (HTML, CSS, Images, APIs) to fully load
   window.addEventListener('load', function() {
     const splashScreen = document.getElementById('ho-pwa-splash');
     
     if (splashScreen) {
-      // Optional: Add a tiny 300ms minimum delay so the user actually 
-      // perceives the smooth animation before it disappears, 
-      // preventing a jarring "flash" on very fast networks.
       setTimeout(() => {
-        // Trigger the CSS fade-out transition
         splashScreen.classList.add('ho-pwa-splash-hidden');
-        
-        // Remove the element from the DOM entirely after the 600ms CSS fade completes
-        // This ensures it doesn't block clicks or consume memory
         setTimeout(() => {
           splashScreen.remove();
         }, 600);

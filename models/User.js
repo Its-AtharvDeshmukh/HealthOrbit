@@ -32,6 +32,10 @@ const userSchema = new mongoose.Schema({
             familyMetadata: { type: Boolean, default: false }
         }
     },
+    profileImage: {
+    type: String,
+    default: null
+},
     // Add this right below your privacySettings:
     donorProfile: {
         bloodDonorEnabled: { type: Boolean, default: false },

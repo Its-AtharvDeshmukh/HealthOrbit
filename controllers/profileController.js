@@ -1,138 +1,204 @@
 const User = require('../models/User');
 const FamilyMember = require('../models/FamilyMember');
-const MedicalReport = require('../models/MedicalReport');
-const HealthMeasurement = require('../models/HealthMeasurement');
-const InsurancePolicy = require('../models/InsurancePolicy');
 const bcrypt = require('bcryptjs');
+const { uploadToCloudinary } = require('../services/cloudinaryService');
 
-// Helper: Calculate Profile Completion Percentage
-const calculateProfileCompletion = (user) => {
-    const fields = ['fullName', 'email', 'phone', 'age', 'gender', 'bloodGroup', 'emergencyContactName'];
-    let filled = 0;
-    fields.forEach(f => { if (user[f] && user[f].toString().trim() !== '') filled++; });
-    if (user.allergies && user.allergies.length > 0) filled++;
-    if (user.medicalConditions && user.medicalConditions.length > 0) filled++;
-    if (user.currentMedicines && user.currentMedicines.length > 0) filled++;
-    return Math.round((filled / 10) * 100);
-};
-
+// 1. Render Profile & Privacy View
 const getProfile = async (req, res) => {
     try {
-        const activeUserId = req.userContextId || req.session.userId || req.user._id;
-        
-        const [user, familyMembers] = await Promise.all([
-            User.findById(activeUserId).lean(),
-            FamilyMember.find({ userId: activeUserId }).sort({ createdAt: -1 }).lean()
-        ]);
-        
-        const completionPct = calculateProfileCompletion(user);
-        
-        const [reportCount, measurementCount, policyCount] = await Promise.all([
-            MedicalReport.countDocuments({ userId: activeUserId }),
-            HealthMeasurement.countDocuments({ userId: activeUserId }),
-            InsurancePolicy ? InsurancePolicy.countDocuments({ userId: activeUserId }) : 0
-        ]);
+        const activeUserId = req.userContextId || req.session.userId || (req.user && req.user._id);
 
-        res.render('profile/profile.ejs', { 
-            user, 
-            familyMembers, 
-            completionPct,
-            counts: { reports: reportCount, measurements: measurementCount, policies: policyCount },
-            hasPassword: !!user.passwordHash,
-            successMsg: req.query.success,
-            errorMsg: req.query.error
+        if (!activeUserId) {
+            return res.redirect('/auth');
+        }
+
+        const user = await User.findById(activeUserId).lean();
+        if (!user) {
+            return res.redirect('/auth');
+        }
+
+        // Fetch related family links
+        const familyMembers = await FamilyMember.find({
+            $or: [
+                { ownerUserId: activeUserId },
+                { viewerUserId: activeUserId, status: 'active' }
+            ]
+        })
+            .populate('viewerUserId', 'fullName email profileImage')
+            .populate('ownerUserId', 'fullName email profileImage')
+            .sort({ createdAt: -1 })
+            .lean()
+            .catch(() => []);
+
+        // Fetch incoming invitations
+        const incomingInvitations = await FamilyMember.find({
+            viewerUserId: activeUserId,
+            status: 'pending'
+        })
+            .populate('ownerUserId', 'fullName email profileImage')
+            .sort({ createdAt: -1 })
+            .lean()
+            .catch(() => []);
+
+        res.render('dashboard/profile', {
+            user,
+            familyMembers: familyMembers || [],
+            incomingInvitations: incomingInvitations || [],
+            csrfToken: req.csrfToken ? req.csrfToken() : (res.locals.csrfToken || ''),
+            successMsg: req.query.success || null,
+            errorMsg: req.query.error || null
         });
     } catch (error) {
-        console.error('[HealthOrbit] Profile Load Error:', error);
+        console.error('[HealthOrbit] Profile Load Error:', error.message);
         res.redirect('/dashboard');
     }
 };
 
+// 2. Update Personal Details
 const updatePersonal = async (req, res) => {
     try {
-        const activeUserId = req.userContextId || req.session.userId || req.user._id;
-        const { fullName, age, gender, phone } = req.body;
-        await User.findByIdAndUpdate(activeUserId, { 
-            fullName: fullName.trim(), age: age ? parseInt(age) : null, gender, phone: phone.trim()
+        const activeUserId = req.userContextId || req.session.userId || (req.user && req.user._id);
+        const { fullName, phone, age, gender, address } = req.body;
+
+        await User.findByIdAndUpdate(activeUserId, {
+            fullName,
+            phone,
+            age,
+            gender,
+            address
         });
-        req.session.userName = fullName.trim();
-        return res.redirect('/profile?success=Personal+Info+updated+successfully');
+
+        res.redirect('/profile?success=Personal+details+updated');
     } catch (error) {
-        return res.redirect('/profile?error=Failed+to+update+Personal+Info');
+        console.error('[HealthOrbit] Update Personal Error:', error.message);
+        res.redirect('/profile?error=Failed+to+update+personal+details');
     }
 };
 
+// 3. Update Health / Clinical Information
 const updateHealth = async (req, res) => {
     try {
-        const activeUserId = req.userContextId || req.session.userId || req.user._id;
-        const { bloodGroup, allergies, medicalConditions, currentMedicines } = req.body;
-        const toArray = (str) => str ? str.split(',').map(s => s.trim()).filter(s => s) : [];
-        await User.findByIdAndUpdate(activeUserId, { 
-            bloodGroup, allergies: toArray(allergies), medicalConditions: toArray(medicalConditions), currentMedicines: toArray(currentMedicines)
+        const activeUserId = req.userContextId || req.session.userId || (req.user && req.user._id);
+        const { bloodGroup, medicalConditions, allergies, currentMedicines } = req.body;
+
+        const conditionsArr = typeof medicalConditions === 'string'
+            ? medicalConditions.split(',').map(s => s.trim()).filter(Boolean)
+            : [];
+        const allergiesArr = typeof allergies === 'string'
+            ? allergies.split(',').map(s => s.trim()).filter(Boolean)
+            : [];
+        const medicinesArr = typeof currentMedicines === 'string'
+            ? currentMedicines.split(',').map(s => s.trim()).filter(Boolean)
+            : [];
+
+        await User.findByIdAndUpdate(activeUserId, {
+            bloodGroup,
+            medicalConditions: conditionsArr,
+            allergies: allergiesArr,
+            currentMedicines: medicinesArr
         });
-        return res.redirect('/profile?success=Health+Profile+updated+successfully');
+
+        res.redirect('/profile?success=Health+profile+updated');
     } catch (error) {
-        return res.redirect('/profile?error=Failed+to+update+Health+Profile');
+        console.error('[HealthOrbit] Update Health Error:', error.message);
+        res.redirect('/profile?error=Failed+to+update+health+profile');
     }
 };
 
+// 4. Update Emergency Contacts
 const updateEmergency = async (req, res) => {
     try {
-        const activeUserId = req.userContextId || req.session.userId || req.user._id;
-        const { emergencyContactName, emergencyContactRelation, emergencyContactPhone } = req.body;
-        await User.findByIdAndUpdate(activeUserId, { 
-            emergencyContactName: emergencyContactName.trim(), emergencyContactRelation: emergencyContactRelation.trim(), emergencyContactPhone: emergencyContactPhone.trim()
+        const activeUserId = req.userContextId || req.session.userId || (req.user && req.user._id);
+        const { emergencyName, emergencyRelation, emergencyPhone } = req.body;
+
+        await User.findByIdAndUpdate(activeUserId, {
+            emergencyContact: {
+                name: emergencyName,
+                relationship: emergencyRelation,
+                phone: emergencyPhone
+            }
         });
-        return res.redirect('/profile?success=Emergency+contact+updated');
+
+        res.redirect('/profile?success=Emergency+contact+updated');
     } catch (error) {
-        return res.redirect('/profile?error=Failed+to+update+Emergency+Info');
+        console.error('[HealthOrbit] Update Emergency Error:', error.message);
+        res.redirect('/profile?error=Failed+to+update+emergency+contact');
     }
 };
 
+// 5. Update Privacy & AI Settings
 const updatePrivacy = async (req, res) => {
     try {
-        const activeUserId = req.userContextId || req.session.userId || req.user._id;
-        const { emergencyCardEnabled, aiProfile, aiReports, aiMeasurements, aiMedicines, aiFamily } = req.body;
-        
-        const privacySettings = {
-            emergencyCardEnabled: emergencyCardEnabled === 'on',
-            aiAccess: {
-                profile: aiProfile === 'on',
-                medicalReports: aiReports === 'on',
-                healthMeasurements: aiMeasurements === 'on',
-                medicines: aiMedicines === 'on',
-                familyMetadata: aiFamily === 'on'
-            }
-        };
+        const activeUserId = req.userContextId || req.session.userId || (req.user && req.user._id);
+        const { profile, medicalReports, healthMeasurements, medicines, familyMetadata, emergencyCardEnabled } = req.body;
 
-        await User.findByIdAndUpdate(activeUserId, { privacySettings });
-        res.redirect('/profile?success=Privacy+settings+updated+successfully');
+        await User.findByIdAndUpdate(activeUserId, {
+            'privacySettings.emergencyCardEnabled': emergencyCardEnabled === 'on' || emergencyCardEnabled === true || emergencyCardEnabled === 'true',
+            'privacySettings.aiAccess': {
+                profile: profile === 'on' || profile === true || profile === 'true',
+                medicalReports: medicalReports === 'on' || medicalReports === true || medicalReports === 'true',
+                healthMeasurements: healthMeasurements === 'on' || healthMeasurements === true || healthMeasurements === 'true',
+                medicines: medicines === 'on' || medicines === true || medicines === 'true',
+                familyMetadata: familyMetadata === 'on' || familyMetadata === true || familyMetadata === 'true'
+            }
+        });
+
+        res.redirect('/profile?success=Privacy+settings+updated');
     } catch (error) {
+        console.error('[HealthOrbit] Update Privacy Error:', error.message);
         res.redirect('/profile?error=Failed+to+update+privacy+settings');
     }
 };
 
+// 6. Update Password
 const updatePassword = async (req, res) => {
     try {
-        const activeUserId = req.userContextId || req.session.userId || req.user._id;
+        const activeUserId = req.userContextId || req.session.userId || (req.user && req.user._id);
         const { currentPassword, newPassword, confirmPassword } = req.body;
 
-        if (newPassword !== confirmPassword) return res.redirect('/profile?error=New+passwords+do+not+match');
-        if (newPassword.length < 8) return res.redirect('/profile?error=Password+must+be+at+least+8+characters');
+        if (newPassword !== confirmPassword) {
+            return res.redirect('/profile?error=New+passwords+do+not+match');
+        }
 
         const user = await User.findById(activeUserId);
-        if (!user.passwordHash) return res.redirect('/profile?error=Google+accounts+cannot+change+passwords+here');
+        if (!user || !user.password) {
+            return res.redirect('/profile?error=Cannot+change+password+for+OAuth+accounts');
+        }
 
-        const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
-        if (!isMatch) return res.redirect('/profile?error=Current+password+is+incorrect');
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.redirect('/profile?error=Current+password+is+incorrect');
+        }
 
         const salt = await bcrypt.genSalt(10);
-        user.passwordHash = await bcrypt.hash(newPassword, salt);
+        user.password = await bcrypt.hash(newPassword, salt);
         await user.save();
 
-        res.redirect('/profile?success=Password+changed+successfully');
+        res.redirect('/profile?success=Password+updated+successfully');
     } catch (error) {
-        res.redirect('/profile?error=Failed+to+change+password');
+        console.error('[HealthOrbit] Update Password Error:', error.message);
+        res.redirect('/profile?error=Failed+to+update+password');
+    }
+};
+
+// 7. Profile Picture Upload via Cloudinary
+const uploadProfileImage = async (req, res) => {
+    try {
+        const activeUserId = req.userContextId || req.session.userId || (req.user && req.user._id);
+
+        if (!req.file) {
+            return res.redirect('/profile?error=No+file+selected');
+        }
+
+        const cloudUpload = await uploadToCloudinary(req.file.path, 'healthorbit_profiles');
+        if (cloudUpload && cloudUpload.url) {
+            await User.findByIdAndUpdate(activeUserId, { profileImage: cloudUpload.url });
+        }
+
+        res.redirect('/profile?success=Profile+photo+updated+successfully');
+    } catch (error) {
+        console.error('[HealthOrbit] Profile Image Upload Error:', error.message);
+        res.redirect('/profile?error=Failed+to+upload+photo');
     }
 };
 
@@ -142,5 +208,6 @@ module.exports = {
     updateHealth,
     updateEmergency,
     updatePrivacy,
-    updatePassword
+    updatePassword,
+    uploadProfileImage
 };

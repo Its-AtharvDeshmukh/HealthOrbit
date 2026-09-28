@@ -1,44 +1,84 @@
 const mongoose = require('mongoose');
 
 const healthMeasurementSchema = new mongoose.Schema({
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
+    userId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User', 
+        required: true, 
+        index: true 
+    },
+    metricName: { 
+        type: String, 
+        required: true, 
+        trim: true 
+    },
+    metricKey: { 
+        type: String, 
+        trim: true, 
+        index: true 
+    },
+    category: { 
+        type: String, 
+        default: 'General' 
+    },
+    value: { 
+        type: mongoose.Schema.Types.Mixed, 
+        required: true 
+    },
+    numericValue: { 
+        type: Number 
+    },
+    unit: { 
+        type: String, 
+        default: '', 
+        trim: true 
+    },
+    referenceRange: { 
+        type: String, 
+        default: 'N/A' 
+    },
+    status: { 
+        type: String, 
+        default: 'Standard' 
+    },
+    source: { 
+        type: String, 
+        default: 'manual' 
+    },
+    sourceType: {
+        type: String,
+        enum: ['medical_report', 'wearable', 'manual', 'unknown'],
+        default: 'manual'
+    },
+    sourceRecordId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'MedicalReport',
+        index: true 
+    },
+    provider: {
+        type: String,
+        enum: ['health_connect', 'apple_health', 'manual', 'lab'],
+        default: 'health_connect'
+    },
+    externalRecordId: {
+        type: String,
+        trim: true,
         index: true
     },
-    metricName: {
-        type: String,
-        required: true // e.g., 'Hemoglobin', 'WBC Count', 'Heart Rate'
-    },
-    category: {
-        type: String,
-        default: 'General Metric'
-    },
-    value: {
-        type: String,
-        required: true
-    },
-    unit: {
-        type: String,
-        required: true
-    },
-    status: {
-        type: String,
-        default: 'Optimal' // Optimal, Low Range, High Range, Deficient
-    },
-    source: {
-        type: String,
-        default: 'OCR Report' // OCR Report, Wearable, Manual
-    },
-    recordedAt: {
-        type: Date,
-        default: Date.now
+    recordedAt: { 
+        type: Date, 
+        default: Date.now 
     }
-}, {
-    timestamps: true
-});
+}, { timestamps: true });
 
-const HealthMeasurement = mongoose.model('HealthMeasurement', healthMeasurementSchema);
+// Existing compound indexes
+healthMeasurementSchema.index({ userId: 1, metricKey: 1, recordedAt: -1 });
+healthMeasurementSchema.index({ userId: 1, sourceRecordId: 1, metricKey: 1 });
 
-module.exports = HealthMeasurement;
+// Wearables deduplication index (sparse so reports without externalRecordId are ignored)
+healthMeasurementSchema.index(
+    { userId: 1, provider: 1, externalRecordId: 1, metricKey: 1 },
+    { unique: true, sparse: true }
+);
+
+module.exports = mongoose.model('HealthMeasurement', healthMeasurementSchema);

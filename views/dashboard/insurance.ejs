@@ -5,10 +5,6 @@
 <link rel="icon" href="/images/Logo.png">
 
 <style>
-/* ==================================================================
-  STRICTLY SCOPED CSS (PREFIXED WITH 'ho-') FOR INSURANCE WALLET
-  v2 — refined spacing/typography + luxury ID card treatment
-================================================================== */
 :root {
   --ho-bg-airy: #edf6f4;
   --ho-teal-900: #0b5e55;
@@ -21,16 +17,12 @@
   --ho-text-muted: #4e6b63;
   --ho-danger: #d94b4b;
   --ho-glass-clear: rgba(255, 255, 255, 0.45);
-  --ho-glass-solid: rgba(255, 255, 255, 0.85);
+  --ho-glass-solid: rgba(255,255,255,0.85);
   --ho-glass-border: rgba(255, 255, 255, 0.95);
-  --ho-glass-border-subtle: rgba(255, 255, 255, 0.5);
+  --ho-glass-border-subtle: rgba(13, 122, 110, 0.12);
   --ho-radius-xl: 32px;
-  --ho-radius-lg: 20px;
-  --ho-radius-md: 12px;
-  --ho-shadow-glass: 0 30px 60px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
 
-  /* --- Luxury ID card palette (new) --- */
-  --ho-card-deep: #04211d;      /* near-black emerald */
+  --ho-card-deep: #04211d;
   --ho-card-mid: #0a3f37;
   --ho-card-edge: #0e5c50;
   --ho-gold: #d8b976;
@@ -39,166 +31,185 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: var(--ho-bg-airy); color: var(--ho-text-main); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 
-/* ---------- Layout shell ---------- */
+/* ---------- GLOBAL SCROLLBAR REMOVAL (every scrollable area on this page) ---------- */
+html { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar { display: none; width: 0; height: 0; }
+body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: var(--ho-bg-airy); color: var(--ho-text-main); overflow-x: hidden; -webkit-font-smoothing: antialiased; scrollbar-width: none; -ms-overflow-style: none; }
+body::-webkit-scrollbar { display: none; width: 0; height: 0; }
+* { scrollbar-width: none; -ms-overflow-style: none; }
+*::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
 .ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
 .ho-main-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
-/* Ambient background orbs for depth */
-.ho-ambient-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.35; }
-.ho-orb-1 { width: 420px; height: 420px; background: var(--ho-mint-400); top: -140px; right: -100px; }
-.ho-orb-2 { width: 360px; height: 360px; background: var(--ho-gold-soft); bottom: -120px; left: 10%; opacity: 0.25; }
-.ho-orb-3 { width: 300px; height: 300px; background: var(--ho-coral-soft); bottom: 20%; right: 20%; opacity: 0.2; }
-
-
-
-
 .ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
+.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.5; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
 .ho-orb-1 { width: 550px; height: 550px; background: #76d7c4; top: -100px; left: -100px; }
-.ho-orb-2 { width: 600px; height: 600px; background: #fadbd8 !important; bottom: -150px; right: -100px; animation-delay: -5s; }
-.ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 35%; left: 35%; opacity: 0.3; animation-delay: -10s; }
+.ho-orb-2 { width: 600px; height: 600px; background: #fadbd8; bottom: -150px; right: -100px; animation-delay: -5s; }
 @keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 60px) scale(1.15); } }
 
-
-
-
-
-
-/* ---------- Topbar ---------- */
 .ho-topbar { display: flex; justify-content: space-between; align-items: center; padding: 2.2rem 3rem 1.2rem; flex-shrink: 0; background: transparent; z-index: 20; }
 .ho-topbar h1 { font-weight: 800; font-size: 1.8rem; color: var(--ho-teal-900); margin-bottom: 0.3rem; letter-spacing: -0.5px;}
 .ho-topbar p { font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 500; }
 .ho-topbar-actions { display: flex; gap: 1rem; align-items: center; }
-.ho-btn-primary { background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); color: #fff; border: none; border-radius: 999px; padding: 0.85rem 1.8rem; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 10px 25px rgba(13, 122, 110, 0.25); transition: 0.25s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+.ho-btn-primary { background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); color: #fff; border: none; border-radius: 999px; padding: 0.85rem 1.8rem; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 10px 25px rgba(13, 122, 110, 0.25); transition: 0.25s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
 .ho-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(13, 122, 110, 0.35); }
 .ho-btn-primary:active { transform: scale(0.96); }
 .ho-btn-primary:focus-visible { outline: 2px solid var(--ho-teal-600); outline-offset: 3px; }
 
-/* ---------- Grid & panels ---------- */
 .ho-workspace-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; padding: 0.5rem 3rem 3rem; flex: 1 0 auto; }
-.ho-panel { background: var(--ho-glass-clear); backdrop-filter: blur(50px) saturate(200%); -webkit-backdrop-filter: blur(50px) saturate(200%); border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl); padding: 2rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass); height: auto; min-height: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.ho-panel { background: var(--ho-glass-clear); backdrop-filter: blur(50px) saturate(200%); border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl); padding: 2rem; display: flex; flex-direction: column; box-shadow: 0 30px 60px rgba(13, 122, 110, 0.08); height: auto; min-height: 0; transition: 0.4s; animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .ho-panel:hover { transform: translateY(-3px); box-shadow: 0 40px 80px rgba(13, 122, 110, 0.12); border-color: #fff; background: rgba(255,255,255,0.65); }
 @keyframes hoSlideUp { from { opacity: 0; transform: translateY(35px); } to { opacity: 1; transform: translateY(0); } }
 .ho-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-shrink: 0; }
 .ho-panel-header h2 { font-weight: 800; font-size: 1.25rem; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem; }
-.ho-badge { background: #fff; border: 1px solid var(--ho-glass-border); padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ho-teal-700); box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
+.ho-badge { background: #fff; border: 1px solid var(--ho-glass-border); padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ho-teal-700); }
 .ho-panel-link { background:none; border:none; color:var(--ho-teal-700); font-weight:700; cursor:pointer; font-size: 0.85rem; padding: 0.4rem 0.6rem; border-radius: 8px; transition: 0.2s; }
 .ho-panel-link:hover { background: rgba(13, 122, 110, 0.08); }
 
-/* ---------- Insurance coverage panel ---------- */
+/* ==================================================================
+   COVERAGE PANEL — rebuilt from scratch
+   Layout: carousel (left, ~58%) | detail card (right, ~42%), stacked
+   on tablet/mobile. Detail panel is now its own visible glass card,
+   not floating text, so it always reads clearly next to the ID card.
+================================================================== */
 .ho-ins-panel { grid-column: span 8; }
-.ho-ins-layout { display: flex; gap: 2rem; align-items: stretch; }
+.ho-ins-body { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+.ho-ins-split { display: flex; gap: 1.75rem; align-items: stretch; min-width: 0; }
 
-/* --- LUXURY ID CARD (redesigned) --- */
+.ho-carousel-col { flex: 1 1 58%; min-width: 0; display: flex; flex-direction: column; gap: 0.9rem; }
+.ho-policies-slider { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 1.25rem; padding: 0.3rem 0.1rem 0.3rem; }
+
+/* --- THE FIX: inactive cards no longer look washed-out/blurish.
+   Old approach used opacity alone on a dark gradient over a light
+   background, which reads as grey. New approach dims via filter
+   (saturate/brightness) so the card stays a real dark-emerald tone,
+   just quieter — and adds a crisp depth shadow so it never blends
+   into the panel behind it. --- */
 .ho-id-card {
-  width: 330px;
-  height: 210px;
-  border-radius: 20px;
-  padding: 1.5rem 1.6rem;
-  color: var(--ho-gold-soft);
-  position: relative;
-  overflow: hidden;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background:
-    radial-gradient(120% 140% at 0% 0%, rgba(216,185,118,0.14) 0%, transparent 45%),
-    linear-gradient(150deg, var(--ho-card-edge) 0%, var(--ho-card-mid) 45%, var(--ho-card-deep) 100%);
+  width: 300px; height: 196px; border-radius: 20px; padding: 1.3rem 1.4rem; color: var(--ho-gold-soft);
+  position: relative; overflow: hidden; flex-shrink: 0; display: flex; flex-direction: column; justify-content: space-between;
+  background: radial-gradient(120% 140% at 0% 0%, rgba(216,185,118,0.14) 0%, transparent 45%), linear-gradient(150deg, var(--ho-card-edge) 0%, var(--ho-card-mid) 45%, var(--ho-card-deep) 100%);
   border: 1px solid var(--ho-gold-line);
-  box-shadow:
-    0 20px 45px rgba(3, 20, 17, 0.45),
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    inset 0 0 0 1px rgba(216,185,118,0.08);
-  transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease;
+  cursor: pointer; scroll-snap-align: center;
+  transform: scale(0.93);
+  filter: saturate(0.75) brightness(0.82);
+  box-shadow: 0 8px 18px rgba(3, 20, 17, 0.22);
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), filter 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
 }
-.ho-id-card:hover { transform: scale(1.02) rotateY(3deg) rotateX(1deg); box-shadow: 0 28px 60px rgba(3, 20, 17, 0.55), inset 0 1px 0 rgba(255,255,255,0.1); }
-/* fine gold hairline border inset */
-.ho-id-card::before {
-  content: '';
-  position: absolute; inset: 8px;
-  border: 1px solid rgba(216,185,118,0.25);
-  border-radius: 13px;
-  pointer-events: none;
+.ho-id-card:hover { filter: saturate(0.9) brightness(0.92); }
+.ho-id-card:focus-visible { outline: 2px solid var(--ho-mint-400); outline-offset: 3px; }
+.ho-id-card.active-card {
+  transform: scale(1);
+  filter: saturate(1) brightness(1);
+  border-color: var(--ho-gold);
+  box-shadow: 0 22px 46px rgba(3, 20, 17, 0.5), 0 0 0 1px rgba(216,185,118,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
 }
-/* soft moving sheen, subtler than before to read as premium not shiny-plastic */
-.ho-id-card::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(105deg, transparent 30%, rgba(216,185,118,0.16) 46%, rgba(255,255,255,0.22) 50%, rgba(216,185,118,0.16) 54%, transparent 70%);
-  background-size: 220% 220%;
-  animation: holoGlare 7s ease-in-out infinite;
-  pointer-events: none;
+.ho-id-card::before { content: ''; position: absolute; inset: 8px; border: 1px solid rgba(216,185,118,0.25); border-radius: 13px; pointer-events: none; }
+/* faint sheen only on the active card — reinforces which one is "selected" */
+.ho-id-card.active-card::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgba(216,185,118,0.14) 48%, rgba(255,255,255,0.18) 50%, rgba(216,185,118,0.14) 52%, transparent 65%);
+  background-size: 220% 220%; animation: holoGlare 6.5s ease-in-out infinite;
 }
 @keyframes holoGlare { 0% { background-position: 200% 0; } 50% { background-position: -20% 0; } 100% { background-position: -200% 0; } }
-.ho-idc-top { display: flex; justify-content: space-between; align-items: flex-start; z-index: 1;}
-.ho-idc-top strong { font-family: 'Fraunces', serif; font-size: 1.15rem; color: #fff; letter-spacing: 0.2px; }
-.ho-idc-icon { width: 34px; height: 34px; background: rgba(216,185,118,0.16); border: 1px solid rgba(216,185,118,0.35); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; backdrop-filter: blur(10px); }
-.ho-idc-mid { z-index: 1; margin-top: auto; margin-bottom: 1.4rem;}
-.ho-idc-num { font-family: 'JetBrains Mono', monospace; font-size: 1.18rem; letter-spacing: 2.5px; margin-bottom: 0.25rem; color: var(--ho-gold-soft); text-shadow: 0 2px 6px rgba(0,0,0,0.35);}
-.ho-idc-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.65; font-weight: 700; color: var(--ho-gold-soft);}
-.ho-idc-bot { display: flex; justify-content: space-between; align-items: flex-end; z-index: 1;}
-.ho-idc-name { font-size: 0.95rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; color: #fff;}
-.ho-idc-valid { text-align: right; }
 
-.ho-ins-details { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 1.2rem; min-width: 0;}
-.ho-ins-stat-row { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.8rem; border-bottom: 1px dashed var(--ho-glass-border-subtle);}
-.ho-ins-stat-row:last-child { border-bottom: none; padding-bottom: 0;}
-.ho-stat-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 600; }
-.ho-stat-label .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ho-mint-400); flex-shrink: 0; }
-.ho-stat-val { font-size: 1.1rem; color: var(--ho-teal-900); font-weight: 800; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
-.ho-progress-bg { width: 100%; height: 8px; background: rgba(13, 122, 110, 0.1); border-radius: 999px; overflow: hidden; margin-top: 0.4rem;}
+.ho-idc-counter {
+  position: absolute; top: 0.8rem; left: 0.8rem; z-index: 5;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 700;
+  color: rgba(243, 227, 184, 0.8); background: rgba(0,0,0,0.25); border: 1px solid rgba(216,185,118,0.25);
+  padding: 3px 7px; border-radius: 999px; pointer-events: none; letter-spacing: 0.03em;
+}
+.ho-policy-delete-form { position: absolute; top: 0.7rem; right: 0.7rem; z-index: 10; }
+.ho-policy-delete-btn {
+  background: rgba(0,0,0,0.32); border: 1px solid rgba(255,255,255,0.2); color: #fff;
+  border-radius: 8px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: 0.2s; backdrop-filter: blur(4px); font-size: 0.8rem;
+}
+.ho-policy-delete-btn:hover, .ho-policy-delete-btn:focus-visible { background: rgba(217, 75, 75, 0.85); border-color: var(--ho-danger); transform: scale(1.05); outline: none; }
+
+.ho-idc-top { display: flex; justify-content: center; z-index: 1; padding: 0 2.2rem; margin-top: 0.05rem; }
+.ho-idc-top strong { font-family: 'Fraunces', serif; font-size: 1.05rem; color: #fff; letter-spacing: 0.2px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.ho-idc-mid { z-index: 1; margin-top: auto; margin-bottom: 1.15rem;}
+.ho-idc-num { font-family: 'JetBrains Mono', monospace; font-size: 1.05rem; letter-spacing: 2px; margin-bottom: 0.22rem; color: var(--ho-gold-soft); text-shadow: 0 2px 6px rgba(0,0,0,0.35);}
+.ho-idc-label { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.65; font-weight: 700; color: var(--ho-gold-soft);}
+.ho-idc-bot { display: flex; justify-content: space-between; align-items: flex-end; z-index: 1; gap: 0.6rem;}
+.ho-idc-name { font-size: 0.85rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; color: #fff;}
+.ho-idc-valid { text-align: right; flex-shrink: 0; }
+
+.ho-carousel-dots { display: flex; gap: 0.4rem; align-items: center; justify-content: center; }
+.ho-carousel-dot { width: 7px; height: 7px; border-radius: 999px; background: rgba(13,122,110,0.2); border: none; cursor: pointer; padding: 0; transition: all 0.3s cubic-bezier(0.16,1,0.3,1); }
+.ho-carousel-dot:hover { background: rgba(13,122,110,0.4); }
+.ho-carousel-dot.active { width: 22px; background: linear-gradient(90deg, var(--ho-teal-600), var(--ho-gold)); }
+
+/* --- DETAIL CARD: now a real, bordered glass card, not floating text.
+   Rows use a fixed-width label column so nothing wraps mid-phrase,
+   and the whole card fades + lifts when you pick a different policy. --- */
+.ho-detail-col { flex: 1 1 42%; min-width: 0; display: flex; }
+.ho-detail-card {
+  flex: 1; background: var(--ho-glass-solid); border: 1px solid var(--ho-glass-border-subtle);
+  border-radius: 20px; padding: 1.5rem 1.4rem; display: flex; flex-direction: column; justify-content: center; gap: 1.1rem;
+  box-shadow: 0 4px 20px rgba(13,122,110,0.05);
+}
+.ho-detail-card.switching { animation: hoDetailSwitch 0.4s ease; }
+@keyframes hoDetailSwitch { 0% { opacity: 0.2; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0); } }
+
+.ho-detail-headline { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--ho-glass-border-subtle); }
+.ho-detail-headline strong { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ho-text-muted); font-weight: 800; }
+.ho-detail-headline span { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--ho-teal-700); font-weight: 700; }
+
+.ho-ins-stat-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.ho-stat-label { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 650; line-height: 1.25; flex: 1 1 auto; min-width: 0; }
+.ho-stat-label .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ho-mint-400); flex-shrink: 0; margin-top: 5px; }
+.ho-stat-val { font-size: 1.05rem; color: var(--ho-teal-900); font-weight: 800; font-family: 'JetBrains Mono', monospace; white-space: nowrap; flex-shrink: 0; }
+.ho-progress-bg { width: 100%; height: 8px; background: rgba(13, 122, 110, 0.1); border-radius: 999px; overflow: hidden; margin-top: 0.5rem;}
 .ho-progress-fill { height: 100%; background: linear-gradient(90deg, var(--ho-mint-400), var(--ho-teal-600)); border-radius: 999px; transition: width 0.6s cubic-bezier(0.16,1,0.3,1); }
+.ho-remaining-note { font-size: 0.72rem; color: var(--ho-text-muted); font-weight: 600; display: block; margin-top: 0.45rem; }
 
 /* ---------- Identity wallet ---------- */
 .ho-id-panel { grid-column: span 4; }
 .ho-wallet-list { display: flex; flex-direction: column; gap: 0.8rem; }
-.ho-wallet-item { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.7); border: 1px solid var(--ho-glass-border); border-radius: 16px; padding: 1rem 1.2rem; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+.ho-wallet-item { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.7); border: 1px solid var(--ho-glass-border); border-radius: 16px; padding: 1rem 1.2rem; transition: 0.2s; cursor: pointer; }
 .ho-wallet-item:hover { transform: translateY(-2px); background: #fff; border-color: var(--ho-teal-600); box-shadow: 0 8px 20px rgba(13, 122, 110, 0.08); }
-.ho-wi-left { display: flex; align-items: center; gap: 0.8rem; min-width: 0; }
+.ho-wallet-item:focus-visible { outline: 2px solid var(--ho-teal-600); outline-offset: 2px; }
+.ho-wi-left { display: flex; align-items: center; gap: 0.8rem; min-width: 0; pointer-events: none; }
 .ho-wi-icon { font-size: 1.4rem; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; background: rgba(13,122,110,0.06); border-radius: 10px; flex-shrink: 0; }
 .ho-wi-text { min-width: 0; }
 .ho-wi-text strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ho-wi-text span { font-size: 0.72rem; color: var(--ho-text-muted); font-weight: 600; font-family: 'JetBrains Mono', monospace;}
-.ho-wi-status { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; background: rgba(46, 204, 113, 0.15); color: #27ae60; padding: 4px 8px; border-radius: 6px; }
-.ho-wi-delete { background:none; border:none; font-size:0.95rem; cursor:pointer; opacity: 0.45; transition: 0.2s; padding: 6px; border-radius: 8px; flex-shrink: 0; }
-.ho-wi-delete:hover { opacity: 1; background: rgba(217, 75, 75, 0.1); }
+.ho-wi-delete { background:none; border:none; font-size:0.95rem; cursor:pointer; opacity: 0.45; transition: 0.2s; padding: 6px; border-radius: 8px; flex-shrink: 0; position: relative; z-index: 2; }
+.ho-wi-delete:hover, .ho-wi-delete:focus-visible { opacity: 1; background: rgba(217, 75, 75, 0.1); outline: none; }
 
 /* ---------- Claims ---------- */
-.ho-claims-panel { grid-column: span 7; }
-.ho-claim-list { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; }
+.ho-claims-panel { grid-column: span 7; display: flex; flex-direction: column; }
+.ho-claim-list { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; max-height: 320px; overflow-y: auto; }
 .ho-claim-item { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 14px; transition: 0.2s; gap: 0.75rem; }
 .ho-claim-item:hover { transform: translateX(3px); border-color: var(--ho-teal-600); box-shadow: 0 4px 15px rgba(13, 122, 110, 0.06); }
 .ho-cl-info { min-width: 0; }
 .ho-cl-info strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
 .ho-cl-info span { font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600;}
 .ho-cl-meta { text-align: right; display: flex; align-items: center; gap: 0.9rem; flex-shrink: 0; }
-.ho-cl-amount-wrap { text-align: right; }
 .ho-cl-amount { font-family: 'JetBrains Mono', monospace; font-size: 1.05rem; font-weight: 800; color: var(--ho-teal-900); display: block; margin-bottom: 0.3rem;}
 .ho-cl-pill { display: inline-block; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; }
 .ho-cl-pill.approved { background: rgba(46, 204, 113, 0.15); color: #27ae60; }
 .ho-cl-pill.processing { background: rgba(243, 156, 18, 0.15); color: #d35400; }
 .ho-cl-pill.rejected { background: rgba(217, 75, 75, 0.15); color: #d94b4b; }
 .ho-cl-delete { background:none; border:none; font-size:0.95rem; cursor:pointer; opacity:0.4; transition: 0.2s; padding: 6px; border-radius: 8px; }
-.ho-cl-delete:hover { opacity: 1; background: rgba(217, 75, 75, 0.1); }
+.ho-cl-delete:hover, .ho-cl-delete:focus-visible { opacity: 1; background: rgba(217, 75, 75, 0.1); outline: none; }
 
 /* ---------- Quick actions ---------- */
 .ho-actions-panel { grid-column: span 5; }
 .ho-act-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.ho-act-card { background: rgba(255,255,255,0.6); border: 1.5px dashed rgba(13, 122, 110, 0.2); border-radius: 16px; padding: 1.2rem; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; }
-.ho-act-card:hover { background: #fff; border-style: solid; border-color: var(--ho-teal-600); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(13, 122, 110, 0.08); }
-.ho-act-card:active { transform: scale(0.96); }
-.ho-act-icon { font-size: 1.6rem; margin-bottom: 0.2rem; }
-.ho-act-card strong { font-size: 0.85rem; color: var(--ho-teal-900); font-weight: 800; }
+.ho-act-card { background: rgba(255,255,255,0.6); border: 1.5px dashed rgba(13, 122, 110, 0.2); border-radius: 16px; padding: 1.2rem; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; outline: none; }
+.ho-act-card:hover, .ho-act-card:focus-visible { background: #fff; border-style: solid; border-color: var(--ho-teal-600); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(13, 122, 110, 0.08); }
+.ho-act-icon { font-size: 1.6rem; pointer-events: none; }
+.ho-act-card strong { font-size: 0.85rem; color: var(--ho-teal-900); font-weight: 800; pointer-events: none; }
 
-/* ---------- Empty states ---------- */
+/* ---------- Empty states & Modals ---------- */
 .ho-empty-state { text-align: center; padding: 2.2rem 1rem; color: var(--ho-text-muted); }
 .ho-empty-icon { font-size: 2rem; margin-bottom: 0.6rem; opacity: 0.6; }
 
-/* ---------- Modal ---------- */
 .ho-modal { position: fixed; inset: 0; background: rgba(11, 94, 85, 0.45); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 1.2rem; opacity: 0; transition: opacity 0.3s; }
 .ho-modal.active { display: flex; opacity: 1; }
 .ho-modal-box { background: #fff; border-radius: 20px; padding: 2rem; width: 100%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
@@ -209,40 +220,26 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 .ho-btn-ghost { background: transparent; border: 1px solid var(--ho-glass-border-subtle); border-radius: 999px; padding: 0.85rem 1.8rem; font-weight: 700; cursor: pointer; color: var(--ho-teal-900); transition: 0.2s; }
 .ho-btn-ghost:hover { background: rgba(13,122,110,0.06); }
 
+/* --- RESPONSIVE --- */
 @media (max-width: 1200px) { .ho-ins-panel, .ho-id-panel, .ho-claims-panel, .ho-actions-panel { grid-column: span 12; } }
-
+@media (max-width: 860px) {
+  .ho-ins-split { flex-direction: column; }
+  .ho-detail-col { flex: 1 1 auto; }
+}
 @media (max-width: 768px) {
   .ho-main-content { padding-top: 5.6rem !important; }
-  .ho-topbar { flex-direction: column; align-items: flex-start; padding: 0 1.25rem 1.2rem !important; gap: 0.6rem; position: static !important; }
-  .ho-topbar h1 { font-size: 1.4rem; }
+  .ho-topbar { flex-direction: column; align-items: flex-start; padding: 0 1.25rem 1.2rem !important; gap: 0.6rem; }
   .ho-btn-primary { width: 100%; }
   .ho-workspace-grid { grid-template-columns: 1fr !important; padding: 0 1.25rem 2.5rem !important; gap: 1.4rem !important; }
   .ho-panel { padding: 1.4rem !important; border-radius: 22px !important; }
-  .ho-ins-layout { flex-direction: column; gap: 1.4rem; }
-  .ho-id-card { width: 100%; height: auto; min-height: 190px; }
-  .ho-act-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; gap: 0.9rem; padding-bottom: 0.5rem; margin-right: -1.4rem; padding-right: 1.4rem; }
-  .ho-act-grid::-webkit-scrollbar { display: none; }
+  .ho-policies-slider { margin-right: -1.4rem; padding-right: 1.4rem; }
+  .ho-id-card { width: 82%; min-width: 250px; }
+  .ho-act-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 0.9rem; padding-bottom: 0.5rem; margin-right: -1.4rem; padding-right: 1.4rem; }
   .ho-act-card { min-width: 130px; scroll-snap-align: start; flex-shrink: 0; }
   .ho-claim-item { flex-wrap: wrap; }
   .ho-cl-meta { margin-left: auto; }
-  .ho-idc-name { max-width: 140px; }
 }
-
-@media (max-width: 420px) {
-  .ho-idc-num { font-size: 1.02rem; letter-spacing: 1.5px; }
-  .ho-stat-val { font-size: 1rem; }
-}
-
-
-    @media (max-width: 1024px) {
-        /* Using 'body .ho-main-content' makes this rule stronger than the original */
-        body .ho-main-content {
-          margin-top: 5.5rem;
-            padding: 0 !important; 
-        }
-    }
-
-
+@media (max-width: 1024px) { body .ho-main-content { margin-top: 5.5rem; padding: 0 !important; } }
 </style>
 </head>
 <body>
@@ -250,7 +247,6 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 <div class="ho-ambient-canvas">
   <div class="ho-glow-orb ho-orb-1"></div>
   <div class="ho-glow-orb ho-orb-2"></div>
-  <div class="ho-glow-orb ho-orb-3"></div>
 </div>
 
 <div class="ho-app-layout">
@@ -273,56 +269,101 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
       <section class="ho-panel ho-ins-panel">
         <div class="ho-panel-header">
           <h2><span>🛡️</span> Active Health Coverage</h2>
-          <span class="ho-badge"><%= primaryPolicy ? 'Verified' : 'No Policy' %></span>
+          <span class="ho-badge"><%= policies.length > 0 ? `${policies.length} Policies` : 'No Policy' %></span>
         </div>
 
-        <% if (primaryPolicy) { %>
-          <% const remaining = Math.max(0, primaryPolicy.coverageAmount - usedCoverage); %>
-          <% const pct = Math.min(100, Math.max(0, (remaining / primaryPolicy.coverageAmount) * 100)); %>
+        <% if (policies && policies.length > 0) { %>
+          <div class="ho-ins-body">
+            <div class="ho-ins-split">
 
-          <div class="ho-ins-layout">
-            <!-- Luxury ID Card -->
-            <div class="ho-id-card">
-              <div class="ho-idc-top">
-                <strong><%= primaryPolicy.providerName %></strong>
-                <div class="ho-idc-icon">🏥</div>
-              </div>
-              <div class="ho-idc-mid">
-                <div class="ho-idc-label">Policy Number</div>
-                <div class="ho-idc-num"><%= primaryPolicy.policyNumber %></div>
-              </div>
-              <div class="ho-idc-bot">
-                <div>
-                  <div class="ho-idc-label">Cardholder</div>
-                  <div class="ho-idc-name"><%= primaryPolicy.policyHolderName %></div>
+              <!-- LEFT: CAROUSEL -->
+              <div class="ho-carousel-col">
+                <div class="ho-policies-slider" id="policiesSlider">
+                  <% policies.forEach((policy, index) => { %>
+                    <div class="ho-id-card <%= index === 0 ? 'active-card' : '' %>"
+                         tabindex="0"
+                         data-index="<%= index %>"
+                         data-provider="<%= policy.providerName %>"
+                         data-policynum="<%= policy.policyNumber %>"
+                         data-coverage="<%= policy.coverageAmount %>"
+                         data-used="<%= policy.usedCoverage %>"
+                         data-copay="<%= policy.coPayPercentage %>"
+                         data-network="<%= policy.networkHospitals || 'Standard' %>"
+                         onclick="switchPolicyDetails(this)"
+                         onkeypress="if(event.key === 'Enter') switchPolicyDetails(this)"
+                         title="Click to view full details">
+
+                      <span class="ho-idc-counter"><%= index + 1 %> / <%= policies.length %></span>
+
+                      <form action="/insurance/policies/<%= policy._id %>/delete" method="POST" class="ho-policy-delete-form" onclick="event.stopPropagation();" onsubmit="return confirm('Are you sure you want to completely remove this policy? All linked claim history will remain, but lose its policy reference.');">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="ho-policy-delete-btn" title="Delete Policy">🗑️</button>
+                      </form>
+
+                      <div class="ho-idc-top">
+                        <strong><%= policy.providerName %></strong>
+                      </div>
+                      <div class="ho-idc-mid">
+                        <div class="ho-idc-label">Policy Number</div>
+                        <div class="ho-idc-num"><%= policy.policyNumber %></div>
+                      </div>
+                      <div class="ho-idc-bot">
+                        <div>
+                          <div class="ho-idc-label">Cardholder</div>
+                          <div class="ho-idc-name"><%= policy.policyHolderName %></div>
+                        </div>
+                        <div class="ho-idc-valid">
+                          <div class="ho-idc-label">Valid Thru</div>
+                          <div class="ho-idc-name"><%= policy.validThru %></div>
+                        </div>
+                      </div>
+                    </div>
+                  <% }) %>
                 </div>
-                <div class="ho-idc-valid">
-                  <div class="ho-idc-label">Valid Thru</div>
-                  <div class="ho-idc-name"><%= primaryPolicy.validThru %></div>
+
+                <% if (policies.length > 1) { %>
+                  <div class="ho-carousel-dots" id="carouselDots">
+                    <% policies.forEach((policy, index) => { %>
+                      <button type="button" class="ho-carousel-dot <%= index === 0 ? 'active' : '' %>" data-dot-index="<%= index %>" aria-label="Go to policy <%= index + 1 %>" onclick="jumpToPolicy(<%= index %>)"></button>
+                    <% }) %>
+                  </div>
+                <% } %>
+              </div>
+
+              <!-- RIGHT: DETAIL CARD (real card now, not floating text) -->
+              <%
+                 const initialPolicy = policies[0];
+                 const initRemaining = Math.max(0, initialPolicy.coverageAmount - initialPolicy.usedCoverage);
+                 const initPct = Math.min(100, Math.max(0, (initRemaining / initialPolicy.coverageAmount) * 100));
+              %>
+              <div class="ho-detail-col">
+                <div class="ho-detail-card" id="coverageDetailsPane">
+                  <div class="ho-detail-headline">
+                    <strong id="det-provider"><%= initialPolicy.providerName %></strong>
+                    <span id="det-policynum">#<%= initialPolicy.policyNumber %></span>
+                  </div>
+
+                  <div>
+                    <div class="ho-ins-stat-row">
+                      <span class="ho-stat-label"><span class="dot"></span> Annual Coverage Limit</span>
+                      <span class="ho-stat-val" id="det-coverage">₹<%= initialPolicy.coverageAmount.toLocaleString('en-IN') %></span>
+                    </div>
+                    <div class="ho-progress-bg"><div class="ho-progress-fill" id="det-progress" style="width: <%= initPct %>%;"></div></div>
+                    <span id="det-remaining" class="ho-remaining-note">₹<%= initRemaining.toLocaleString('en-IN') %> remaining this year</span>
+                  </div>
+
+                  <div class="ho-ins-stat-row">
+                    <span class="ho-stat-label"><span class="dot" style="background: var(--ho-coral);"></span> Co-Pay</span>
+                    <span class="ho-stat-val" id="det-copay"><%= initialPolicy.coPayPercentage %>%</span>
+                  </div>
+
+                  <div class="ho-ins-stat-row">
+                    <span class="ho-stat-label"><span class="dot" style="background: var(--ho-teal-700);"></span> Network Hospitals</span>
+                    <span class="ho-stat-val" id="det-network" style="font-family: inherit;"><%= initialPolicy.networkHospitals || 'Standard' %></span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Plain English Breakdown -->
-            <div class="ho-ins-details">
-              <div>
-                <div class="ho-ins-stat-row">
-                  <span class="ho-stat-label"><span class="dot"></span> Annual Coverage Limit</span>
-                  <span class="ho-stat-val">₹<%= primaryPolicy.coverageAmount.toLocaleString('en-IN') %></span>
-                </div>
-                <div class="ho-progress-bg"><div class="ho-progress-fill" style="width: <%= pct %>%;"></div></div>
-                <span style="font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600; display: block; margin-top: 0.4rem;">₹<%= remaining.toLocaleString('en-IN') %> remaining this year</span>
-              </div>
-
-              <div class="ho-ins-stat-row">
-                <span class="ho-stat-label"><span class="dot" style="background: var(--ho-coral);"></span> Co-Pay</span>
-                <span class="ho-stat-val"><%= primaryPolicy.coPayPercentage %>%</span>
-              </div>
-
-              <div class="ho-ins-stat-row">
-                <span class="ho-stat-label"><span class="dot" style="background: var(--ho-teal-700);"></span> Network Hospitals</span>
-                <span class="ho-stat-val" style="font-family: inherit;"><%= primaryPolicy.networkHospitals %></span>
-              </div>
             </div>
           </div>
         <% } else { %>
@@ -344,16 +385,15 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
         <div class="ho-wallet-list">
           <% if (digitalIds && digitalIds.length > 0) { %>
             <% digitalIds.forEach(id => { %>
-              <div class="ho-wallet-item">
+              <div class="ho-wallet-item" tabindex="0" onclick="viewDigitalId('<%= id._id %>')" onkeypress="if(event.key === 'Enter') viewDigitalId('<%= id._id %>')">
                 <div class="ho-wi-left">
                   <div class="ho-wi-icon"><%= id.icon %></div>
                   <div class="ho-wi-text">
                     <strong><%= id.idType %></strong>
-                    <!-- Securely redacting the output for privacy compliance -->
                     <span><%= id.idNumber.replace(/.(?=.{4})/g, '•') %></span>
                   </div>
                 </div>
-                <form action="/insurance/digital-id/<%= id._id %>/delete" method="POST" style="margin: 0;">
+                <form action="/insurance/digital-id/<%= id._id %>/delete" method="POST" style="margin: 0;" onclick="event.stopPropagation();" onsubmit="return confirm('Remove this digital identity from your wallet?');">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                   <button type="submit" class="ho-wi-delete" title="Delete">🗑️</button>
                 </form>
@@ -391,7 +431,7 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
                     <span class="ho-cl-amount">₹<%= claim.claimAmount.toLocaleString('en-IN') %></span>
                     <span class="ho-cl-pill <%= statusClass %>"><%= claim.status %></span>
                   </div>
-                  <form action="/insurance/claims/<%= claim._id %>/delete" method="POST" style="margin: 0;">
+                  <form action="/insurance/claims/<%= claim._id %>/delete" method="POST" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete this claim record?');">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button type="submit" class="ho-cl-delete" title="Delete">❌</button>
                   </form>
@@ -414,19 +454,19 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
         </div>
 
         <div class="ho-act-grid">
-          <div class="ho-act-card" onclick="alert('Feature planned for next phase.')">
+          <div class="ho-act-card" tabindex="0" onclick="alert('Download E-Card feature planned for the next phase.')">
             <div class="ho-act-icon">📥</div>
             <strong>Download E-Card</strong>
           </div>
-          <div class="ho-act-card" onclick="alert('Feature planned for next phase.')">
+          <div class="ho-act-card" tabindex="0" onclick="alert('Secure Sharing feature planned for the next phase.')">
             <div class="ho-act-icon">🏥</div>
             <strong>Share with Hospital</strong>
           </div>
-          <div class="ho-act-card" onclick="alert('Feature planned for next phase.')">
+          <div class="ho-act-card" tabindex="0" onclick="alert('Policy Renewal feature planned for the next phase.')">
             <div class="ho-act-icon">🔄</div>
             <strong>Renew Policy</strong>
           </div>
-          <div class="ho-act-card" style="border-color: var(--ho-coral-soft);" onclick="alert('Feature planned for next phase.')">
+          <div class="ho-act-card" tabindex="0" style="border-color: var(--ho-coral-soft);" onclick="alert('Contact Support interface planned for the next phase.')">
             <div class="ho-act-icon">💬</div>
             <strong>Contact Support</strong>
           </div>
@@ -441,7 +481,22 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 
 <!-- ================= MODALS ================= -->
 
-<!-- ADD POLICY MODAL -->
+<div class="ho-modal" id="idDetailModal">
+  <div class="ho-modal-box" style="max-width: 400px; text-align: center;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+      <h3 style="font-size:1.3rem; font-weight:800; color:var(--ho-teal-900);">Digital ID Details</h3>
+      <button onclick="closeModal('idDetailModal')" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color: var(--ho-text-muted);">&times;</button>
+    </div>
+    <div id="detailIcon" style="font-size: 3rem; margin-bottom: 1rem; background: var(--ho-bg-airy); width: 80px; height: 80px; margin: 0 auto 1rem; border-radius: 50%; display: flex; align-items: center; justify-content: center;"></div>
+    <h4 id="detailType" style="font-size: 1.2rem; color: var(--ho-teal-900); margin-bottom: 0.5rem; font-weight: 800;"></h4>
+    <div style="background: #f8faf9; border: 1px solid var(--ho-glass-border-subtle); padding: 1.4rem 1rem; border-radius: 12px; margin-bottom: 1.8rem;">
+      <div style="font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 800; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.05em;">Document Number</div>
+      <div id="detailNumber" style="font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; font-weight: 800; color: var(--ho-text-main); word-break: break-all;"></div>
+    </div>
+    <button class="ho-btn-ghost" style="width: 100%;" onclick="closeModal('idDetailModal')">Close</button>
+  </div>
+</div>
+
 <div class="ho-modal" id="addPolicyModal">
   <div class="ho-modal-box">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
@@ -467,7 +522,6 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   </div>
 </div>
 
-<!-- ADD ID MODAL -->
 <div class="ho-modal" id="addIdModal">
   <div class="ho-modal-box">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
@@ -484,7 +538,6 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   </div>
 </div>
 
-<!-- ADD CLAIM MODAL -->
 <div class="ho-modal" id="addClaimModal">
   <div class="ho-modal-box">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
@@ -524,6 +577,79 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 <script>
   function openModal(id) { document.getElementById(id).classList.add('active'); }
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+  function updateDots(index) {
+    document.querySelectorAll('.ho-carousel-dot').forEach(d => {
+      d.classList.toggle('active', Number(d.dataset.dotIndex) === index);
+    });
+  }
+
+  function switchPolicyDetails(cardElement) {
+    document.querySelectorAll('.ho-id-card').forEach(c => c.classList.remove('active-card'));
+    cardElement.classList.add('active-card');
+    cardElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    updateDots(Number(cardElement.dataset.index));
+
+    const pane = document.getElementById('coverageDetailsPane');
+    pane.classList.remove('switching');
+    // force reflow so the animation can re-trigger on repeated clicks
+    void pane.offsetWidth;
+    pane.classList.add('switching');
+
+    const provider = cardElement.dataset.provider;
+    const policynum = cardElement.dataset.policynum;
+    const coverage = parseFloat(cardElement.dataset.coverage) || 0;
+    const used = parseFloat(cardElement.dataset.used) || 0;
+    const copay = parseFloat(cardElement.dataset.copay) || 0;
+    const network = cardElement.dataset.network;
+
+    const remaining = Math.max(0, coverage - used);
+    const pct = coverage > 0 ? Math.min(100, Math.max(0, (remaining / coverage) * 100)) : 0;
+
+    document.getElementById('det-provider').innerText = provider;
+    document.getElementById('det-policynum').innerText = '#' + policynum;
+    document.getElementById('det-coverage').innerText = '₹' + coverage.toLocaleString('en-IN');
+    document.getElementById('det-progress').style.width = pct + '%';
+    document.getElementById('det-remaining').innerText = '₹' + remaining.toLocaleString('en-IN') + ' remaining this year';
+    document.getElementById('det-copay').innerText = copay + '%';
+    document.getElementById('det-network').innerText = network;
+  }
+
+  function jumpToPolicy(index) {
+    const card = document.querySelector('.ho-id-card[data-index="' + index + '"]');
+    if (card) switchPolicyDetails(card);
+  }
+
+  async function viewDigitalId(id) {
+    try {
+      const typeEl = document.getElementById('detailType');
+      const numEl = document.getElementById('detailNumber');
+      const iconEl = document.getElementById('detailIcon');
+
+      typeEl.innerText = "Loading...";
+      numEl.innerText = "Retrieving securely...";
+      iconEl.innerText = "⏳";
+      openModal('idDetailModal');
+
+      const res = await fetch(`/insurance/digital-id/${id}`);
+      if (!res.ok) throw new Error('Failed to retrieve card details');
+
+      const data = await res.json();
+      typeEl.innerText = data.idType;
+      numEl.innerText = data.idNumber;
+      iconEl.innerText = data.icon || '🪪';
+    } catch (err) {
+      document.getElementById('detailType').innerText = "Error Loading ID";
+      document.getElementById('detailNumber').innerText = "Details unavailable.";
+      document.getElementById('detailIcon').innerText = "⚠️";
+    }
+  }
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      document.querySelectorAll('.ho-modal.active').forEach(modal => closeModal(modal.id));
+    }
+  });
 </script>
 
 </body>

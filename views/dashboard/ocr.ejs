@@ -16,6 +16,7 @@
       --ho-text-muted: #4e6b63;
       --ho-danger: #d94b4b;
       --ho-green: #27ae60;
+      --ho-warning: #f39c12;
       
       --ho-glass-clear: rgba(255, 255, 255, 0.48);
       --ho-glass-solid: rgba(255, 255, 255, 0.88);
@@ -28,6 +29,9 @@
       --ho-shadow-glass: 0 20px 50px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
     }
 
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; background-color: var(--ho-bg-airy); color: var(--ho-text-main); font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
+
     .ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
     .ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
     .ho-orb-1 { width: 550px; height: 550px; background: #76d7c4; top: -100px; left: -100px; }
@@ -39,11 +43,140 @@
       100% { transform: translate(50px, 60px) scale(1.15); } 
     }
 
+    .ho-app-layout { display: flex; width: 100vw; min-height: 100vh; position: relative; z-index: 10; }
+    .ho-main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow-y: auto; }
+    .ho-topbar { display: flex; justify-content: space-between; align-items: center; padding: 2.2rem 3rem 1.2rem; flex-shrink: 0; }
+    .ho-topbar h1 { font-weight: 800; font-size: 1.8rem; color: var(--ho-teal-900); letter-spacing: -0.5px; }
+    .ho-topbar p { font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 500; margin-top: 0.2rem; }
+    
+    .ho-btn-primary { 
+      background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); 
+      color: #fff; border: none; border-radius: 999px; padding: 0.75rem 1.5rem; 
+      font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all 0.2s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; text-decoration: none;
+    }
+    .ho-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(13, 122, 110, 0.25); }
+    .ho-btn-ghost {
+      background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border); 
+      border-radius: 999px; padding: 0.5rem 1rem; font-weight: 700; font-size: 0.82rem; 
+      color: var(--ho-teal-900); cursor: pointer; transition: all 0.2s ease; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 0.3rem;
+    }
+    .ho-btn-ghost:hover { background: #fff; border-color: var(--ho-teal-600); }
+
+    .ho-workspace-grid { 
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.8rem; 
+      padding: 0.5rem 3rem 2.5rem; flex: 1 0 auto; 
+    }
+    .ho-panel { 
+      background: var(--ho-glass-clear); backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl); 
+      padding: 1.8rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass); height: calc(100vh - 180px); min-height: 550px;
+    }
+    .ho-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-shrink: 0; }
+    .ho-panel-header h2 { font-weight: 800; font-size: 1.25rem; color: var(--ho-teal-900); }
+    .ho-badge { 
+      background: #fff; border: 1px solid var(--ho-glass-border-subtle); padding: 0.35rem 0.85rem; 
+      border-radius: 999px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ho-teal-700); 
+    }
+
+    .ho-doc-viewer { flex: 1; border-radius: var(--ho-radius-lg); overflow: hidden; background: rgba(255,255,255,0.7); border: 1px solid var(--ho-glass-border-subtle); position: relative; }
+    .ho-doc-viewer iframe { width: 100%; height: 100%; border: none; }
+
+    .ho-tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--ho-glass-border-subtle); padding-bottom: 0.8rem; margin-bottom: 1.2rem; flex-shrink: 0; }
+    .ho-tab-btn { 
+      background: transparent; border: none; padding: 0.5rem 1rem; border-radius: 999px; 
+      font-weight: 700; font-size: 0.84rem; color: var(--ho-text-muted); cursor: pointer; transition: 0.2s ease;
+    }
+    .ho-tab-btn.active { background: #fff; color: var(--ho-teal-900); box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
+
+    .ho-tab-content { display: none; flex: 1; flex-direction: column; min-height: 0; }
+    .ho-tab-content.active { display: flex; }
+    .ho-scroll-container { flex: 1; overflow-y: auto; padding-right: 0.5rem; }
+    .ho-scroll-container::-webkit-scrollbar { width: 5px; }
+    .ho-scroll-container::-webkit-scrollbar-thumb { background: rgba(13, 122, 110, 0.2); border-radius: 999px; }
+
+    .ho-data-card { 
+      background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: var(--ho-radius-md); 
+      padding: 1.1rem; margin-bottom: 0.8rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02); 
+    }
+    .ho-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; gap: 0.8rem; }
+    .ho-card-top input[type="text"] { font-size: 0.95rem; font-weight: 800; color: var(--ho-teal-900); border: 1px solid transparent; border-radius: 6px; padding: 2px 6px; outline: none; width: 65%; }
+    .ho-card-top input[type="text"]:focus { border-color: var(--ho-teal-600); background: #fdfefe; }
+    .ho-tag { font-size: 0.72rem; font-weight: 800; background: rgba(13, 122, 110, 0.08); color: var(--ho-teal-700); padding: 4px 10px; border-radius: 999px; text-transform: uppercase; text-align: right; }
+
+    .ho-card-mid label { display: block; font-size: 0.72rem; font-weight: 800; color: var(--ho-text-muted); text-transform: uppercase; margin-bottom: 0.3rem; }
+    .ho-card-mid textarea { 
+      width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0.6rem; 
+      font-family: inherit; font-size: 0.95rem; font-weight: 600; color: var(--ho-text-main); resize: vertical; min-height: 48px; outline: none; 
+    }
+    .ho-card-mid textarea:focus { border-color: var(--ho-teal-600); }
+
+    .ho-card-bot { display: flex; align-items: center; justify-content: space-between; margin-top: 0.8rem; gap: 0.6rem; flex-wrap: wrap; }
+    .ho-meta-group { display: flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; font-weight: 700; color: var(--ho-text-muted); }
+    .ho-meta-group input { width: 75px; padding: 3px 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.82rem; font-weight: 600; outline: none; }
+    .ho-meta-group input:focus { border-color: var(--ho-teal-600); }
+    .ho-status-pill { font-size: 0.7rem; font-weight: 800; padding: 3px 9px; border-radius: 6px; text-transform: uppercase; }
+    .ho-status-pill.good { background: rgba(39, 174, 96, 0.15); color: var(--ho-green); }
+    .ho-status-pill.warn { background: rgba(243, 156, 18, 0.15); color: var(--ho-warning); }
+
+    .ho-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: var(--ho-text-muted); padding: 2rem; }
+    .ho-empty-state span { font-size: 3rem; margin-bottom: 0.8rem; opacity: 0.6; }
+
+    .ho-ai-box { background: rgba(255, 255, 255, 0.88); border: 1px solid var(--ho-mint-400); border-radius: var(--ho-radius-lg); padding: 1.5rem; }
+    .ho-ai-box h3 { font-size: 1.05rem; font-weight: 800; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem; }
+
+    .ho-raw-text { 
+      background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: var(--ho-radius-md); 
+      padding: 1.2rem; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.6; 
+      color: var(--ho-text-main); white-space: pre-wrap; word-break: break-word; min-height: 200px;
+    }
+
+    .ho-vault-card { 
+      background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: var(--ho-radius-md); 
+      padding: 1rem 1.2rem; margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s;
+    }
+    .ho-vault-card.active { border-color: var(--ho-teal-600); background: rgba(223, 241, 236, 0.4); }
+    .ho-vault-info strong { display: block; font-size: 0.92rem; color: var(--ho-teal-900); margin-bottom: 0.2rem; }
+    .ho-vault-info span { font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600; }
+    .ho-btn-delete { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 4px; border-radius: 6px; transition: 0.2s; }
+    .ho-btn-delete:hover { background: var(--ho-coral-soft); transform: scale(1.1); }
+
+    .ho-modal { position: fixed; inset: 0; background: rgba(11, 94, 85, 0.45); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 1.2rem; }
+    .ho-modal-box { background: #fff; border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl); padding: 2.2rem; width: 100%; max-width: 520px; box-shadow: 0 30px 60px rgba(0,0,0,0.2); }
+    .ho-modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .ho-modal-head h3 { font-size: 1.35rem; font-weight: 800; color: var(--ho-teal-900); }
+    .ho-modal-close { background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--ho-text-muted); line-height: 1; }
+    
+    .ho-dropzone { border: 2px dashed rgba(13, 122, 110, 0.35); border-radius: var(--ho-radius-lg); padding: 3rem 1.5rem; text-align: center; cursor: pointer; transition: 0.2s; background: var(--ho-bg-airy); }
+    .ho-dropzone:hover { border-color: var(--ho-teal-600); background: #fff; }
+
+    /* CSS Spinner for Upload Animation */
+    .ho-spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(13, 122, 110, 0.2);
+      border-left-color: var(--ho-teal-600);
+      border-radius: 50%;
+      animation: hoSpin 1s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes hoSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .ho-mobile-upload-card { display: none; }
     @media (max-width: 1024px) {
-      body .ho-main-content {
-         margin-top: 5.5rem;
-         padding: 0 !important; 
+      body .ho-main-content { margin-top: 5.5rem; padding: 0 !important; }
+      .ho-workspace-grid { grid-template-columns: 1fr; padding: 1rem 1.25rem 2.5rem; }
+      .ho-panel { height: auto; min-height: 480px; }
+      .ho-mobile-upload-card { 
+        display: flex; flex-direction: column; align-items: center; text-align: center;
+        background: #fff; border: 1.5px dashed var(--ho-teal-600); border-radius: var(--ho-radius-lg); 
+        padding: 1.5rem; margin-bottom: 1rem; cursor: pointer;
       }
+      .ho-mobile-upload-card .icon-wrap { font-size: 2rem; margin-bottom: 0.4rem; }
+      .ho-mobile-upload-card h3 { font-size: 1.1rem; color: var(--ho-teal-900); font-weight: 800; }
+      .ho-mobile-upload-card p { font-size: 0.8rem; color: var(--ho-text-muted); margin: 0.3rem 0 1rem; }
+      .ho-mobile-upload-card button { background: var(--ho-teal-700); color: #fff; border: none; border-radius: 999px; padding: 0.6rem 1.4rem; font-weight: 700; font-size: 0.85rem; }
     }
   </style>
 </head>
@@ -52,11 +185,9 @@
 <%- include('../partials/ambient') %>
 
 <div class="ho-app-layout">
-  
   <%- include('../partials/sidebar') %>
 
   <main class="ho-main-content">
-    
     <header class="ho-topbar">
       <div>
         <h1>Document <b style="color: #e07a68;">Intelligence</b> Workspace</h1>
@@ -68,28 +199,29 @@
     </header>
 
     <div class="ho-workspace-grid">
-      
-      <!-- MOBILE-ONLY UPLOAD CARD -->
+      <!-- MOBILE UPLOAD CARD -->
       <div class="ho-mobile-upload-card" onclick="openUpload()">
         <div class="icon-wrap">📄</div>
         <h3>Add Medical Document</h3>
-        <p>Upload a lab report or prescription for instant OCR & AI Extraction.</p>
-        <button>Select File to Upload</button>
+        <p>Supported: PDF, PNG, JPG, WEBP (Max 50MB)</p>
+        <button type="button">Select File to Upload</button>
       </div>
 
       <!-- LEFT PANE: SECURE DOCUMENT VIEWER -->
       <section class="ho-panel">
         <div class="ho-panel-header">
           <h2>Original Source</h2>
-          <span class="ho-badge"><%= locals.latestReport && latestReport.originalFileName ? latestReport.originalFileName : 'No File Active' %></span>
+          <span class="ho-badge"><%= (locals.latestReport && latestReport.originalFileName) ? latestReport.originalFileName : 'No File Active' %></span>
         </div>
 
         <div class="ho-doc-viewer">
           <% if (locals.latestReport && latestReport._id) { %>
-            <% if (latestReport.mimeType === 'application/pdf' || latestReport.originalFileName.toLowerCase().endsWith('.pdf')) { %>
-              <iframe src="/reports/<%= latestReport._id %>/file#toolbar=0"></iframe>
+            <% if (latestReport.mimeType === 'application/pdf' || (latestReport.originalFileName && latestReport.originalFileName.toLowerCase().endsWith('.pdf'))) { %>
+              <iframe src="/reports/<%= latestReport._id %>/file#toolbar=0" title="PDF Document Viewer"></iframe>
             <% } else { %>
-              <img src="/reports/<%= latestReport._id %>/file" alt="Report Preview" style="max-width: 100%; max-height: 100%; padding: 0.8rem; border-radius: var(--ho-radius-md); object-fit: contain;">
+              <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: auto; padding: 1rem;">
+                <img src="/reports/<%= latestReport._id %>/file" alt="Report Preview" style="max-width: 100%; max-height: 100%; border-radius: var(--ho-radius-md); object-fit: contain; box-shadow: 0 4px 15px rgba(0,0,0,0.06);">
+              </div>
             <% } %>
           <% } else { %>
             <div class="ho-empty-state">
@@ -103,17 +235,33 @@
 
       <!-- RIGHT PANE: INTELLIGENCE CONSOLE -->
       <section class="ho-panel">
+        <%
+          const repStatus = (locals.latestReport && latestReport.status) ? latestReport.status.toLowerCase() : 'standby';
+          let statusBadgeColor = 'var(--ho-teal-700)';
+          if (repStatus === 'completed' || repStatus === 'extracted') statusBadgeColor = 'var(--ho-green)';
+          if (repStatus === 'needs_review') statusBadgeColor = 'var(--ho-warning)';
+          if (repStatus === 'failed') statusBadgeColor = 'var(--ho-danger)';
+
+          const paramsList = (locals.latestReport && latestReport.extractedData && Array.isArray(latestReport.extractedData.parameters)) 
+            ? latestReport.extractedData.parameters 
+            : [];
+          
+          const rawDocText = (locals.latestReport && latestReport.rawText && latestReport.rawText.trim().length > 0)
+            ? latestReport.rawText
+            : ((locals.latestReport && latestReport.extractedData && latestReport.extractedData.rawText) ? latestReport.extractedData.rawText : '');
+        %>
+
         <div class="ho-panel-header">
           <h2>Intelligence Console</h2>
-          <span class="ho-badge" style="background: var(--ho-teal-700); color: #fff; border:none;">
-            Status: <%= locals.latestReport && latestReport.status ? latestReport.status.toUpperCase() : 'STANDBY' %>
+          <span class="ho-badge" style="background: <%= statusBadgeColor %>; color: #fff; border: none;">
+            Status: <%= repStatus.toUpperCase() %>
           </span>
         </div>
 
         <!-- Glass Tabs -->
         <div class="ho-tabs">
           <button class="ho-tab-btn active" onclick="switchTab('ho-tab-findings', this)">
-            🔬 Findings (<%= locals.latestReport && latestReport.extractedData && latestReport.extractedData.parameters ? latestReport.extractedData.parameters.length : 0 %>)
+            🔬 Findings (<%= paramsList.length %>)
           </button>
           <button class="ho-tab-btn" onclick="switchTab('ho-tab-ai', this)">🤖 AI Summary</button>
           <button class="ho-tab-btn" onclick="switchTab('ho-tab-raw', this)">📝 Raw Text</button>
@@ -123,63 +271,81 @@
         <!-- TAB 1: FINDINGS -->
         <div id="ho-tab-findings" class="ho-tab-content active">
           <% if (locals.latestReport) { %>
-            <form class="ho-findings-form" action="/reports/update/<%= latestReport._id %>" method="POST">
-              
-              <div class="ho-scroll-container">
-                <div style="margin-bottom: 1.2rem; font-size: 0.82rem; color: var(--ho-teal-900); background: rgba(223, 241, 236, 0.9); padding: 12px 16px; border-radius: 12px; font-weight: 700; display: flex; gap: 0.6rem; align-items: center;">
-                  <span style="font-size: 1.1rem;">✏️</span> Review findings below. Tap any field to edit before saving.
+            
+            <% if (repStatus === 'needs_review' || repStatus === 'failed') { %>
+              <div style="background: rgba(254, 243, 199, 0.85); border: 1px solid var(--ho-warning); padding: 0.9rem 1.1rem; border-radius: 12px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap;">
+                <div style="font-size: 0.84rem; color: #92400e; font-weight: 600;">
+                  ⚠️ <%= latestReport.failureMessage || "Document text was extracted, but clinical parameters require review or retry." %>
                 </div>
+                <form action="/reports/<%= latestReport._id %>/reprocess" method="POST" style="margin: 0;">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="ho-btn-ghost" style="padding: 0.4rem 0.9rem; font-size: 0.78rem;">⚡ Reprocess Document</button>
+                </form>
+              </div>
+            <% } %>
 
-                <% if (latestReport.extractedData && latestReport.extractedData.parameters && latestReport.extractedData.parameters.length > 0) { %>
-                  <% latestReport.extractedData.parameters.forEach(function(param, index) { %>
+            <form class="ho-findings-form" action="/reports/update/<%= latestReport._id %>" method="POST" style="display:flex; flex-direction:column; flex:1; min-height:0;">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+              <div class="ho-scroll-container">
+                <% if (paramsList.length > 0) { %>
+                  <div style="margin-bottom: 1rem; font-size: 0.82rem; color: var(--ho-teal-900); background: rgba(223, 241, 236, 0.9); padding: 10px 14px; border-radius: 10px; font-weight: 700; display: flex; gap: 0.5rem; align-items: center;">
+                    <span>✏️</span> Review findings below. Tap any field to edit before saving.
+                  </div>
+
+                  <% paramsList.forEach(function(param, index) { 
+                      const pName = param.name || param.testName || param.test || 'Finding';
+                      const pVal = param.value !== undefined ? param.value : (param.result || param.val || '');
+                      const pUnit = param.unit || param.units || '';
+                      const pRef = param.referenceRange || param.refRange || 'N/A';
+                      const pStatus = param.status || 'Standard';
+                      const pClass = param.statusClass || (pStatus.toLowerCase().includes('high') || pStatus.toLowerCase().includes('low') ? 'warn' : 'good');
+                  %>
                     <div class="ho-data-card">
-                      <input type="hidden" name="params[<%= index %>][status]" value="<%= param.status || 'Optimal' %>">
-                      <input type="hidden" name="params[<%= index %>][statusClass]" value="<%= param.statusClass || 'good' %>">
+                      <input type="hidden" name="params[<%= index %>][status]" value="<%= pStatus %>">
+                      <input type="hidden" name="params[<%= index %>][statusClass]" value="<%= pClass %>">
 
                       <div class="ho-card-top">
-                        <input type="text" name="params[<%= index %>][name]" value="<%= param.name %>" placeholder="Finding Name">
-                        <input type="text" name="params[<%= index %>][category]" value="<%= param.category || 'Observation' %>" class="ho-tag" style="border:none;">
+                        <input type="text" name="params[<%= index %>][name]" value="<%= pName %>" placeholder="Finding Name" required>
+                        <input type="text" name="params[<%= index %>][category]" value="<%= param.category || 'Clinical' %>" class="ho-tag" style="border:none;">
                       </div>
 
                       <div class="ho-card-mid">
                         <label>Measured Value / Observation:</label>
-                        <textarea name="params[<%= index %>][value]"><%= param.value %></textarea>
+                        <textarea name="params[<%= index %>][value]" required><%= pVal %></textarea>
                       </div>
 
                       <div class="ho-card-bot">
-                        <div class="ho-meta-group"><span>Unit:</span><input type="text" name="params[<%= index %>][unit]" value="<%= param.unit %>"></div>
-                        <div class="ho-meta-group"><span>Ref:</span><input type="text" name="params[<%= index %>][referenceRange]" value="<%= param.referenceRange %>"></div>
-                        <span class="ho-status-pill <%= param.statusClass || 'good' %>"><%= param.status || 'Standard' %></span>
+                        <div class="ho-meta-group"><span>Unit:</span><input type="text" name="params[<%= index %>][unit]" value="<%= pUnit %>"></div>
+                        <div class="ho-meta-group"><span>Ref:</span><input type="text" name="params[<%= index %>][referenceRange]" value="<%= pRef %>"></div>
+                        <span class="ho-status-pill <%= pClass %>"><%= pStatus %></span>
                       </div>
                     </div>
                   <% }) %>
+
+                  <button type="submit" class="ho-btn-primary" style="width: 100%; margin-top: 1rem; padding: 0.85rem; font-size: 0.92rem; flex-shrink: 0;">Save & Sync Corrections</button>
+
                 <% } else { %>
-                  <div class="ho-data-card">
-                    <input type="hidden" name="params[0][status]" value="Attention">
-                    <input type="hidden" name="params[0][statusClass]" value="warn">
-                    <div class="ho-card-top">
-                      <input type="text" name="params[0][name]" value="Scan Result" placeholder="Finding Name">
-                      <input type="text" name="params[0][category]" value="General" class="ho-tag" style="border:none;">
-                    </div>
-                    <div class="ho-card-mid">
-                      <label>Measured Value / Observation:</label>
-                      <textarea name="params[0][value]"><%= latestReport.extractedData ? latestReport.extractedData.rawText : 'Document uploaded successfully.' %></textarea>
-                    </div>
-                    <div class="ho-card-bot">
-                      <div class="ho-meta-group"><span>Unit:</span><input type="text" name="params[0][unit]" value="text"></div>
-                      <div class="ho-meta-group"><span>Ref:</span><input type="text" name="params[0][referenceRange]" value="Review"></div>
-                      <span class="ho-status-pill warn">Review</span>
-                    </div>
+                  <div class="ho-empty-state">
+                    <span style="font-size: 2.8rem;">🔬</span>
+                    <h3 style="color: var(--ho-teal-900); font-weight: 800; font-size: 1.15rem; margin-top: 0.4rem;">No Structured Parameters Extracted</h3>
+                    <p style="font-size: 0.85rem; max-width: 320px; line-height: 1.5; margin: 0.5rem 0 1.2rem;">
+                      <%= rawDocText ? "OCR text was preserved successfully, but individual parameters were not isolated." : "Upload a clean lab report or prescription to extract metrics." %>
+                    </p>
+                    <form action="/reports/<%= latestReport._id %>/reprocess" method="POST" style="margin: 0;">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <button type="submit" class="ho-btn-ghost">⚡ Retry Extraction</button>
+                    </form>
                   </div>
                 <% } %>
               </div>
-              
-              <button type="submit" class="ho-btn-primary" style="width: 100%; margin-top: 1.2rem; padding: 1rem; font-size: 0.95rem; flex-shrink: 0;">Save & Sync Corrections</button>
             </form>
+
           <% } else { %>
-            <div class="ho-empty-state" style="margin-top: 2rem;">
-              <h3 style="color: var(--ho-teal-900); font-weight: 800; font-size: 1.2rem;">No Extracted Data</h3>
-              <p style="font-size: 0.9rem; margin-top: 0.5rem;">Upload a report to trigger automated parsing.</p>
+            <div class="ho-empty-state">
+              <span>📄</span>
+              <h3 style="color: var(--ho-teal-900); font-weight: 800; font-size: 1.2rem;">No Active Document</h3>
+              <p style="font-size: 0.9rem; margin-top: 0.5rem;">Upload a report to view and edit findings.</p>
             </div>
           <% } %>
         </div>
@@ -189,17 +355,17 @@
           <div class="ho-scroll-container">
             <div class="ho-ai-box">
               <h3><span>✨</span> Medical Analyst Summary</h3>
-              <p style="line-height: 1.6; margin-top: 0.5rem;">
-                <%= (locals.latestReport && latestReport.aiExplanation) ? latestReport.aiExplanation : 'Clinical summaries will appear here once your document is analyzed.' %>
+              <p style="line-height: 1.6; margin-top: 0.5rem; font-size: 0.9rem; color: var(--ho-text-main);">
+                <%= (locals.latestReport && latestReport.aiExplanation) ? latestReport.aiExplanation : 'Clinical summary will appear here once the document is analyzed.' %>
               </p>
               <% if (locals.latestReport && latestReport._id) { %>
-                <a href="/ai-assistant?reportId=<%= latestReport._id %>" class="ho-btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1.2rem; padding: 0.7rem 1.4rem; font-size: 0.85rem; text-decoration: none; width: fit-content;">
+                <a href="/ai-assistant?reportId=<%= latestReport._id %>" class="ho-btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1.2rem; padding: 0.65rem 1.3rem; font-size: 0.82rem; text-decoration: none; width: fit-content;">
                   💬 Ask AI About This Report
                 </a>
               <% } %>
             </div>
-            <div style="background: rgba(255, 255, 255, 0.8); border: 1.5px dashed rgba(13, 122, 110, 0.3); border-radius: var(--ho-radius-md); padding: 1.2rem; font-size: 0.82rem; color: var(--ho-text-muted); line-height: 1.5; margin-top: 1rem;">
-              🛡️ <strong>Decision Support Notice:</strong> HealthOrbit provides automated summaries. AI observations do not replace professional physician diagnosis or medical evaluation.
+            <div style="background: rgba(255, 255, 255, 0.8); border: 1.5px dashed rgba(13, 122, 110, 0.25); border-radius: var(--ho-radius-md); padding: 1.1rem; font-size: 0.82rem; color: var(--ho-text-muted); line-height: 1.5; margin-top: 1.2rem;">
+              🛡️ <strong>Decision Support Notice:</strong> HealthOrbit generates observational summaries. These findings do not replace physician assessment, clinical diagnosis, or formal medical care.
             </div>
           </div>
         </div>
@@ -207,23 +373,37 @@
         <!-- TAB 3: RAW TEXT -->
         <div id="ho-tab-raw" class="ho-tab-content">
           <div class="ho-scroll-container">
-            <div class="ho-raw-text"><%= (locals.latestReport && latestReport.extractedData && latestReport.extractedData.rawText) ? latestReport.extractedData.rawText : 'No raw text available for this document.' %></div>
+            <% if (rawDocText) { %>
+              <div class="ho-raw-text"><%= rawDocText %></div>
+            <% } else { %>
+              <div class="ho-empty-state">
+                <span>📝</span>
+                <p style="font-weight: 600;">No raw OCR text could be parsed from this document.</p>
+                <% if (locals.latestReport) { %>
+                  <form action="/reports/<%= latestReport._id %>/reprocess" method="POST" style="margin-top: 1rem;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="ho-btn-ghost">⚡ Retry OCR Pass</button>
+                  </form>
+                <% } %>
+              </div>
+            <% } %>
           </div>
         </div>
 
-        <!-- TAB 4: VAULT (WITH DELETE) -->
+        <!-- TAB 4: VAULT (DOCUMENT HISTORY) -->
         <div id="ho-tab-vault" class="ho-tab-content">
           <div class="ho-scroll-container">
             <% if (locals.reports && reports.length > 0) { %>
               <% reports.forEach(function(rep) { %>
-                <div class="ho-vault-card <%= locals.latestReport && latestReport._id.toString() === rep._id.toString() ? 'active' : '' %>">
-                  <a href="/ocr?reportId=<%= rep._id %>" style="text-decoration:none; flex:1; min-width:0;">
+                <div class="ho-vault-card <%= (locals.latestReport && latestReport._id.toString() === rep._id.toString()) ? 'active' : '' %>">
+                  <a href="/ocr?reportId=<%= rep._id %>" style="text-decoration: none; flex: 1; min-width: 0;">
                     <div class="ho-vault-info">
                       <strong>📄 <%= rep.originalFileName %></strong>
-                      <span><%= new Date(rep.createdAt).toLocaleDateString() %> • <%= rep.extractedData && rep.extractedData.parameters ? rep.extractedData.parameters.length : 0 %> Findings</span>
+                      <span><%= new Date(rep.createdAt).toLocaleDateString() %> • <%= (rep.extractedData && Array.isArray(rep.extractedData.parameters)) ? rep.extractedData.parameters.length : 0 %> Findings</span>
                     </div>
                   </a>
-                  <form action="/reports/delete/<%= rep._id %>" method="POST" style="margin:0; padding-left: 1rem;">
+                  <form action="/reports/delete/<%= rep._id %>" method="POST" style="margin: 0; padding-left: 0.8rem;" onsubmit="return confirm('Delete this medical report? Linked health measurements will also be removed.');">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button type="submit" class="ho-btn-delete" title="Delete Report">🗑️</button>
                   </form>
                 </div>
@@ -233,14 +413,11 @@
             <% } %>
           </div>
         </div>
-
       </section>
-
     </div>
 
     <!-- UNIVERSAL FOOTER -->
     <%- include('../partials/footer') %>
-
   </main>
 </div>
 
@@ -249,14 +426,32 @@
   <div class="ho-modal-box" onclick="event.stopPropagation()">
     <div class="ho-modal-head">
       <h3>Upload Medical Report</h3>
-      <button class="ho-modal-close" onclick="closeUpload()">×</button>
+      <button type="button" class="ho-modal-close" onclick="closeUpload()">×</button>
     </div>
     <form id="hoModalUploadForm" action="/reports/upload" method="POST" enctype="multipart/form-data">
-      <div class="ho-dropzone" onclick="document.getElementById('hoModalFileInput').click();">
-        <span style="font-size: 3.5rem; display: block; margin-bottom: 1rem;">☁️</span>
-        <strong style="font-size: 1.15rem; color: var(--ho-teal-900);">Tap to select document</strong>
-        <p style="font-size: 0.85rem; color: var(--ho-text-muted); margin-top: 0.6rem; font-weight: 600;">Supported: PDF, PNG, JPG (Max 25MB)</p>
-        <input type="file" id="hoModalFileInput" name="reportFile" accept=".pdf,.png,.jpg,.jpeg" style="display:none;" onchange="document.getElementById('hoModalUploadForm').submit();" required>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      
+      <!-- Modified Dropzone with Idle and Uploading States -->
+      <div class="ho-dropzone" id="hoDropzoneTarget" onclick="document.getElementById('hoModalFileInput').click();">
+        
+        <!-- Idle State -->
+        <div id="hoUploadIdle">
+          <span style="font-size: 3.5rem; display: block; margin-bottom: 1rem;">☁️</span>
+          <strong style="font-size: 1.15rem; color: var(--ho-teal-900);">Tap to select document</strong>
+          <p style="font-size: 0.85rem; color: var(--ho-text-muted); margin-top: 0.5rem; font-weight: 600;">
+            Supported: PDF, PNG, JPG, WEBP (Max 50MB)
+          </p>
+        </div>
+
+        <!-- Active Uploading State -->
+        <div id="hoUploadActive" style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <div class="ho-spinner"></div>
+          <strong style="font-size: 1.15rem; color: var(--ho-teal-900); margin-top: 1rem;">Uploading & Processing...</strong>
+          <p style="font-size: 0.85rem; color: var(--ho-text-muted); margin-top: 0.5rem; font-weight: 600;">Please wait, AI is extracting data.</p>
+        </div>
+
+        <!-- Hidden File Input -->
+        <input type="file" id="hoModalFileInput" name="reportFile" accept=".pdf,.png,.jpg,.jpeg,.webp" style="display:none;" onchange="handleFileUpload()" required>
       </div>
     </form>
   </div>
@@ -266,14 +461,36 @@
   function switchTab(tabId, btn) {
     document.querySelectorAll('.ho-tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.ho-tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    btn.classList.add('active');
+    const target = document.getElementById(tabId);
+    if (target) target.classList.add('active');
+    if (btn) btn.classList.add('active');
   }
 
-  function openUpload() { document.getElementById('hoUploadModal').style.display = 'flex'; }
+  function openUpload() { 
+    const modal = document.getElementById('hoUploadModal');
+    if (modal) modal.style.display = 'flex'; 
+  }
+  
   function closeUpload(e) { 
-    if (!e || e.target === document.getElementById('hoUploadModal') || e.target.classList.contains('ho-modal-close')) {
-      document.getElementById('hoUploadModal').style.display = 'none'; 
+    const modal = document.getElementById('hoUploadModal');
+    if (!e || e.target === modal || e.target.classList.contains('ho-modal-close')) {
+      if (modal) modal.style.display = 'none'; 
+    }
+  }
+
+  // Intercept file selection to trigger animation
+  function handleFileUpload() {
+    const fileInput = document.getElementById('hoModalFileInput');
+    if (fileInput.files.length > 0) {
+      // Hide idle state, show active animation
+      document.getElementById('hoUploadIdle').style.display = 'none';
+      document.getElementById('hoUploadActive').style.display = 'flex';
+      
+      // Disable further clicks to prevent double submissions
+      document.getElementById('hoDropzoneTarget').style.pointerEvents = 'none';
+      
+      // Submit the form
+      document.getElementById('hoModalUploadForm').submit();
     }
   }
 </script>
