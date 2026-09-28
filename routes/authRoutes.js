@@ -2,8 +2,12 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const authController = require('../controllers/authController');
 const User = require('../models/User');
+const HealthMeasurement = require('../models/HealthMeasurement');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // ==========================================
 // 1. EXISTING WEB APPLICATION ROUTES (INTACT)
@@ -117,9 +121,9 @@ router.post('/api/auth/mobile-login', async (req, res) => {
             message: 'Authentication successful',
             token,
             user: {
-                _id: user._id.toString(),
-                fullName: user.fullName || '',
+                id: user._id.toString(),
                 email: user.email,
+                fullName: user.fullName || '',
                 profileImage: user.profileImage || null
             }
         });
@@ -133,6 +137,97 @@ router.post('/api/auth/mobile-login', async (req, res) => {
 });
 
 /**
+ * POST /api/auth/google-mobile
+ * Verifies Android Credential Manager Google ID Token and resolves to the SAME MongoDB user
+ */
+router.post('/api/auth/google-mobile', async (req, res) => {
+    try {
+        const { idToken } = req.body;
+        if (!idToken) {
+            return res.status(400).json({ success: false, message: 'Google ID token required' });
+        }
+
+        // 1. Verify token signature, audience, and expiry
+        const ticket = await googleClient.verifyIdToken({
+            idToken,
+            audience: process.env.GOOGLE_CLIENT_ID
+        });
+        const payload = ticket.getPayload();
+
+        if (!payload || !payload.sub) {
+            return res.status(401).json({ success: false, message: 'Invalid Google token payload' });
+        }
+
+        if (!payload.email_verified) {
+            return res.status(401).json({ success: false, message: 'Google email is not verified' });
+        }
+
+        const googleId = payload.sub;
+        const email = (payload.email || '').toLowerCase().trim();
+        const fullName = payload.name || `${payload.given_name || ''} ${payload.family_name || ''}`.trim() || 'HealthOrbit User';
+        const picture = payload.picture || null;
+
+        // 2. Resolve existing user from MongoDB Atlas
+        let user = await User.findOne({ googleId });
+
+        if (!user && email) {
+            user = await User.findOne({ email });
+            if (user) {
+                // Link Google identity to the established user
+                if (!user.googleId) {
+                    user.googleId = googleId;
+                }
+                if (!user.profileImage && picture) {
+                    user.profileImage = picture;
+                }
+                await user.save();
+            } else {
+                // New user matching web schema defaults
+                user = await User.create({
+                    googleId,
+                    email,
+                    fullName,
+                    profileImage: picture,
+                    authProvider: 'google',
+                    isEmailVerified: true
+                });
+            }
+        }
+
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'Could not resolve HealthOrbit user' });
+        }
+
+        // 3. Issue Mobile JWT Session
+        const secret = process.env.MOBILE_JWT_SECRET || process.env.SESSION_SECRET;
+        const jwtPayload = {
+            sub: user._id.toString(),
+            email: user.email
+        };
+
+        const token = jwt.sign(jwtPayload, secret, { expiresIn: '7d' });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Google authentication successful',
+            token,
+            user: {
+                id: user._id.toString(),
+                email: user.email,
+                fullName: user.fullName || '',
+                profileImage: user.profileImage || null
+            }
+        });
+    } catch (err) {
+        console.error('[Google Mobile Auth Error]:', err);
+        return res.status(401).json({
+            success: false,
+            message: 'Invalid or expired Google token'
+        });
+    }
+});
+
+/**
  * GET /api/mobile/me
  */
 router.get('/api/mobile/me', requireMobileAuth, (req, res) => {
@@ -140,7 +235,7 @@ router.get('/api/mobile/me', requireMobileAuth, (req, res) => {
     return res.status(200).json({
         success: true,
         user: {
-            _id: user._id.toString(),
+            id: user._id.toString(),
             fullName: user.fullName || '',
             email: user.email,
             profileImage: user.profileImage || null
@@ -148,10 +243,9 @@ router.get('/api/mobile/me', requireMobileAuth, (req, res) => {
     });
 });
 
-
-
-const HealthMeasurement = require('../models/HealthMeasurement');
-
+/**
+ * POST /api/wearables/sync
+ */
 router.post('/api/wearables/sync', requireMobileAuth, async (req, res) => {
     try {
         const { provider = 'health_connect', records } = req.body;
@@ -171,56 +265,56 @@ router.post('/api/wearables/sync', requireMobileAuth, async (req, res) => {
             const recordedAt = item.recordedAt ? new Date(item.recordedAt) : new Date();
             const externalRecordId = item.externalRecordId;
 
-      // Inside router.post('/api/wearables/sync', ...) loop:
-let metricName = 'Heart Rate';
-let category = 'Cardiovascular';
-let unit = item.unit || '';
+            let metricName = 'Heart Rate';
+            let category = 'Cardiovascular';
+            let unit = item.unit || '';
 
-if (metricKey === 'heart_rate') {
-    metricName = 'Heart Rate';
-    category = 'Cardiovascular';
-    unit = 'bpm';
-} else if (metricKey === 'steps') {
-    metricName = 'Steps';
-    category = 'Physical Activity';
-    unit = 'steps';
-} else if (metricKey === 'blood_pressure_systolic') {
-    metricName = 'Blood Pressure (Systolic)';
-    category = 'Cardiovascular';
-    unit = 'mmHg';
-} else if (metricKey === 'blood_pressure_diastolic') {
-    metricName = 'Blood Pressure (Diastolic)';
-    category = 'Cardiovascular';
-    unit = 'mmHg';
-} else if (metricKey === 'spo2') {
-    metricName = 'Blood Oxygen Saturation';
-    category = 'Respiratory';
-    unit = '%';
-} else if (metricKey === 'sleep_duration') {
-    metricName = 'Total Sleep';
-    category = 'Recovery';
-    unit = 'hours';
-} else if (metricKey === 'deep_sleep') {
-    metricName = 'Deep Sleep';
-    category = 'Recovery';
-    unit = 'hours';
-} else if (metricKey === 'body_temperature') {
-    metricName = 'Body Temperature';
-    category = 'General Vitals';
-    unit = '°C';
-} else if (metricKey === 'calories') {
-    metricName = 'Active Energy Burned';
-    category = 'Physical Activity';
-    unit = 'kcal';
-} else if (metricKey === 'distance') {
-    metricName = 'Distance Traveled';
-    category = 'Physical Activity';
-    unit = 'km';
-} else if (metricKey === 'stress_hrv') {
-    metricName = 'Heart Rate Variability (Stress)';
-    category = 'Cardiovascular';
-    unit = 'ms';
-}
+            if (metricKey === 'heart_rate') {
+                metricName = 'Heart Rate';
+                category = 'Cardiovascular';
+                unit = 'bpm';
+            } else if (metricKey === 'steps') {
+                metricName = 'Steps';
+                category = 'Physical Activity';
+                unit = 'steps';
+            } else if (metricKey === 'blood_pressure_systolic') {
+                metricName = 'Blood Pressure (Systolic)';
+                category = 'Cardiovascular';
+                unit = 'mmHg';
+            } else if (metricKey === 'blood_pressure_diastolic') {
+                metricName = 'Blood Pressure (Diastolic)';
+                category = 'Cardiovascular';
+                unit = 'mmHg';
+            } else if (metricKey === 'spo2') {
+                metricName = 'Blood Oxygen Saturation';
+                category = 'Respiratory';
+                unit = '%';
+            } else if (metricKey === 'sleep_duration') {
+                metricName = 'Total Sleep';
+                category = 'Recovery';
+                unit = 'hours';
+            } else if (metricKey === 'deep_sleep') {
+                metricName = 'Deep Sleep';
+                category = 'Recovery';
+                unit = 'hours';
+            } else if (metricKey === 'body_temperature') {
+                metricName = 'Body Temperature';
+                category = 'General Vitals';
+                unit = '°C';
+            } else if (metricKey === 'calories') {
+                metricName = 'Active Energy Burned';
+                category = 'Physical Activity';
+                unit = 'kcal';
+            } else if (metricKey === 'distance') {
+                metricName = 'Distance Traveled';
+                category = 'Physical Activity';
+                unit = 'km';
+            } else if (metricKey === 'stress_hrv') {
+                metricName = 'Heart Rate Variability (Stress)';
+                category = 'Cardiovascular';
+                unit = 'ms';
+            }
+
             const result = await HealthMeasurement.updateOne(
                 { userId, provider, externalRecordId, metricKey },
                 {
@@ -259,16 +353,15 @@ if (metricKey === 'heart_rate') {
     }
 });
 
-
-// GET /api/wearables/history/:metricKey
-// Owner-scoped historical telemetry feed for mobile charts
+/**
+ * GET /api/wearables/history/:metricKey
+ */
 router.get('/api/wearables/history/:metricKey', requireMobileAuth, async (req, res) => {
     try {
         const rawMetricKey = req.params.metricKey.toLowerCase().trim();
         const userId = req.mobileUser._id;
         const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 30, 1), 100);
 
-        // Normalize compound metrics like blood pressure
         let queryMetricKeys = [rawMetricKey];
         if (rawMetricKey === 'blood_pressure') {
             queryMetricKeys = ['blood_pressure_systolic', 'blood_pressure_diastolic'];
@@ -278,7 +371,7 @@ router.get('/api/wearables/history/:metricKey', requireMobileAuth, async (req, r
             userId,
             metricKey: { $in: queryMetricKeys }
         })
-        .sort({ recordedAt: 1 }) // Chronological order for direct graphing
+        .sort({ recordedAt: 1 })
         .limit(limit)
         .lean();
 
@@ -293,9 +386,9 @@ router.get('/api/wearables/history/:metricKey', requireMobileAuth, async (req, r
 
         const primaryUnit = measurements[measurements.length - 1].unit || '';
         const records = measurements.map(m => ({
-            id: m._id,
+            id: m._id.toString(),
             metricKey: m.metricKey,
-            value: m.numericValue !== null && !isNaN(m.numericValue) ? m.numericValue : m.value,
+            value: m.numericValue !== null && !isNaN(m.numericValue) ? m.numericValue : Number(m.value) || 0.0,
             unit: m.unit,
             recordedAt: m.recordedAt
         }));
@@ -314,6 +407,5 @@ router.get('/api/wearables/history/:metricKey', requireMobileAuth, async (req, r
         });
     }
 });
-
 
 module.exports = router;
