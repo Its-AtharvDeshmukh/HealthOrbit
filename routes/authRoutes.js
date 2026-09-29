@@ -114,7 +114,7 @@ router.post('/api/auth/mobile-login', async (req, res) => {
             email: user.email
         };
 
-        const token = jwt.sign(payload, secret, { expiresIn: '7d' });
+        const token = jwt.sign(payload, secret, { expiresIn: '30d' });
 
         return res.status(200).json({
             success: true,
@@ -147,7 +147,6 @@ router.post('/api/auth/google-mobile', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Google ID token required' });
         }
 
-        // 1. Verify token signature, audience, and expiry
         const ticket = await googleClient.verifyIdToken({
             idToken,
             audience: process.env.GOOGLE_CLIENT_ID
@@ -167,13 +166,12 @@ router.post('/api/auth/google-mobile', async (req, res) => {
         const fullName = payload.name || `${payload.given_name || ''} ${payload.family_name || ''}`.trim() || 'HealthOrbit User';
         const picture = payload.picture || null;
 
-        // 2. Resolve existing user from MongoDB Atlas
+        // Resolve or associate existing MongoDB user
         let user = await User.findOne({ googleId });
 
         if (!user && email) {
             user = await User.findOne({ email });
             if (user) {
-                // Link Google identity to the established user
                 if (!user.googleId) {
                     user.googleId = googleId;
                 }
@@ -182,7 +180,6 @@ router.post('/api/auth/google-mobile', async (req, res) => {
                 }
                 await user.save();
             } else {
-                // New user matching web schema defaults
                 user = await User.create({
                     googleId,
                     email,
@@ -198,14 +195,13 @@ router.post('/api/auth/google-mobile', async (req, res) => {
             return res.status(401).json({ success: false, message: 'Could not resolve HealthOrbit user' });
         }
 
-        // 3. Issue Mobile JWT Session
         const secret = process.env.MOBILE_JWT_SECRET || process.env.SESSION_SECRET;
         const jwtPayload = {
             sub: user._id.toString(),
             email: user.email
         };
 
-        const token = jwt.sign(jwtPayload, secret, { expiresIn: '7d' });
+        const token = jwt.sign(jwtPayload, secret, { expiresIn: '30d' });
 
         return res.status(200).json({
             success: true,
@@ -245,6 +241,7 @@ router.get('/api/mobile/me', requireMobileAuth, (req, res) => {
 
 /**
  * POST /api/wearables/sync
+ * Ingests and updates health readings using $set so increments (steps, distance) refresh live
  */
 router.post('/api/wearables/sync', requireMobileAuth, async (req, res) => {
     try {
@@ -254,8 +251,7 @@ router.post('/api/wearables/sync', requireMobileAuth, async (req, res) => {
         }
 
         const userId = req.mobileUser._id;
-        let insertedCount = 0;
-        let skippedCount = 0;
+        let syncedCount = 0;
 
         for (const item of records) {
             if (!item.metric || item.value === undefined || item.value === null) continue;
@@ -315,10 +311,33 @@ router.post('/api/wearables/sync', requireMobileAuth, async (req, res) => {
                 unit = 'ms';
             }
 
-            const result = await HealthMeasurement.updateOne(
-                { userId, provider, externalRecordId, metricKey },
+            // Cumulative daily totals (steps, calories, distance) update within the active day window
+            const isCumulativeDaily = ['steps', 'calories', 'distance'].includes(metricKey);
+
+            let query;
+            if (isCumulativeDaily) {
+                const startOfDay = new Date(recordedAt);
+                startOfDay.setHours(0, 0, 0, 0);
+
+                const endOfDay = new Date(recordedAt);
+                endOfDay.setHours(23, 59, 59, 999);
+
+                query = {
+                    userId,
+                    metricKey,
+                    recordedAt: { $gte: startOfDay,$lte: endOfDay }
+                };
+            } else if (externalRecordId) {
+                query = { userId, provider, externalRecordId, metricKey };
+            } else {
+                query = { userId, metricKey, recordedAt };
+            }
+
+            // Update document values with $set so newer readings overwrite previous counts
+            await HealthMeasurement.updateOne(
+                query,
                 {
-                    $setOnInsert: {
+                    $set: {
                         userId,
                         metricName,
                         metricKey,
@@ -330,22 +349,20 @@ router.post('/api/wearables/sync', requireMobileAuth, async (req, res) => {
                         source: 'wearable',
                         sourceType: 'wearable',
                         provider,
-                        externalRecordId,
+                        externalRecordId: externalRecordId || null,
                         recordedAt
                     }
                 },
                 { upsert: true }
             );
 
-            if (result.upsertedCount > 0) insertedCount++;
-            else skippedCount++;
+            syncedCount++;
         }
 
         return res.status(200).json({
             success: true,
-            message: 'Wearable data ingested successfully',
-            inserted: insertedCount,
-            skipped: skippedCount
+            message: 'Wearable data ingested and updated successfully',
+            synced: syncedCount
         });
     } catch (err) {
         console.error('[Wearables Ingestion Error]:', err);

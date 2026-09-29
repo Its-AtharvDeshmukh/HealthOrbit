@@ -24,6 +24,67 @@ const buildUserQuery = (userId, extraQuery = {}) => {
     };
 };
 
+// Helper: Extracts clean metric maps with today's dynamic steps/distance/calories
+const processWearableMetrics = (rawWearables) => {
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const latestMetrics = {};
+    for (const record of rawWearables) {
+        if (!latestMetrics[record.metricKey]) {
+            latestMetrics[record.metricKey] = record;
+        }
+    }
+
+    // Filter today's records for active metrics
+    const todayRecords = rawWearables.filter(r => new Date(r.recordedAt) >= startOfDay);
+
+    // 1. STEPS: Take the highest/latest reported reading for today
+    const stepRecords = todayRecords.filter(r => r.metricKey === 'steps');
+    if (stepRecords.length > 0) {
+        // If the companion app updates via $set, pick the maximum or most recent record
+        const maxSteps = Math.max(...stepRecords.map(r => Number(r.numericValue || r.value) || 0));
+        latestMetrics['steps'] = {
+            metricName: 'Steps',
+            metricKey: 'steps',
+            value: maxSteps.toLocaleString(),
+            numericValue: maxSteps,
+            unit: 'steps',
+            recordedAt: stepRecords[0].recordedAt
+        };
+    }
+
+    // 2. DISTANCE (km): Take the latest/maximum distance reported today
+    const distRecords = todayRecords.filter(r => r.metricKey === 'distance');
+    if (distRecords.length > 0) {
+        const maxDistance = Math.max(...distRecords.map(r => Number(r.numericValue || r.value) || 0));
+        latestMetrics['distance'] = {
+            metricName: 'Distance Traveled',
+            metricKey: 'distance',
+            value: maxDistance.toFixed(2),
+            numericValue: Number(maxDistance.toFixed(2)),
+            unit: 'km',
+            recordedAt: distRecords[0].recordedAt
+        };
+    }
+
+    // 3. CALORIES (kcal): Take the latest/maximum burned calories for today
+    const calRecords = todayRecords.filter(r => r.metricKey === 'calories');
+    if (calRecords.length > 0) {
+        const maxCalories = Math.max(...calRecords.map(r => Number(r.numericValue || r.value) || 0));
+        latestMetrics['calories'] = {
+            metricName: 'Active Energy Burned',
+            metricKey: 'calories',
+            value: Math.round(maxCalories),
+            numericValue: Math.round(maxCalories),
+            unit: 'kcal',
+            recordedAt: calRecords[0].recordedAt
+        };
+    }
+
+    return latestMetrics;
+};
+
 // 1. Main Dashboard Index Page
 const getDashboard = async (req, res) => {
     try {
@@ -46,17 +107,12 @@ const getDashboard = async (req, res) => {
                 })
             )
                 .sort({ recordedAt: -1 })
-                .limit(50)
+                .limit(100)
                 .lean()
         ]);
 
-        // Aggregate latest reading per metric key for dashboard summary tiles
-        const latestWearables = {};
-        for (const item of rawWearables) {
-            if (!latestWearables[item.metricKey]) {
-                latestWearables[item.metricKey] = item;
-            }
-        }
+        // Unified extraction ensures the main dashboard displays true live synced data
+        const latestWearables = processWearableMetrics(rawWearables);
 
         res.render('dashboard/index', {
             reportCount,
@@ -139,16 +195,11 @@ const getTrends = async (req, res) => {
     }
 };
 
-// 4. Wearables Page
 // 4. Wearables & Telemetry Integration Page
 const getWearables = async (req, res) => {
     try {
         const rawUserId = getActiveUserId(req);
         if (!rawUserId) return res.redirect('/login');
-
-        // Bounded window: today's 24-hour cycle
-        const now = new Date();
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
         const rawWearables = await HealthMeasurement.find(
             buildUserQuery(rawUserId, {
@@ -163,38 +214,7 @@ const getWearables = async (req, res) => {
             .limit(100)
             .lean();
 
-        // 1. Point-in-time latest vitals
-        const latestMetrics = {};
-        for (const record of rawWearables) {
-            if (!latestMetrics[record.metricKey]) {
-                latestMetrics[record.metricKey] = record;
-            }
-        }
-
-        // 2. Cumulative daily totals for physical activity within today's window
-        const todayRecords = rawWearables.filter(r => new Date(r.recordedAt) >= startOfDay);
-        
-        const totalSteps = todayRecords
-            .filter(r => r.metricKey === 'steps')
-            .reduce((acc, curr) => acc + (Number(curr.numericValue || curr.value) || 0), 0);
-
-        const totalCalories = todayRecords
-            .filter(r => r.metricKey === 'calories')
-            .reduce((acc, curr) => acc + (Number(curr.numericValue || curr.value) || 0), 0);
-
-        const totalDistance = todayRecords
-            .filter(r => r.metricKey === 'distance')
-            .reduce((acc, curr) => acc + (Number(curr.numericValue || curr.value) || 0), 0);
-
-        if (totalSteps > 0) {
-            latestMetrics['steps'] = { value: totalSteps, numericValue: totalSteps, unit: 'steps' };
-        }
-        if (totalCalories > 0) {
-            latestMetrics['calories'] = { value: Math.round(totalCalories), numericValue: Math.round(totalCalories), unit: 'kcal' };
-        }
-        if (totalDistance > 0) {
-            latestMetrics['distance'] = { value: Number(totalDistance.toFixed(2)), numericValue: Number(totalDistance.toFixed(2)), unit: 'km' };
-        }
+        const latestMetrics = processWearableMetrics(rawWearables);
 
         res.render('dashboard/wearables.ejs', {
             wearables: rawWearables,
@@ -206,7 +226,6 @@ const getWearables = async (req, res) => {
         res.redirect('/dashboard');
     }
 };
-
 
 const getErrorPage = (req, res) => {
     res.render('errors/not-found.ejs');
