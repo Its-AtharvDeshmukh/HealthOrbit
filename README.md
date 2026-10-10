@@ -1,153 +1,63 @@
-# HealthOrbit
+<div align="center">
 
-### An Integrated Digital Health Information Platform with a Framework for Context-Aware AI Assistance
+# 🩺 HealthOrbit
 
-HealthOrbit is an integrated digital health information platform designed to organize, manage, and present personal health information in a structured and accessible manner.
+### An Integrated Digital Health Information Platform  
+### with a Framework for Context-Aware AI Assistance
 
-The project combines medical document management, OCR-based information extraction, health-context organization, health timelines and trends, and a framework for AI-assisted health information analysis.
+<img
+  src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&duration=2600&pause=900&color=19A58C&center=true&vCenter=true&width=850&lines=Medical+Reports+%E2%86%92+Structured+Health+Information;Health+Timeline+%E2%86%92+Trends+%E2%86%92+Context;Wearables+%E2%86%92+Health+Connect+%E2%86%92+HealthOrbit;Authorized+Health+Context+%E2%86%92+AI+Assistance"
+  alt="HealthOrbit animated architecture"
+/>
 
----
+<br/>
 
-## 📌 Project Overview
+[![Node.js](https://img.shields.io/badge/Node.js-Backend-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express.js-API-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Android](https://img.shields.io/badge/Android-Health_Connect-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/health-and-fitness/guides/health-connect)
+[![Kotlin](https://img.shields.io/badge/Kotlin-Companion_App-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 
-Managing health information can become difficult when medical reports, prescriptions, medicines, symptoms, health records, and other information are stored in different places.
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-HealthOrbit-0F766E?style=for-the-badge)](https://healthorbit.onrender.com/)
+[![Android Repo](https://img.shields.io/badge/📱_Android-HealthOrbit--Android-111827?style=for-the-badge)](https://github.com/Its-AtharvDeshmukh/HealthOrbit-Android)
 
-HealthOrbit aims to provide a centralized platform where users can organize their health-related information and access it through a unified interface.
-
-The system is designed with a modular architecture so that additional health-data sources, wearable integrations, analytics, and context-aware AI capabilities can be incorporated as the platform evolves.
-
----
-
-## 🎯 Objectives
-
-The main objectives of HealthOrbit are:
-
-- Provide a centralized platform for personal health information management.
-- Allow users to upload and manage medical documents.
-- Extract useful text from medical documents using OCR.
-- Organize extracted information into a structured health context.
-- Maintain a chronological health timeline.
-- Provide health trends and summarized information.
-- Support medicine and symptom management.
-- Provide emergency and insurance-related information.
-- Support family/authorized access to health information.
-- Provide a framework for context-aware AI-assisted health information analysis.
-- Provide an extensible architecture for future wearable and health-device integration.
+</div>
 
 ---
 
-## ✨ Key Features
+## 🌍 What is HealthOrbit?
 
-### 🔐 Authentication
+**HealthOrbit** is an integrated personal health information platform designed to bring fragmented health information into one structured and accessible environment.
 
-- User login and authentication.
-- Secure access to personal health information.
-- Logout functionality.
+Personal health information is often distributed across:
 
-### 👤 User Profile
+- laboratory reports
+- prescriptions
+- medicines
+- symptoms
+- wearable measurements
+- nutrition and lifestyle records
+- insurance information
+- emergency information
+- historical health records
 
-- Personal health profile management.
-- User-specific health information.
-- Support for family and authorized access concepts.
+HealthOrbit brings these different sources together and helps users **organize, review, compare and understand their own recorded health information**.
 
-### 📄 Medical Reports
+The system combines document processing, longitudinal health records, deterministic analytics, wearable integration and context-aware AI assistance while maintaining clear privacy and medical-safety boundaries.
 
-- Upload medical documents.
-- Manage uploaded health records.
-- Review extracted information.
-
-### 🔎 OCR & Document Processing
-
-- OCR-based extraction of text from supported medical documents.
-- Processing of uploaded documents through the backend.
-- Extracted information can be reviewed by the user.
-
-### 🧠 Health Context
-
-HealthOrbit organizes relevant health information into a contextual structure that can be used for health-information management and future AI-assisted analysis.
-
-### 📈 Health Timeline & Trends
-
-- Chronological organization of health information.
-- Visualization and presentation of available health-related trends.
-- Helps users understand changes in their stored health information.
-
-### 💊 Medicines & Symptoms
-
-- Medicine-related information management.
-- Symptom information management.
-- Designed for maintaining a structured record of relevant information.
-
-### ⌚ Wearable & Health Data
-
-The architecture is designed to support integration with wearable and health-device data.
-
-Future Android integration can use Android Health Connect to allow authorized health data to be synchronized with the HealthOrbit platform.
-
-### 🚨 Emergency Information
-
-Provides a dedicated area for important emergency-related health information.
-
-### 🏥 Insurance Management
-
-Provides a structured section for storing and managing relevant insurance information.
-
-### 🥗 Nutrition & Lifestyle
-
-Provides a framework for organizing nutrition and lifestyle-related health information.
-
-### 🤖 AI Health Assistance
-
-HealthOrbit includes a framework for context-aware AI assistance intended to use relevant health information as context for generating health-related informational responses.
-
-> **Important:** HealthOrbit is intended for health-information management and assistance. It is not a replacement for professional medical diagnosis or treatment.
+> **HealthOrbit is an informational and organizational platform. It does not diagnose diseases, prescribe medication, or replace qualified healthcare professionals.**
 
 ---
 
-## 🏗️ System Architecture
-
-The platform follows a modular architecture consisting of the following major layers:
+## ✨ Core Idea
 
 ```text
-┌─────────────────────────────────────────────┐
-│                User Interface               │
-│        Web Application / Mobile App         │
-└──────────────────────┬──────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────┐
-│              Authentication                 │
-│          Login / User Management            │
-└──────────────────────┬──────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────┐
-│           Application Backend               │
-│            Node.js / Express                │
-└──────────────────────┬──────────────────────┘
-                       │
-          ┌────────────┴─────────────┐
-          ▼                          ▼
-┌─────────────────────┐    ┌─────────────────────┐
-│ Medical Documents   │    │   Health Data       │
-│ Upload & Processing │    │ Management & Context│
-└──────────┬──────────┘    └──────────┬──────────┘
-           │                          │
-           ▼                          ▼
-┌─────────────────────┐    ┌─────────────────────┐
-│        OCR          │    │ Timeline & Trends   │
-│ Text Extraction     │    │ Health Information  │
-└──────────┬──────────┘    └──────────┬──────────┘
-           │                          │
-           └────────────┬─────────────┘
-                        ▼
-              ┌─────────────────────┐
-              │    Data Storage     │
-              │ MongoDB / Cloud DB  │
-              └──────────┬──────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │ AI Assistance Layer │
-              │ Context-Aware Model │
-              └─────────────────────┘
+COLLECT
+   ↓
+UNDERSTAND
+   ↓
+CONNECT
+   ↓
+ANALYZE
+   ↓
+EXPLAIN
