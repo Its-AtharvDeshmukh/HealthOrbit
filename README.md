@@ -498,10 +498,6 @@ nodemon server.js
 <td><b>Academic Year</b></td>
 <td>2026–2027</td>
 </tr>
-<tr>
-<td><b>Guide</b></td>
-<td>Prof. K. R. Sarode</td>
-</tr>
 </table>
 
 ### Team
