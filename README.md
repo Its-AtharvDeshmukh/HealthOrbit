@@ -1,72 +1,39 @@
-Absolutely. Here is the **entire README.md in one single copy-ready block** so you can directly replace your existing `README.md`.
-
-```markdown
 <div align="center">
 
-# 🩺 HealthOrbit
+<img src="https://capsule-render.vercel.app/api?type=waving&height=230&color=0:07111F,45:0F766E,100:14B8A6&text=HealthOrbit&fontColor=F8FAFC&fontSize=58&fontAlignY=38&desc=Integrated%20Digital%20Health%20Information%20Platform&descAlignY=58&descSize=18&animation=fadeIn" width="100%" alt="HealthOrbit Banner"/>
 
-### An Integrated Digital Health Information Platform  
-### with a Framework for Context-Aware AI Assistance
-
-<img
-  src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&duration=2600&pause=900&color=19A58C&center=true&vCenter=true&width=850&lines=Medical+Reports+%E2%86%92+Structured+Health+Information;Health+Timeline+%E2%86%92+Trends+%E2%86%92+Context;Wearables+%E2%86%92+Health+Connect+%E2%86%92+HealthOrbit;Authorized+Health+Context+%E2%86%92+AI+Assistance"
-  alt="HealthOrbit animated architecture"
-/>
+<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=19&duration=2500&pause=850&color=2DD4BF&center=true&vCenter=true&width=920&lines=Medical+Reports+%E2%86%92+Structured+Health+Information;Health+Timeline+%E2%86%92+Trends+%E2%86%92+Context;Health+Connect+%E2%86%92+HealthOrbit+%E2%86%92+Longitudinal+Records;Authorized+Health+Context+%E2%86%92+AI+Assistance" alt="HealthOrbit animation"/>
 
 <br/>
 
-[![Node.js](https://img.shields.io/badge/Node.js-Backend-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express.js-API-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Android](https://img.shields.io/badge/Android-Health_Connect-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/health-and-fitness/guides/health-connect)
-[![Kotlin](https://img.shields.io/badge/Kotlin-Companion_App-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+[![Live Demo](https://img.shields.io/badge/LIVE_DEMO-HealthOrbit-14B8A6?style=for-the-badge&logo=render&logoColor=white)](https://healthorbit.onrender.com/)
+[![Android](https://img.shields.io/badge/ANDROID-HealthOrbit--Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/Its-AtharvDeshmukh/HealthOrbit-Android)
+![Academic Project](https://img.shields.io/badge/ACADEMIC_PROJECT-2026--27-8B5CF6?style=for-the-badge)
+![Status](https://img.shields.io/badge/STATUS-IN_DEVELOPMENT-F59E0B?style=for-the-badge)
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-HealthOrbit-0F766E?style=for-the-badge)](https://healthorbit.onrender.com/)
-[![Android Repo](https://img.shields.io/badge/📱_Android-HealthOrbit--Android-111827?style=for-the-badge)](https://github.com/Its-AtharvDeshmukh/HealthOrbit-Android)
+<br/><br/>
+
+### One health context. One continuous story.
+
+**Reports · Measurements · Timeline · Trends · Wearables · AI**
 
 </div>
 
 ---
 
-## 🌍 What is HealthOrbit?
+## 🩺 About HealthOrbit
 
-**HealthOrbit** is an integrated personal health information platform designed to bring fragmented health information into one structured and accessible environment.
+**HealthOrbit** is an integrated personal health-information platform designed to bring fragmented health information into one structured, secure, and understandable environment.
 
-Personal health information is often distributed across:
+It connects **medical reports, health measurements, medicines, symptoms, wearable data, nutrition, lifestyle records, insurance information, emergency information, and authorized family access** through one HealthOrbit account.
 
-- laboratory reports
-- prescriptions
-- medicines
-- symptoms
-- wearable measurements
-- nutrition and lifestyle records
-- insurance information
-- emergency information
-- historical health records
+The platform combines **medical-document processing, OCR, deterministic health analytics, longitudinal records, Android Health Connect integration, and context-aware AI assistance**.
 
-HealthOrbit brings these different sources together and helps users **organize, review, compare, and understand their own recorded health information**.
-
-The system combines document processing, longitudinal health records, deterministic analytics, wearable integration, and context-aware AI assistance while maintaining clear privacy and medical-safety boundaries.
-
-> **HealthOrbit is an informational and organizational platform. It does not diagnose diseases, prescribe medication, or replace qualified healthcare professionals.**
+> **HealthOrbit is an informational and organizational system. It does not diagnose disease, prescribe medication, or replace qualified healthcare professionals.**
 
 ---
 
-## ✨ Core Idea
-
-```text
-COLLECT
-   ↓
-UNDERSTAND
-   ↓
-CONNECT
-   ↓
-ANALYZE
-   ↓
-EXPLAIN
-```
-
-HealthOrbit converts disconnected health information into a structured personal health context.
+## ⚡ HealthOrbit at a Glance
 
 ```text
 Medical Reports ───────┐
@@ -76,181 +43,85 @@ Symptoms ──────────────┤
 Nutrition ─────────────┤
 Hydration ─────────────┤
 Lifestyle ─────────────┤
-Profile Information ───┤
-                       ↓
-                HEALTHORBIT CONTEXT
-                       ↓
-          Timeline • Trends • Analytics
-                       ↓
-             Context-Aware Assistance
+Profile & Family ──────┤
+                       ▼
+              AUTHORIZED HEALTH CONTEXT
+                       │
+         ┌─────────────┼─────────────┐
+         ▼             ▼             ▼
+     Timeline        Trends       Dashboard
+         │             │             │
+         └─────────────┴─────────────┘
+                       ▼
+             Context-Aware AI
 ```
 
 ---
 
-# 🚀 Main Features
+## ✨ Core Features
 
 <table>
 <tr>
-<td width="50%">
+<td width="50%" valign="top">
 
 ### 🔐 Authentication & Authorization
-
-- User registration and login
+- Registration and login
 - Session-based web authentication
 - Google authentication support
 - Password hashing
-- Server-side user identity
 - Ownership and permission checks
 - Mobile API authentication
 
-</td>
-<td width="50%">
-
-### 👤 Profile & Privacy
-
-- Personal profile information
-- Health-related profile details
-- Medical conditions
-- Allergies
-- Emergency contacts
-- Privacy preferences
-- Account-level health context
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-### 📄 Medical Reports
-
-- Medical document upload
-- PDF and image processing
-- Report lifecycle management
-- Secure report access
-- Report correction
-- Structured health parameters
-- Source-linked measurements
-
-</td>
-<td>
-
-### 🔎 OCR & Document Intelligence
-
-- `Tesseract.js` OCR
-- `pdf-parse`
-- Medical text extraction
-- Structured parameter extraction
-- Gemini-based document intelligence
-- Metric normalization
+### 📄 Medical Reports & OCR
+- PDF and image uploads
+- Tesseract OCR
+- PDF text extraction
+- Structured report parameters
+- Report correction workflow
 - HealthMeasurement synchronization
 
-</td>
-</tr>
-
-<tr>
-<td>
-
-### 🕒 Longitudinal Health Timeline
-
-- Medical reports
-- Health measurements
-- Medicines
-- Medicine logs
-- Symptoms
-- Chronological health events
-- Source-aware historical records
-
-</td>
-<td>
-
-### 📈 Health Trends
-
-- Historical metric visualization
-- Current vs previous comparison
-- Average / minimum / maximum values
-- Period-based comparison
+### 🕒 Timeline & Trends
+- Chronological health history
+- Metric comparisons
+- Average / minimum / maximum
 - Reference-range evaluation
-- Deterministic deviation analysis
-
-</td>
-</tr>
-
-<tr>
-<td>
+- Deterministic trend analysis
 
 ### 💊 Medicines & Symptoms
-
-- Active medicines
-- Dosage and schedules
+- Medicine schedules
 - Medicine logs
 - Symptom records
-- Manual symptom tracking
-- Longitudinal health integration
+- Longitudinal health context
 
 </td>
-<td>
+<td width="50%" valign="top">
 
-### 🥗 Nutrition, Hydration & Lifestyle
-
-- Meal records
-- Hydration tracking
-- Lifestyle habits
-- Wellness goals
-- Daily wellness information
-- Structured lifestyle records
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-### 🚨 Emergency & SOS
-
-- Emergency profile
+### 👤 Profile, Privacy & Family
+- Health profile
+- Allergies and conditions
 - Emergency contacts
-- SOS-related functionality
-- Donor preferences
-- Emergency health information
-- Privacy-controlled access design
+- Privacy preferences
+- Permission-based family access
 
-</td>
-<td>
-
-### 🏥 Insurance Management
-
-- Insurance policies
-- Policy information
-- Claims-related records
-- Digital insurance information
-- User-owned insurance records
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-### 👨‍👩‍👧 Family & Authorized Access
-
-- Family relationships
-- Permission-based access
-- Selected health-information sharing
-- Owner-controlled permissions
-- Separate user identities
-
-</td>
-<td>
-
-### 🤖 AI Medical Analysis & Health Assistant
-
-- Health-information explanations
-- Medical-report summaries
-- Context-aware questions
+### 🤖 AI Medical Analysis
+- Medical-report explanations
+- Context-aware health questions
 - Doctor consultation preparation
 - Conversation history
-- Authorized HealthOrbit context
+- Authorized backend context only
+
+### ⌚ Wearable / Health Connect
+- Android Health Connect
+- HealthOrbit Android companion
+- Authenticated wearable sync
+- Source-aware measurements
+
+### 🥗 Lifestyle, Emergency & Insurance
+- Meals and hydration
+- Lifestyle habits
+- Wellness goals
+- Emergency functions
+- Insurance records
 
 </td>
 </tr>
@@ -258,20 +129,42 @@ Profile Information ───┤
 
 ---
 
-# 🧠 Context-Aware AI Architecture
+## 🛠️ Technology Stack
 
-HealthOrbit does **not train or host its own Machine Learning model**.
+<div align="center">
 
-It uses external AI services through controlled backend workflows.
+### Web & Backend
 
-## Conversational Assistant
+<img src="https://skillicons.dev/icons?i=js,nodejs,express,mongodb,html,css,git,github,vscode&perline=9" alt="Web stack"/>
+
+### Android & Mobile
+
+<img src="https://skillicons.dev/icons?i=kotlin,androidstudio,gradle&perline=6" alt="Android stack"/>
+
+### Infrastructure & Tools
+
+<img src="https://skillicons.dev/icons?i=gcp,docker,postman&perline=6" alt="Tools"/>
+
+</div>
+
+<p align="center">
+<b>EJS · Mongoose · Passport.js · Express Session · bcrypt · Multer · Cloudinary · Tesseract.js · pdf-parse · Gemini API · Mesh API · Android Health Connect · Jetpack Compose · WorkManager</b>
+</p>
+
+---
+
+## 🧠 Context-Aware AI Architecture
+
+HealthOrbit **does not train or host its own machine-learning model**.
+
+The backend gathers authorized HealthOrbit records, performs deterministic calculations, constructs context, and then communicates with an external AI model through the Mesh API gateway.
 
 ```mermaid
 flowchart LR
     A[User Question] --> B[Authenticated Backend]
     B --> C[Server-Side User Identity]
     C --> D[Authorized Context Service]
-    D --> E[Health Records]
+    D --> E[(HealthOrbit Records)]
     E --> F[Deterministic Analytics]
     F --> G[Context Construction]
     G --> H[Mesh API Gateway]
@@ -279,120 +172,73 @@ flowchart LR
     I --> J[HealthOrbit Response]
 ```
 
-The conversational architecture follows:
+### Medical Document Intelligence
 
-```text
-Browser
-   ↓
-/api/chat
-   ↓
-Authenticated HealthOrbit Backend
-   ↓
-Authorized Health Context
-   ↓
-Deterministic Analytics
-   ↓
-Conversation Context
-   ↓
-Mesh API Gateway
-   ↓
-External AI Model
+```mermaid
+flowchart LR
+    A[Medical Report] --> B{Document Type}
+    B -->|PDF| C[PDF Parsing]
+    B -->|Image / Scan| D[Tesseract OCR]
+    C --> E[Extracted Text]
+    D --> E
+    E --> F[Document Intelligence]
+    F --> G[Gemini API]
+    G --> H[Structured Parameters]
+    H --> I[MedicalReport]
+    I --> J[HealthMeasurement]
 ```
-
-## Medical Document Intelligence
-
-Document analysis is kept separate from conversational AI.
-
-```text
-Medical Report
-      ↓
-PDF Parsing / OCR
-      ↓
-Extracted Text
-      ↓
-Document Intelligence
-      ↓
-Gemini API
-      ↓
-Structured Parameters
-      ↓
-MedicalReport
-      ↓
-HealthMeasurement
-```
-
-This separation allows HealthOrbit to change document-analysis providers without replacing the conversational architecture.
 
 ---
 
-# ⌚ Wearable & Health Connect Architecture
+## ⌚ Wearable & Health Connect
 
-HealthOrbit does **not directly connect the website to individual smartwatch brands**.
-
-Wearable information is synchronized through the Android ecosystem.
+HealthOrbit does **not** directly connect the website to individual smartwatch brands.
 
 ```mermaid
-flowchart TD
-    A[Smartwatch / Fitness Tracker]
-    --> B[Manufacturer Health App]
-
-    B --> C[Android Health Connect]
-
-    C --> D[HealthOrbit Android Companion]
-
-    D --> E[Authenticated HealthOrbit API]
-
-    E --> F[Node.js / Express Backend]
-
-    F --> G[(MongoDB)]
-
-    G --> H[HealthMeasurement]
-
-    H --> I[Dashboard]
-    H --> J[Timeline]
-    H --> K[Trends]
-    H --> L[AI Context]
+flowchart LR
+    A[Smartwatch / Fitness App] --> B[Android Health Connect]
+    B --> C[HealthOrbit Android]
+    C --> D[Authenticated HealthOrbit API]
+    D --> E[Node.js / Express]
+    E --> F[(MongoDB)]
+    F --> G[HealthMeasurement]
+    G --> H[Dashboard]
+    G --> I[Timeline]
+    G --> J[Trends]
+    G --> K[AI Context]
 ```
 
-## Android Companion Repository
+<div align="center">
 
-📱 **HealthOrbit Android**
+[![HealthOrbit Android](https://img.shields.io/badge/Open-HealthOrbit--Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/Its-AtharvDeshmukh/HealthOrbit-Android)
 
-https://github.com/Its-AtharvDeshmukh/HealthOrbit-Android
+</div>
 
-The Android application is a **client of the existing HealthOrbit backend**.
-
-It does not create:
-
-- another MongoDB database
-- another Node.js backend
-- duplicate HealthOrbit accounts
-- direct mobile database access
+The Android application is a **client of the existing HealthOrbit backend**. It does not create a second backend or duplicate database.
 
 ---
 
-# 🏗️ System Architecture
+## 🏗️ System Architecture
 
 ```mermaid
 flowchart TD
-
     USER[User]
 
-    subgraph CLIENTS["Client Layer"]
-        WEB[Web Application<br/>EJS • HTML • CSS • JavaScript]
-        MOBILE[Android Companion<br/>Kotlin • Health Connect]
+    subgraph CLIENT["Client Layer"]
+        WEB[Web Application<br/>EJS · HTML · CSS · JavaScript]
+        MOBILE[Android Companion<br/>Kotlin · Health Connect]
     end
 
     USER --> WEB
     USER --> MOBILE
 
-    subgraph AUTH["Authentication & Authorization"]
-        PASSPORT[Passport / Sessions]
-        JWT[Mobile API Authentication]
+    subgraph SECURITY["Authentication & Authorization"]
+        SESSION[Passport / Sessions]
+        MOBILEAUTH[Mobile Authentication]
     end
 
-    WEB --> PASSPORT
-    MOBILE --> JWT
+    WEB --> SESSION
+    MOBILE --> MOBILEAUTH
 
     subgraph BACKEND["HealthOrbit Backend"]
         NODE[Node.js / Express]
@@ -402,58 +248,44 @@ flowchart TD
         AI[AI Service Layer]
     end
 
-    PASSPORT --> NODE
-    JWT --> NODE
+    SESSION --> NODE
+    MOBILEAUTH --> NODE
 
     NODE --> REPORTS
     NODE --> CONTEXT
     NODE --> ANALYTICS
     NODE --> AI
 
-    subgraph DOCUMENT["Document Pipeline"]
-        OCR[Tesseract OCR]
-        PDF[PDF Parsing]
-        DOC_AI[Gemini Document Intelligence]
+    subgraph DATA["Data Layer"]
+        DB[(MongoDB)]
+        MR[MedicalReport]
+        HM[HealthMeasurement]
     end
 
-    REPORTS --> OCR
-    REPORTS --> PDF
-    OCR --> DOC_AI
-    PDF --> DOC_AI
-
-    subgraph DATABASE["Data Layer"]
-        MONGO[(MongoDB)]
-        MEASUREMENTS[HealthMeasurement]
-        MEDICALREPORT[MedicalReport]
-    end
-
-    DOC_AI --> MEDICALREPORT
-    MEDICALREPORT --> MEASUREMENTS
-
-    NODE --> MONGO
-    MONGO --> CONTEXT
-    MONGO --> ANALYTICS
+    REPORTS --> MR
+    MR --> HM
+    NODE --> DB
+    DB --> CONTEXT
+    DB --> ANALYTICS
 
     CONTEXT --> AI
     ANALYTICS --> AI
-
-    AI --> MESH[Mesh API Gateway]
-    MESH --> MODEL[External AI Model]
+    AI --> EXT[Mesh API / External AI]
 ```
 
 ---
 
-# 🧩 HealthOrbit Modules
+## 🧩 Modules
 
-| No. | Module | Purpose |
+| # | Module | Purpose |
 |---:|---|---|
 | 01 | 🔐 Authentication & Authorization | Secure access and permission control |
 | 02 | 👤 Profile & Privacy | Personal health profile and privacy information |
-| 03 | 🏥 Insurance Management | Insurance policies and related information |
+| 03 | 🏥 Insurance Management | Insurance policies and related records |
 | 04 | 🚨 Emergency & SOS | Emergency health information and support functions |
 | 05 | 🤖 AI Medical Analysis & Health Assistant | Context-aware informational assistance |
 | 06 | ⌚ Wearable / Health Connect | User-authorized wearable synchronization |
-| 07 | 📄 Medical Reports & OCR | Medical document processing and structured extraction |
+| 07 | 📄 Medical Reports & OCR | Medical-document processing and structured extraction |
 | 08 | 🕒 Health Timeline | Chronological health-information organization |
 | 09 | 📈 Health Trends | Deterministic longitudinal analytics |
 | 10 | 💊 Medicines & Symptoms | Medicine and symptom management |
@@ -462,172 +294,19 @@ flowchart TD
 
 ---
 
-# 🛠️ Technology Stack
-
-## Frontend
-
-![EJS](https://img.shields.io/badge/EJS-Templates-B4CA65?style=flat-square)
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=000)
-
-## Backend
-
-![Node](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=node.js&logoColor=white)
-![Express](https://img.shields.io/badge/Express.js-000000?style=flat-square&logo=express&logoColor=white)
-
-## Database
-
-![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white)
-![Mongoose](https://img.shields.io/badge/Mongoose-880000?style=flat-square)
-
-## Authentication
-
-- Passport.js
-- Express Session
-- Google OAuth
-- bcrypt
-- Mobile API authentication
-
-## Document Processing
-
-- Tesseract.js
-- pdf-parse
-- Multer
-- Cloudinary
-- Gemini document intelligence
-
-## AI
-
-- Mesh API Gateway
-- External conversational AI model
-- Gemini for document intelligence
-- Server-controlled health context
-- Deterministic analytics
-
-## Mobile / Wearables
-
-- Kotlin
-- Android
-- Jetpack Compose
-- Android Health Connect
-- WorkManager
-- HealthOrbit REST API
-
----
-
-# 🗃️ Health Data Model
-
-HealthOrbit uses two closely related information layers.
-
-## 1. Normalized Health Measurement Layer
-
-Numerical observations from supported sources are normalized into `HealthMeasurement`.
-
-```text
-Medical Reports ────┐
-                    │
-Wearable Data ──────┤
-                    ▼
-             HealthMeasurement
-                    │
-        ┌───────────┼───────────┐
-        ▼           ▼           ▼
-    Timeline      Trends     Dashboard
-```
-
-Measurements can preserve information such as:
-
-```text
-metricKey
-numericValue
-unit
-recordedAt
-sourceType
-sourceRecordId
-provider
-```
-
-## 2. Broader HealthOrbit Context
-
-Not every piece of health information needs to become a numerical measurement.
-
-```text
-Profile
-Reports
-Medicines
-Symptoms
-Nutrition
-Hydration
-Lifestyle
-Insurance
-Family Permissions
-Conversation History
-        │
-        ▼
-Authorized HealthOrbit Context
-        │
-        ▼
-Context-Aware Assistance
-```
-
----
-
-# 🔒 Privacy & Safety Principles
-
-HealthOrbit is designed around several important boundaries:
-
-- User identity is derived by the backend.
-- Private health records are protected by authentication and authorization.
-- Browser-supplied user IDs are not trusted for private record ownership.
-- AI receives only authorized context.
-- Stored medical facts and AI-generated explanations are treated separately.
-- HealthOrbit does not claim clinical validation.
-- HealthOrbit does not diagnose diseases.
-- HealthOrbit does not prescribe medicines.
-- HealthOrbit does not replace professional healthcare providers.
-
----
-
-# 📂 Repository Structure
+## 📂 Repository Structure
 
 ```text
 HealthOrbit/
-│
-├── config/
-│   └── Application and service configuration
-│
-├── controllers/
-│   └── Request handling and module controllers
-│
-├── middleware/
-│   └── Authentication and application middleware
-│
-├── models/
-│   └── MongoDB / Mongoose data models
-│
-├── public/
-│   ├── css/
-│   ├── js/
-│   └── assets/
-│
-├── routes/
-│   └── Express route modules
-│
-├── services/
-│   ├── AI services
-│   ├── document intelligence
-│   ├── OCR processing
-│   ├── health timeline
-│   ├── health trends
-│   ├── dashboard analytics
-│   └── contextual health services
-│
-├── views/
-│   ├── auth/
-│   ├── dashboard/
-│   └── partials/
-│
+├── config/          # Application and service configuration
+├── controllers/     # Request handlers and module controllers
+├── middleware/      # Authentication and authorization middleware
+├── models/          # MongoDB / Mongoose models
+├── public/          # CSS, JavaScript and static assets
+├── routes/          # Express route modules
+├── services/        # AI, OCR, timeline, trends and other services
+├── views/           # EJS pages and partials
+├── app.js
 ├── server.js
 ├── package.json
 └── README.md
@@ -635,29 +314,22 @@ HealthOrbit/
 
 ---
 
-# ⚙️ Local Development
+## ⚙️ Run Locally
 
-## 1. Clone the repository
+### 1. Clone
 
 ```bash
 git clone https://github.com/Its-AtharvDeshmukh/HealthOrbit.git
-```
-
-```bash
 cd HealthOrbit
 ```
 
-## 2. Install dependencies
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-## 3. Configure environment variables
-
-Create your local environment configuration.
-
-Typical server-side configuration may include:
+### 3. Configure environment variables
 
 ```env
 MONGODB_URI=
@@ -674,15 +346,15 @@ CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 ```
 
-> Never commit real `.env` values or private API credentials to GitHub.
+> Never commit real API keys, private tokens, passwords, or production secrets.
 
-## 4. Start the application
+### 4. Start
 
 ```bash
 node server.js
 ```
 
-or during development:
+Development:
 
 ```bash
 nodemon server.js
@@ -690,109 +362,99 @@ nodemon server.js
 
 ---
 
-# 📱 HealthOrbit Android
+## 🔒 Privacy & Safety
 
-The companion Android application is maintained separately:
-
-### [`HealthOrbit-Android`](https://github.com/Its-AtharvDeshmukh/HealthOrbit-Android)
-
-Its primary responsibility is to securely bridge authorized Android Health Connect information with the existing HealthOrbit backend.
-
-```text
-Health Connect
-      ↓
-HealthOrbit Android
-      ↓
-Authenticated API
-      ↓
-HealthOrbit Backend
-      ↓
-MongoDB
-      ↓
-Dashboard / Timeline / Trends / AI Context
-```
+- User identity is derived on the backend.
+- Private health records require authentication and authorization.
+- Frontend-supplied user IDs are not trusted for private record ownership.
+- AI receives only authorized context.
+- Stored medical facts and AI-generated explanations remain conceptually separate.
+- HealthOrbit does not claim clinical validation.
+- HealthOrbit does not diagnose disease.
+- HealthOrbit does not prescribe medication.
+- HealthOrbit does not replace healthcare professionals.
 
 ---
 
-# 🔬 Project Scope
+## 🔬 Current Scope
 
-HealthOrbit currently focuses on:
+<details>
+<summary><b>Implemented / actively developed</b></summary>
 
-✅ Personal health-information organization  
-✅ Medical-report processing  
-✅ OCR and document intelligence  
-✅ Normalized health measurements  
-✅ Longitudinal timeline  
-✅ Deterministic trend analysis  
-✅ Medicines and symptom records  
-✅ Nutrition and lifestyle records  
-✅ Insurance information  
-✅ Emergency-related information  
-✅ Family / authorized access  
-✅ Context-aware AI assistance  
-✅ Android Health Connect integration architecture  
+<br/>
 
-Future development may extend the platform with:
+- Authentication and profile foundations
+- Medical-report upload and document processing
+- OCR and structured extraction
+- Normalized HealthMeasurement records
+- Health Timeline
+- Health Trends and deterministic analytics
+- Medicines and Symptoms
+- Nutrition, Hydration and Lifestyle
+- Insurance
+- Emergency functions
+- Family / authorized access
+- AI Medical Analysis and conversational assistance
+- Android Health Connect companion architecture
 
-- broader device interoperability
-- hospital / EHR interoperability
-- advanced consent and auditing
-- multilingual assistance
-- voice interaction
-- additional medical-document types
-- formally evaluated predictive techniques where clinically appropriate
-- standards such as HL7 FHIR
+</details>
+
+<details>
+<summary><b>Future expansion</b></summary>
+
+<br/>
+
+- Wider device interoperability
+- Hospital / EHR interoperability
+- HL7 FHIR-based exchange
+- Voice and multilingual assistance
+- Stronger consent and auditing
+- Additional medical-document types
+- Formally evaluated predictive techniques where appropriate
+
+</details>
 
 ---
 
-# ⚠️ Medical Disclaimer
+## 🎓 Academic Project
 
-> HealthOrbit is developed as a personal health-information management and assistance platform.
+| | |
+|---|---|
+| **Project** | HealthOrbit |
+| **Department** | Computer Engineering |
+| **College** | Smt. Radhikatai Pandav College of Engineering, Nagpur |
+| **University** | Rashtrasant Tukadoji Maharaj Nagpur University |
+| **Academic Year** | 2026–2027 |
+| **Guide** | Prof. K. R. Sarode |
+
+### Team
+
+<div align="center">
+
+**Atharv Deshmukh · Ansh Shahane · Sujal Arse · Vansh Sakhare**
+
+</div>
+
+---
+
+## ⚠️ Medical Disclaimer
+
+> HealthOrbit is a personal health-information management and assistance platform.
 >
-> Information produced by the system or an external AI service is intended for informational and organizational purposes only.
+> Information generated or explained through AI services is intended for **informational and organizational purposes only**.
 >
-> **HealthOrbit does not provide medical diagnosis, treatment recommendations, prescriptions, or emergency medical advice.**
+> **HealthOrbit does not provide medical diagnosis, prescriptions, treatment recommendations, or emergency medical advice.**
 >
-> Medical decisions should always be made with a qualified healthcare professional.
-
----
-
-# 🎓 Academic Project
-
-**Project:** HealthOrbit  
-**Department:** Computer Engineering  
-**College:** Smt. Radhikatai Pandav College of Engineering, Nagpur  
-**University:** Rashtrasant Tukadoji Maharaj Nagpur University  
-**Academic Year:** 2026–2027
-
----
-
-# 👥 Team
-
-<table>
-<tr>
-<td align="center"><b>Atharv Deshmukh</b></td>
-<td align="center"><b>Ansh Shahane</b></td>
-<td align="center"><b>Sujal Arse</b></td>
-<td align="center"><b>Vansh Sakhare</b></td>
-</tr>
-</table>
-
-**Project Guide:** Prof. K. R. Sarode
+> Always consult a qualified healthcare professional for medical decisions.
 
 ---
 
 <div align="center">
 
-### 🩺 One health context. One continuous story.
+<img src="https://capsule-render.vercel.app/api?type=waving&height=120&section=footer&color=0:14B8A6,50:0F766E,100:07111F" width="100%" alt="HealthOrbit Footer"/>
 
-**Reports • Measurements • Timeline • Trends • Wearables • AI**
+### Build a clearer picture of your health information.
 
-<br/>
-
-[![HealthOrbit](https://img.shields.io/badge/Explore-HealthOrbit-14B8A6?style=for-the-badge)](https://healthorbit.onrender.com/)
+[![Launch HealthOrbit](https://img.shields.io/badge/Launch-HealthOrbit-14B8A6?style=for-the-badge&logo=render&logoColor=white)](https://healthorbit.onrender.com/)
 
 </div>
-```
-
-You can now **select everything inside that single block**, copy it, open your GitHub `README.md`, replace the old content, and commit it.
