@@ -1,240 +1,227 @@
-const mongoose = require('mongoose');
-const MedicalReport = require('../models/MedicalReport');
-const HealthMeasurement = require('../models/HealthMeasurement');
+const healthTrendsService = require('../services/healthTrendsService');
+const healthTimelineService = require('../services/healthTimelineService');
+const { chatWithMeshAPI } = require('../services/aiService');
 
-// Helper to extract the logged-in User ID across all session styles
-const getActiveUserId = (req) => {
-    if (req.user && req.user._id) return req.user._id;
-    if (req.session && req.session.passport && req.session.passport.user) return req.session.passport.user;
-    if (req.session && req.session.userId) return req.session.userId;
-    if (req.userContextId) return req.userContextId;
-    return null;
-};
+const dashboardService = require('../services/dashboardService');
 
-// Builds a safe query that matches both ObjectId and String forms of the userId
-const buildUserQuery = (userId, extraQuery = {}) => {
-    const rawId = userId.toString();
-    const idVariants = [rawId];
-    if (mongoose.Types.ObjectId.isValid(rawId)) {
-        idVariants.push(new mongoose.Types.ObjectId(rawId));
-    }
-    return {
-        userId: { $in: idVariants },
-        ...extraQuery
-    };
-};
-
-// Helper: Extracts clean metric maps with today's dynamic steps/distance/calories
-const processWearableMetrics = (rawWearables) => {
-    const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-    const latestMetrics = {};
-    for (const record of rawWearables) {
-        if (!latestMetrics[record.metricKey]) {
-            latestMetrics[record.metricKey] = record;
-        }
-    }
-
-    // Filter today's records for active metrics
-    const todayRecords = rawWearables.filter(r => new Date(r.recordedAt) >= startOfDay);
-
-    // 1. STEPS: Take the highest/latest reported reading for today
-    const stepRecords = todayRecords.filter(r => r.metricKey === 'steps');
-    if (stepRecords.length > 0) {
-        // If the companion app updates via $set, pick the maximum or most recent record
-        const maxSteps = Math.max(...stepRecords.map(r => Number(r.numericValue || r.value) || 0));
-        latestMetrics['steps'] = {
-            metricName: 'Steps',
-            metricKey: 'steps',
-            value: maxSteps.toLocaleString(),
-            numericValue: maxSteps,
-            unit: 'steps',
-            recordedAt: stepRecords[0].recordedAt
-        };
-    }
-
-    // 2. DISTANCE (km): Take the latest/maximum distance reported today
-    const distRecords = todayRecords.filter(r => r.metricKey === 'distance');
-    if (distRecords.length > 0) {
-        const maxDistance = Math.max(...distRecords.map(r => Number(r.numericValue || r.value) || 0));
-        latestMetrics['distance'] = {
-            metricName: 'Distance Traveled',
-            metricKey: 'distance',
-            value: maxDistance.toFixed(2),
-            numericValue: Number(maxDistance.toFixed(2)),
-            unit: 'km',
-            recordedAt: distRecords[0].recordedAt
-        };
-    }
-
-    // 3. CALORIES (kcal): Take the latest/maximum burned calories for today
-    const calRecords = todayRecords.filter(r => r.metricKey === 'calories');
-    if (calRecords.length > 0) {
-        const maxCalories = Math.max(...calRecords.map(r => Number(r.numericValue || r.value) || 0));
-        latestMetrics['calories'] = {
-            metricName: 'Active Energy Burned',
-            metricKey: 'calories',
-            value: Math.round(maxCalories),
-            numericValue: Math.round(maxCalories),
-            unit: 'kcal',
-            recordedAt: calRecords[0].recordedAt
-        };
-    }
-
-    return latestMetrics;
-};
-
-// 1. Main Dashboard Index Page
+// 1. Overview Dashboard
 const getDashboard = async (req, res) => {
     try {
-        const rawUserId = getActiveUserId(req);
-        if (!rawUserId) return res.redirect('/login');
+        const activeUserId = req.userContextId || req.session?.userId || (req.user && req.user._id);
+        if (!activeUserId) return res.redirect('/auth');
 
-        const [reportCount, recentMeasurements, rawWearables] = await Promise.all([
-            MedicalReport.countDocuments(buildUserQuery(rawUserId)),
-            HealthMeasurement.find(buildUserQuery(rawUserId))
-                .sort({ recordedAt: -1 })
-                .limit(6)
-                .lean(),
-            HealthMeasurement.find(
-                buildUserQuery(rawUserId, {
-                    $or: [
-                        { sourceType: 'wearable' },
-                        { provider: 'health_connect' },
-                        { source: { $regex: /wearable|device/i } }
-                    ]
-                })
-            )
-                .sort({ recordedAt: -1 })
-                .limit(100)
-                .lean()
-        ]);
+        let dashboardData = { hasHealthData: false, user: { firstName: 'User' } };
+        let dashboardError = false;
 
-        // Unified extraction ensures the main dashboard displays true live synced data
-        const latestWearables = processWearableMetrics(rawWearables);
+        try {
+            dashboardData = await dashboardService.getDashboardData(activeUserId);
+        } catch (err) {
+            console.error('[Dashboard Data Error]:', err.message);
+            dashboardError = true;
+        }
 
         res.render('dashboard/index', {
-            reportCount,
-            recentMeasurements,
-            recentWearables: rawWearables.slice(0, 4),
-            latestWearables,
-            user: req.user || req.session.user
+            userName: req.user ? req.user.fullName : (req.session?.userName || 'User'),
+            csrfToken: req.csrfToken ? req.csrfToken() : (res.locals.csrfToken || ''),
+            dashboardData,
+            dashboardError
         });
-    } catch (error) {
-        console.error('[HealthOrbit] Dashboard Load Error:', error);
-        res.render('dashboard/index', {
-            reportCount: 0,
-            recentMeasurements: [],
-            recentWearables: [],
-            latestWearables: {},
-            user: req.user || req.session.user
-        });
+    } catch (err) {
+        console.error('[HealthOrbit] getDashboard fatal error:', err.message);
+        res.redirect('/auth');
     }
 };
 
-// 2. Timeline
-const getTimeline = async (req, res) => {
-    try {
-        const rawUserId = getActiveUserId(req);
-        if (!rawUserId) return res.redirect('/login');
 
-        const [reports, measurements] = await Promise.all([
-            MedicalReport.find(buildUserQuery(rawUserId)).sort({ date: -1, createdAt: -1 }).lean(),
-            HealthMeasurement.find(buildUserQuery(rawUserId)).sort({ recordedAt: -1 }).limit(100).lean()
-        ]);
-
-        const timelineEvents = [
-            ...reports.map(r => ({
-                type: 'report',
-                title: r.reportType || 'Medical Report',
-                date: r.date || r.createdAt,
-                details: r.summary || r.notes || '',
-                id: r._id
-            })),
-            ...measurements.map(m => ({
-                type: m.sourceType === 'wearable' ? 'wearable' : 'clinical_lab',
-                title: m.metricName,
-                value: `${m.value} ${m.unit || ''}`.trim(),
-                date: m.recordedAt,
-                provider: m.provider || 'Health Connect',
-                id: m._id
-            }))
-        ].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-        res.render('dashboard/timeline.ejs', {
-            timelineEvents,
-            user: req.user || req.session.user
-        });
-    } catch (error) {
-        console.error('[HealthOrbit] Timeline Load Error:', error);
-        res.redirect('/dashboard');
-    }
-};
-
-// 3. Trends
+// 2. Health Trends
 const getTrends = async (req, res) => {
     try {
-        const rawUserId = getActiveUserId(req);
-        if (!rawUserId) return res.redirect('/login');
+        const activeUserId = req.userContextId || req.session?.userId || (req.user && req.user._id);
+        if (!activeUserId) return res.redirect('/auth');
 
-        const measurements = await HealthMeasurement.find(
-            buildUserQuery(rawUserId, { numericValue: { $ne: null } })
-        )
-            .sort({ recordedAt: 1 })
-            .limit(100)
-            .lean();
+        const { range, metric, source, from, to } = req.query;
 
-        res.render('dashboard/trends.ejs', {
-            measurements,
-            user: req.user || req.session.user
+        let trendData = { hasData: false, availableMetrics: [] };
+        if (healthTrendsService && typeof healthTrendsService.getHealthTrendsForUser === 'function') {
+            trendData = await healthTrendsService.getHealthTrendsForUser({
+                userId: activeUserId,
+                range: range || '30d',
+                metric: metric || null,
+                source: source || 'all',
+                from: from || null,
+                to: to || null
+            });
+        }
+
+        let aiSummary = null;
+        if (trendData && trendData.hasData && trendData.primaryTrend && trendData.primaryTrend.points && trendData.primaryTrend.points.length >= 2) {
+            try {
+                const compactFacts = {
+                    period: trendData.selectedRange,
+                    metric: trendData.primaryTrend.label,
+                    current: `${trendData.primaryTrend.currentValue} ${trendData.primaryTrend.unit}`.trim(),
+                    average: `${trendData.primaryTrend.averageValue} ${trendData.primaryTrend.unit}`.trim(),
+                    trendDirection: trendData.primaryTrend.direction,
+                    deviationsCount: (trendData.deviations || []).length
+                };
+
+                const prompt = `You are HealthOrbit's clinical analytics assistant. Synthesize these deterministic facts into a brief 40-60 word trend observation. Do NOT diagnose or prescribe.\nFACTS: ${JSON.stringify(compactFacts)}`;
+                aiSummary = await chatWithMeshAPI("Summarize my trends.", prompt);
+            } catch (aiErr) {
+                console.warn('[HealthTrends AI Warning]:', aiErr.message);
+                aiSummary = null;
+            }
+        }
+        trendData.aiSummary = aiSummary;
+
+        res.render('dashboard/trends', {
+            trendData,
+            trendError: false,
+            userName: req.user ? req.user.fullName : (req.session?.userName || 'User'),
+            csrfToken: req.csrfToken ? req.csrfToken() : (res.locals.csrfToken || '')
         });
     } catch (error) {
-        console.error('[HealthOrbit] Trends Load Error:', error);
-        res.redirect('/dashboard');
+        console.error('[HealthOrbit] getTrends error:', error.message);
+        res.render('dashboard/trends', {
+            trendData: { hasData: false, availableMetrics: [] },
+            trendError: true,
+            userName: req.user ? req.user.fullName : (req.session?.userName || 'User'),
+            csrfToken: req.csrfToken ? req.csrfToken() : (res.locals.csrfToken || '')
+        });
     }
 };
 
-// 4. Wearables & Telemetry Integration Page
+// 3. Health Timeline
+const getTimeline = async (req, res) => {
+    try {
+        const activeUserId = req.userContextId || req.session?.userId || (req.user && req.user._id);
+        if (!activeUserId) return res.redirect('/auth');
+
+        let timelineEvents = [];
+        if (healthTimelineService && typeof healthTimelineService.getTimelineForUser === 'function') {
+            timelineEvents = await healthTimelineService.getTimelineForUser(activeUserId, 50);
+        }
+
+        res.render('dashboard/timeline', {
+            timelineEvents: timelineEvents || [],
+            timelineError: false,
+            userName: req.user ? req.user.fullName : (req.session?.userName || 'User'),
+            csrfToken: req.csrfToken ? req.csrfToken() : (res.locals.csrfToken || '')
+        });
+    } catch (error) {
+        console.error('[HealthOrbit] getTimeline error:', error.message);
+        res.render('dashboard/timeline', {
+            timelineEvents: [],
+            timelineError: true,
+            userName: req.user ? req.user.fullName : (req.session?.userName || 'User'),
+            csrfToken: req.csrfToken ? req.csrfToken() : (res.locals.csrfToken || '')
+        });
+    }
+};
+
+// 4. Wearables View (CRASH FIXED)
 const getWearables = async (req, res) => {
     try {
-        const rawUserId = getActiveUserId(req);
-        if (!rawUserId) return res.redirect('/login');
+        const activeUserId = req.userContextId || req.session?.userId || (req.user && req.user._id);
+        if (!activeUserId) return res.redirect('/auth');
 
-        const rawWearables = await HealthMeasurement.find(
-            buildUserQuery(rawUserId, {
-                $or: [
-                    { sourceType: 'wearable' },
-                    { provider: 'health_connect' },
-                    { source: { $regex: /wearable|device/i } }
-                ]
-            })
-        )
-            .sort({ recordedAt: -1 })
-            .limit(100)
-            .lean();
+        let latestMetrics = {};
+        let wearables = []; // <--- FIXED: Renamed to strictly match the GitHub wearables.ejs variable expectation
 
-        const latestMetrics = processWearableMetrics(rawWearables);
+        try {
+            const HealthMeasurement = require('../models/HealthMeasurement');
+            const records = await HealthMeasurement.find({ 
+                userId: activeUserId, 
+                sourceType: { $in: ['wearable', 'Health Connect'] } 
+            }).sort({ recordedAt: -1 }).limit(50).lean();
+            
+            wearables = records;
+            
+            records.forEach(r => {
+                const key = r.metricKey || (r.metricName ? r.metricName.toLowerCase().replace(/ /g, '_') : null);
+                if (key && !latestMetrics[key]) {
+                    latestMetrics[key] = r;
+                }
+            });
+        } catch (e) {
+            console.warn('[Wearables] DB fetch error:', e.message);
+        }
 
-        res.render('dashboard/wearables.ejs', {
-            wearables: rawWearables,
+        res.render('dashboard/wearables', {
+            userName: req.user ? req.user.fullName : (req.session?.userName || 'User'),
+            csrfToken: req.csrfToken ? req.csrfToken() : (res.locals.csrfToken || ''),
             latestMetrics,
-            user: req.user || req.session.user
+            wearables,          // Exposes the array using the exact name EJS requires
+            wearableRecords: wearables // Fallback duplicate just in case
+        });
+    } catch (err) {
+        console.error('[HealthOrbit] getWearables error:', err.message);
+        res.render('dashboard/module-soon');
+    }
+};
+
+// 5. Medicines View
+const getMedicines = async (req, res) => {
+    try {
+        const activeUserId = req.userContextId || req.session?.userId || (req.user && req.user._id);
+        if (!activeUserId) return res.redirect('/auth');
+
+        let medicines = [];
+        let logs = [];
+
+        try {
+            const Medicine = require('../models/Medicine');
+            const MedicineLog = require('../models/MedicineLog');
+            medicines = await Medicine.find({ userId: activeUserId }).lean();
+            logs = await MedicineLog.find({ userId: activeUserId }).sort({ date: -1, scheduledTime: -1 }).limit(30).lean();
+        } catch (e) {
+            console.warn('[Medicines] DB fetch error:', e.message);
+        }
+
+        res.render('dashboard/medicines', {
+            userName: req.user ? req.user.fullName : (req.session?.userName || 'User'),
+            csrfToken: req.csrfToken ? req.csrfToken() : (res.locals.csrfToken || ''),
+            medicines,
+            logs
+        });
+    } catch (err) {
+        console.error('[HealthOrbit] getMedicines error:', err.message);
+        res.render('dashboard/module-soon');
+    }
+};
+
+// 6. Generic Error Page
+const getErrorPage = async (req, res) => {
+    try {
+        res.render('dashboard/error', {
+            message: 'An unexpected application state occurred.'
+        });
+    } catch (err) {
+        res.status(500).send('Application Error');
+    }
+};
+
+
+const getBodyTwin = async (req, res) => {
+    try {
+        // Minimum viable render context. No backend data queries yet.
+        res.render('dashboard/body-twin', {
+            path: '/body-twin',
+            userName: req.user ? req.user.fullName : 'User'
         });
     } catch (error) {
-        console.error('[HealthOrbit] Wearables Load Error:', error);
+        console.error('Error loading Body Twin:', error);
         res.redirect('/dashboard');
     }
 };
 
-const getErrorPage = (req, res) => {
-    res.render('errors/not-found.ejs');
-};
 
 module.exports = {
     getDashboard,
-    getTimeline,
     getTrends,
+    getTimeline,
     getWearables,
-    getErrorPage
+    getMedicines,
+    getErrorPage,
+    getBodyTwin
 };

@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b5e55">
 <title>HealthOrbit — AI-Powered Personal Health Intelligence Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -10,84 +11,199 @@
 <link rel="icon" href="/images/Logo.png">
 
 <style>
-/* 
-==================================================================
-  BULLETPROOF MOBILE UX OVERRIDES (MAX-WIDTH: 768px)
-  This block uses aggressive '!important' rules to completely 
-  override any desktop spacing, gaps, or flex behaviors that 
-  were causing the components to separate on mobile screens.
-================================================================== 
-*/
+/* ==========================================================
+   ENHANCED AMBIENT ORBS & ENTRANCE ANIMATION (DESKTOP / GENERAL)
+   (unchanged)
+========================================================== */
+.ho-ambient-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.ho-glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.65;
+  animation: hoFloatOrb 20s ease-in-out infinite alternate;
+}
+.ho-orb-1 { width: 550px; height: 550px; background: #76d7c4 !important; top: -100px; left: -100px; }
+.ho-orb-2 { width: 600px; height: 600px; background: #fadbd8 !important; bottom: -150px; right: -100px; animation-delay: -5s; }
+.ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 35%; left: 35%; opacity: 0.3; animation-delay: -10s; }
 
+@keyframes hoFloatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(50px, 60px) scale(1.15); }
+}
 
+@keyframes authEntrance {
+  from { opacity: 0; transform: translateY(20px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
 
+.auth-viewport {
+  animation: authEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ==========================================================
+   REDESIGNED FEATURE MATRIX (unchanged)
+========================================================== */
+.health-matrix-container { width: 100%; margin: 1.5rem 0 1rem; }
+
+.matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(13, 122, 110, 0.2) transparent;
+}
+.matrix-grid::-webkit-scrollbar { width: 4px; }
+.matrix-grid::-webkit-scrollbar-thumb { background: rgba(13, 122, 110, 0.2); border-radius: 999px; }
+
+.matrix-card {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 15px rgba(11, 94, 85, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+.matrix-card:hover {
+  background: #ffffff;
+  border-color: rgba(16, 148, 133, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(13, 122, 110, 0.1);
+}
+.matrix-icon-box {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: rgba(13, 122, 110, 0.08); color: #0b5e55;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0; transition: transform 0.3s ease;
+}
+.matrix-card:hover .matrix-icon-box { transform: scale(1.1) rotate(-5deg); background: #e8f8f5; }
+.matrix-info { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.matrix-info strong { font-size: 0.82rem; font-weight: 750; color: #0b5e55; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.matrix-info span { font-size: 0.7rem; font-weight: 600; color: #4e6b63; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+
+.hd-hero-h2 { font-weight: 900; line-height: 1.06; letter-spacing: -1px; margin-bottom: .8rem; }
+.hd-hero-h2 em { font-style: normal; background: linear-gradient(100deg, #9be8d3, #ffd2c8 70%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* ==========================================================
+   MOBILE-ONLY ELEMENTS: HIDDEN ON DESKTOP (desktop stays as-is)
+========================================================== */
+.m-chips, .m-ecg, .m-secure, .m-tab-pill, .m-eye, .m-ripple { display: none; }
+
+/* ==========================================================
+   ✦ NEW MOBILE EXPERIENCE (max-width: 768px) ✦
+   - Aurora background + floating orbs
+   - Pulsing orbit logo, ECG heartbeat line, staggered hero
+   - Auto-scrolling feature chips
+   - Bottom-sheet card that slides up
+   - Sliding pill tabs, floating-focus inputs, show/hide password
+   - Ripple buttons, staggered field animations
+========================================================== */
 @media screen and (max-width: 768px) {
-  /* 1. Reset Body to Natural Scroll */
-  body, html {
+
+  html, body {
     height: auto !important;
     min-height: 100vh !important;
+    min-height: 100dvh !important;
     overflow-x: hidden !important;
-    background: #edf6f4 !important; /* Solid clean background */
     margin: 0 !important;
     padding: 0 !important;
+    background:
+      radial-gradient(120% 60% at 50% -10%, #0d7a6e 0%, #0b5e55 38%, transparent 70%),
+      linear-gradient(180deg, #0b5e55 0%, #d9f1ec 55%, #edf6f4 100%) !important;
+    background-attachment: fixed !important;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  /* Kill the orbs on mobile to improve performance and stop ghost-spacing */
+  /* ---------- Aurora orbs (kept, tuned for mobile) ---------- */
+  .ho-ambient-canvas { display: block !important; }
+  .ho-glow-orb { filter: blur(60px) !important; animation-duration: 14s !important; }
+  .ho-orb-1 { width: 260px !important; height: 260px !important; top: -60px !important; left: -80px !important; background: #76d7c4 !important; opacity: .55 !important; }
+  .ho-orb-2 { width: 280px !important; height: 280px !important; bottom: 10% !important; right: -100px !important; background: #fadbd8 !important; opacity: .7 !important; }
+  .ho-orb-3 { width: 200px !important; height: 200px !important; top: 30% !important; left: 40% !important; opacity: .35 !important; }
   .ambient-canvas { display: none !important; }
 
-  /* 2. Main Viewport Container - Strict Top-Down Stacking */
+  /* ---------- Viewport: top-down stack ---------- */
   .auth-viewport {
-    display: flex !important; 
+    position: relative !important;
+    z-index: 1 !important;
+    display: flex !important;
     flex-direction: column !important;
-    justify-content: flex-start !important; /* Pushes everything to the top */
-    align-items: center !important; /* Centers everything perfectly */
+    justify-content: flex-start !important;
+    align-items: stretch !important;
     height: auto !important;
     min-height: 100vh !important;
+    min-height: 100dvh !important;
     padding: 0 !important;
     margin: 0 !important;
-    gap: 0 !important; /* Kills any inherited gaps */
+    gap: 0 !important;
     background: transparent !important;
   }
 
-  /* 3. Brand Panel - Compact & Centered */
+  /* ---------- Brand panel ---------- */
   .brand-panel {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
     width: 100% !important;
     height: auto !important;
     min-height: 0 !important;
-    flex: none !important; /* Stops it from growing and taking up space */
+    flex: none !important;
     background: none !important;
     border: none !important;
     box-shadow: none !important;
     margin: 0 !important;
-    padding: 2rem 1rem 0.5rem !important; /* CRITICAL: 0.5rem bottom padding leaves almost 0 space before the form */
+    padding: calc(1.4rem + env(safe-area-inset-top)) 1.2rem 1.6rem !important;
+    position: relative !important;
+    overflow: visible !important;
   }
-  
-  /* Kill any desktop pseudo-elements causing green boxes */
   .brand-panel::before, .brand-panel::after { display: none !important; }
 
   .brand-header {
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-    gap: 0.5rem !important;
-    margin-bottom: 1.2rem !important;
+    gap: .55rem !important;
+    margin: 0 0 1.1rem !important;
+    padding: .45rem 1rem .45rem .6rem !important;
+    background: rgba(255,255,255,.14) !important;
+    border: 1px solid rgba(255,255,255,.3) !important;
+    border-radius: 999px !important;
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    animation: mDropIn .7s cubic-bezier(.16,1,.3,1) both;
   }
-
-  .logo-orbit-container { width: 30px !important; height: 30px !important; flex-shrink: 0 !important; }
-
+  .logo-orbit-container {
+    width: 30px !important; height: 30px !important; flex-shrink: 0 !important;
+    filter: drop-shadow(0 0 8px rgba(155,232,211,.7));
+  }
   .nav-logo {
     font-family: 'Plus Jakarta Sans', sans-serif !important;
     font-weight: 800 !important;
-    font-size: 1.5rem !important;
-    color: #0b5e55 !important;
+    font-size: 1.35rem !important;
+    color: #ffffff !important;
     white-space: nowrap !important;
+    letter-spacing: -.3px !important;
   }
-  .brand-highlight { color: #e07a68 !important; }
+  .brand-highlight { color: #ffd2c8 !important; }
 
+  /* ---------- Hero ---------- */
   .hero-content {
     display: flex !important;
     flex-direction: column !important;
@@ -97,155 +213,400 @@
     margin: 0 !important;
     padding: 0 !important;
   }
-
   .hero-content h1 {
-    font-size: 1.7rem !important;
-    line-height: 1.2 !important;
-    margin: 0 0 0.4rem 0 !important;
-    color: #0b5e55 !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 2rem !important;
+    line-height: 1.1 !important;
+    letter-spacing: -1px !important;
+    margin: 0 0 .6rem !important;
+    color: #ffffff !important;
+    animation: mRise .8s .12s cubic-bezier(.16,1,.3,1) both;
   }
-  
+  .hero-content h1 em {
+    background: linear-gradient(100deg, #b6f5e3 0%, #ffd2c8 60%, #b6f5e3 100%) !important;
+    background-size: 200% auto !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
+    animation: mShimmer 4s linear infinite;
+  }
   .hero-content p {
-    font-size: 0.9rem !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: .92rem !important;
+    line-height: 1.5 !important;
     margin: 0 auto !important;
-    max-width: 90% !important;
-    color: #4e6b63 !important;
-    line-height: 1.4 !important;
+    max-width: 320px !important;
+    color: rgba(255,255,255,.85) !important;
+    animation: mRise .8s .24s cubic-bezier(.16,1,.3,1) both;
   }
 
-  /* Hide massive desktop features list */
+  /* ECG heartbeat line */
+  .m-ecg {
+    display: block !important;
+    width: 100%;
+    max-width: 300px;
+    height: 36px;
+    margin: 1rem auto .2rem;
+    overflow: visible;
+    animation: mRise .8s .32s cubic-bezier(.16,1,.3,1) both;
+  }
+  .m-ecg path {
+    fill: none;
+    stroke: #9be8d3;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 420;
+    stroke-dashoffset: 420;
+    filter: drop-shadow(0 0 5px rgba(155,232,211,.9));
+    animation: mEcg 2.8s linear infinite;
+  }
+
+  /* Secure pill */
+  .m-secure {
+    display: inline-flex !important;
+    align-items: center;
+    gap: .45rem;
+    margin-top: .7rem;
+    padding: .38rem .85rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.28);
+    color: #fff;
+    font: 600 .72rem 'Inter', sans-serif;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    animation: mRise .8s .4s cubic-bezier(.16,1,.3,1) both;
+  }
+  .m-secure i {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #6ff0c4;
+    box-shadow: 0 0 0 0 rgba(111,240,196,.7);
+    animation: mPulse 1.8s infinite;
+  }
+
+  /* Desktop-only bits */
   .telemetry-marquee, .brand-footer-note { display: none !important; }
 
-  /* 4. Form Panel - Pull it up tight to the text */
+  /* ---------- Auto-scrolling feature chips ---------- */
+  .m-chips {
+    display: block !important;
+    width: calc(100% + 2.4rem);
+    margin: 1.3rem -1.2rem 0;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    animation: mRise .8s .5s cubic-bezier(.16,1,.3,1) both;
+  }
+  .m-chips-track {
+    display: flex;
+    gap: .55rem;
+    width: max-content;
+    animation: mMarquee 28s linear infinite;
+  }
+  .m-chips:active .m-chips-track { animation-play-state: paused; }
+  .m-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .5rem .85rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,.92);
+    color: #0b5e55;
+    font: 700 .74rem 'Plus Jakarta Sans', sans-serif;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(5,60,54,.16);
+  }
+  .m-chip b { font-size: .95rem; }
+
+  /* ---------- Form panel = bottom sheet ---------- */
   .form-panel {
     display: flex !important;
     flex-direction: column !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
+    align-items: stretch !important;
+    justify-content: flex-end !important;
     width: 100% !important;
     height: auto !important;
     min-height: 0 !important;
-    flex: none !important;
+    flex: 1 1 auto !important;
     background: transparent !important;
     margin: 0 !important;
-    padding: 0.5rem 1.2rem 3rem !important; /* CRITICAL: 0.5rem top padding to touch the brand-panel */
+    padding: 0 !important;
   }
 
-  /* Compact, clean, mobile-optimized white card */
   .liquid-card {
     display: block !important;
+    position: relative !important;
     width: 100% !important;
-    max-width: 450px !important;
-    margin: 0 auto !important;
-    padding: 1.8rem 1.5rem !important;
-    border-radius: 20px !important;
-    background: #ffffff !important;
-    box-shadow: 0 8px 30px rgba(13, 122, 110, 0.08) !important;
-    border: 1px solid rgba(13, 122, 110, 0.05) !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 1.6rem 1.35rem calc(2rem + env(safe-area-inset-bottom)) !important;
+    border-radius: 30px 30px 0 0 !important;
+    background: rgba(255,255,255,.96) !important;
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,.9) !important;
+    border-bottom: none !important;
+    box-shadow: 0 -14px 50px rgba(5,60,54,.22) !important;
+    animation: mSheetUp .9s .2s cubic-bezier(.16,1,.3,1) both;
+  }
+  /* grab handle */
+  .liquid-card::before {
+    content: "" !important;
+    display: block !important;
+    width: 44px; height: 5px;
+    margin: -.55rem auto 1.15rem;
+    border-radius: 999px;
+    background: #cfe3df;
   }
 
-  /* 5. Inputs & Touch Targets */
+  /* ---------- Sliding pill tabs ---------- */
   .glass-tabs {
+    position: relative !important;
     display: flex !important;
-    background: #f0f7f6 !important;
+    background: #eef6f4 !important;
     border-radius: 999px !important;
     padding: 4px !important;
-    margin-bottom: 1.5rem !important;
-    border: 1px solid rgba(13, 122, 110, 0.05) !important;
+    margin: 0 0 1.4rem !important;
+    border: 1px solid rgba(13,122,110,.08) !important;
   }
+  .m-tab-pill {
+    display: block !important;
+    position: absolute;
+    top: 4px; bottom: 4px; left: 4px;
+    width: calc(50% - 4px);
+    border-radius: 999px;
+    background: linear-gradient(135deg, #0d7a6e, #0b5e55);
+    box-shadow: 0 6px 16px rgba(11,94,85,.35);
+    transition: transform .45s cubic-bezier(.34,1.56,.64,1);
+    z-index: 0;
+  }
+  .glass-tabs:has(#tabSignup.active) .m-tab-pill { transform: translateX(100%); }
   .glass-tabs button {
+    position: relative !important;
+    z-index: 1 !important;
     flex: 1 !important;
-    padding: 0.8rem 0 !important;
-    font-size: 0.9rem !important;
+    padding: .85rem 0 !important;
+    font: 700 .9rem 'Plus Jakarta Sans', sans-serif !important;
     border-radius: 999px !important;
-    font-weight: 700 !important;
     color: #4e6b63 !important;
     border: none !important;
     background: transparent !important;
+    box-shadow: none !important;
+    transition: color .3s ease, transform .15s ease !important;
   }
-  .glass-tabs button.active {
-    background: #ffffff !important;
+  .glass-tabs button:active { transform: scale(.96) !important; }
+  .glass-tabs button.active { color: #ffffff !important; background: transparent !important; box-shadow: none !important; }
+
+  /* ---------- Titles ---------- */
+  .form-title-group { text-align: center !important; margin: 0 0 1.4rem !important; }
+  .form-title-group h2 {
+    font: 800 1.5rem 'Plus Jakarta Sans', sans-serif !important;
+    letter-spacing: -.5px !important;
+    margin: 0 0 .25rem !important;
     color: #0b5e55 !important;
-    box-shadow: 0 2px 8px rgba(13, 122, 110, 0.08) !important;
   }
+  .form-title-group p { font: 500 .86rem 'Inter', sans-serif !important; color: #4e6b63 !important; margin: 0 !important; }
 
-  .form-title-group { text-align: center !important; margin-bottom: 1.5rem !important; }
-  .form-title-group h2 { font-size: 1.4rem !important; margin-bottom: 0.2rem !important; color: #0b5e55 !important; }
-  .form-title-group p { font-size: 0.85rem !important; color: #4e6b63 !important; margin: 0 !important;}
+  /* ---------- Staggered field entrance (re-runs on every tab switch) ---------- */
+  .auth-form.active .form-title-group,
+  .auth-form.active .server-error-banner,
+  .auth-form.active .input-group,
+  .auth-form.active .form-options,
+  .auth-form.active .liquid-submit-btn,
+  .auth-form.active .auth-divider,
+  .auth-form.active .google-auth-btn,
+  .auth-form.active .switch-prompt {
+    animation: mRise .6s cubic-bezier(.16,1,.3,1) both;
+  }
+  .auth-form.active .form-title-group { animation-delay: .05s; }
+  .auth-form.active .input-group:nth-of-type(1) { animation-delay: .10s; }
+  .auth-form.active .input-group:nth-of-type(2) { animation-delay: .16s; }
+  .auth-form.active .input-group:nth-of-type(3) { animation-delay: .22s; }
+  .auth-form.active .input-group:nth-of-type(4) { animation-delay: .28s; }
+  .auth-form.active .form-options { animation-delay: .26s; }
+  .auth-form.active .liquid-submit-btn { animation-delay: .32s; }
+  .auth-form.active .auth-divider { animation-delay: .38s; }
+  .auth-form.active .google-auth-btn { animation-delay: .42s; }
+  .auth-form.active .switch-prompt { animation-delay: .48s; }
 
-  .input-group { margin-bottom: 1.2rem !important; text-align: left !important; }
-  .input-group label { display: block !important; font-size: 0.8rem !important; margin-bottom: 0.4rem !important; font-weight: 700 !important; color: #0b5e55 !important; }
-  
-  /* 16px completely disables iOS Safari auto-zoom */
+  /* ---------- Inputs ---------- */
+  .input-group { margin-bottom: 1.1rem !important; text-align: left !important; position: relative; }
+  .input-group label {
+    display: block !important;
+    font: 700 .78rem 'Plus Jakarta Sans', sans-serif !important;
+    letter-spacing: .2px !important;
+    margin-bottom: .4rem !important;
+    color: #0b5e55 !important;
+    transition: color .25s ease, transform .25s ease;
+  }
+  .input-group:focus-within label { color: #0d9a88 !important; transform: translateX(3px); }
+
+  .input-wrapper { position: relative !important; }
   .input-wrapper input {
     width: 100% !important;
-    height: 50px !important;
+    box-sizing: border-box !important;
+    height: 52px !important;
     padding: 0 1.2rem !important;
-    font-size: 16px !important; 
-    border-radius: 12px !important;
-    background: #f8fbfb !important;
-    border: 1px solid #e2ecea !important;
+    font-size: 16px !important;               /* stops iOS zoom */
+    font-family: 'Inter', sans-serif !important;
+    border-radius: 14px !important;
+    background: #f6fbfa !important;
+    border: 1.5px solid #e0ecea !important;
     color: #0f1c1a !important;
+    outline: none !important;
+    transition: border-color .25s ease, box-shadow .25s ease, background .25s ease, transform .25s ease !important;
   }
+  .input-wrapper input:focus {
+    background: #ffffff !important;
+    border-color: #14a090 !important;
+    box-shadow: 0 0 0 4px rgba(20,160,144,.14), 0 8px 22px rgba(13,122,110,.1) !important;
+    transform: translateY(-1px);
+  }
+  .input-wrapper input[type="password"],
+  .input-wrapper input.m-has-eye { padding-right: 3.2rem !important; }
 
+  /* Show / hide password */
+  .m-eye {
+    display: flex !important;
+    align-items: center; justify-content: center;
+    position: absolute; right: 6px; top: 50%;
+    width: 42px; height: 42px;
+    margin-top: -21px;
+    border: none; background: transparent;
+    color: #6d8a83; font-size: 1.1rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease, transform .2s ease;
+  }
+  .m-eye:active { background: #e3f1ee; transform: scale(.9); }
+  .m-eye.on { color: #0d9a88; }
+
+  .error-hint, .input-helper { font-size: .74rem !important; margin-top: .35rem !important; display: block; }
+
+  .server-error-banner { border-radius: 12px !important; font-size: .82rem !important; }
+  .server-error-banner.show { animation: mShake .45s ease; }
+
+  /* ---------- Options row ---------- */
   .form-options {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    font-size: 0.85rem !important;
-    margin-bottom: 1.5rem !important;
+    font: 500 .84rem 'Inter', sans-serif !important;
+    margin: .2rem 0 1.4rem !important;
   }
+  .forgot-link { color: #e07a68 !important; font-weight: 700 !important; text-decoration: none !important; }
 
+  /* ---------- Primary button ---------- */
   .liquid-submit-btn {
+    position: relative !important;
+    overflow: hidden !important;
     width: 100% !important;
-    height: 50px !important;
-    border-radius: 12px !important;
-    font-size: 1rem !important;
-    font-weight: 800 !important;
+    height: 54px !important;
+    border-radius: 16px !important;
+    font: 800 1rem 'Plus Jakarta Sans', sans-serif !important;
+    letter-spacing: .2px !important;
+    color: #fff !important;
+    border: none !important;
+    background: linear-gradient(120deg, #0d7a6e 0%, #109485 50%, #0b5e55 100%) !important;
+    background-size: 200% auto !important;
+    box-shadow: 0 12px 28px rgba(13,122,110,.38) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    transition: transform .15s ease, box-shadow .2s ease, background-position .6s ease !important;
+  }
+  .liquid-submit-btn:active { transform: scale(.97) !important; box-shadow: 0 6px 16px rgba(13,122,110,.3) !important; background-position: right center !important; }
+  .liquid-submit-btn.is-loading span { opacity: 0; }
+  .liquid-submit-btn.is-loading::after {
+    content: ""; position: absolute; width: 22px; height: 22px;
+    border: 3px solid rgba(255,255,255,.4); border-top-color: #fff;
+    border-radius: 50%; animation: mSpin .7s linear infinite;
+  }
+  .m-ripple {
+    display: block !important;
+    position: absolute; border-radius: 50%;
+    background: rgba(255,255,255,.45);
+    transform: scale(0);
+    animation: mRipple .65s ease-out forwards;
+    pointer-events: none;
   }
 
-  .auth-divider { margin: 1.5rem 0 !important; text-align: center !important; font-size: 0.85rem !important; color: #4e6b63 !important; }
+  /* ---------- Divider ---------- */
+  .auth-divider {
+    margin: 1.4rem 0 !important;
+    text-align: center !important;
+    font: 600 .8rem 'Inter', sans-serif !important;
+    color: #7a948d !important;
+  }
 
+  /* ---------- Google button ---------- */
   .google-auth-btn {
     width: 100% !important;
-    height: 50px !important;
-    border-radius: 12px !important;
+    box-sizing: border-box !important;
+    height: 52px !important;
+    border-radius: 16px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 0.6rem !important;
+    gap: .65rem !important;
     background: #ffffff !important;
-    border: 1px solid #e2ecea !important;
+    border: 1.5px solid #e0ecea !important;
     color: #0b5e55 !important;
-    font-weight: 700 !important;
-    font-size: 0.95rem !important;
+    font: 700 .95rem 'Plus Jakarta Sans', sans-serif !important;
+    box-shadow: 0 4px 14px rgba(13,122,110,.06) !important;
+    transition: transform .15s ease, border-color .2s ease, box-shadow .2s ease !important;
   }
+  .google-auth-btn:active { transform: scale(.97) !important; border-color: #14a090 !important; }
   .google-icon { width: 20px !important; height: 20px !important; }
 
-  .switch-prompt { text-align: center !important; font-size: 0.9rem !important; margin-top: 1.5rem !important; }
-  .legal-disclaimer { text-align: center !important; font-size: 0.75rem !important; margin-top: 1.5rem !important; color: #4e6b63 !important; }
+  /* ---------- Footer bits ---------- */
+  .switch-prompt { text-align: center !important; font: 500 .9rem 'Inter', sans-serif !important; margin-top: 1.4rem !important; color: #4e6b63 !important; }
+  .switch-prompt button { color: #0d7a6e !important; font-weight: 800 !important; background: none !important; border: none !important; padding: .3rem .2rem !important; }
+
+  .legal-disclaimer {
+    text-align: center !important;
+    font: 500 .72rem/1.5 'Inter', sans-serif !important;
+    margin-top: 1.4rem !important;
+    padding-top: 1rem !important;
+    border-top: 1px dashed #d4e6e2 !important;
+    color: #7a948d !important;
+  }
+
+  /* Hidden matrix on mobile stays one column if used */
+  .matrix-grid { grid-template-columns: 1fr; max-height: none; overflow-y: visible; }
+
+  /* ---------- Keyframes ---------- */
+  @keyframes mRise     { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes mDropIn   { from { opacity: 0; transform: translateY(-16px) scale(.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes mSheetUp  { from { opacity: 0; transform: translateY(70px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes mShimmer  { to { background-position: 200% center; } }
+  @keyframes mPulse    { 70% { box-shadow: 0 0 0 9px rgba(111,240,196,0); } 100% { box-shadow: 0 0 0 0 rgba(111,240,196,0); } }
+  @keyframes mMarquee  { to { transform: translateX(-50%); } }
+  @keyframes mEcg      { 0% { stroke-dashoffset: 420; } 60% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -420; } }
+  @keyframes mSpin     { to { transform: rotate(360deg); } }
+  @keyframes mRipple   { to { transform: scale(4); opacity: 0; } }
+  @keyframes mShake    { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  }
 }
 
-
-.ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
-.ho-orb-1 { width: 550px; height: 550px; background: #76d7c4 !important; top: -100px; left: -100px; }
-.ho-orb-2 { width: 600px; height: 600px; background: #fadbd8 !important; bottom: -150px; right: -100px; animation-delay: -5s; }
-.ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 35%; left: 35%; opacity: 0.3; animation-delay: -10s; }
-@keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 60px) scale(1.15); } }
-
+/* Very small phones */
+@media screen and (max-width: 360px) {
+  .hero-content h1 { font-size: 1.7rem !important; }
+  .liquid-card { padding-left: 1rem !important; padding-right: 1rem !important; }
+}
 </style>
 </head>
 <body>
 
   <!-- Ambient Airy Lighting Orbs -->
-  <div class="ambient-canvas">
-    <div class="glow-orb orb-1"></div>
-    <div class="glow-orb orb-2"></div>
-    <div class="glow-orb orb-3"></div>
+  <div class="ho-ambient-canvas">
+    <div class="ho-glow-orb ho-orb-1"></div>
+    <div class="ho-glow-orb ho-orb-2"></div>
+    <div class="ho-glow-orb ho-orb-3"></div>
   </div>
 
   <div class="auth-viewport">
@@ -262,14 +623,21 @@
       </div>
 
       <div class="hero-content">
-        <h1>Your health.<br><span class="gradient-text">In absolute orbit.</span></h1>
+        <h1 class="hd-hero-h2">Your health.<br><span class="hd-hero-h2"><em> In absolute orbit.</em></span></h1>
         <p>Unified medical records, wearable telemetry, and autonomous AI insights secured in one dashboard.</p>
+
+        <!-- MOBILE ONLY: animated heartbeat line -->
+        <svg class="m-ecg" viewBox="0 0 300 40" aria-hidden="true">
+          <path d="M0 20 H80 L92 20 L100 6 L112 34 L122 12 L130 20 H175 L185 20 L192 10 L200 30 L208 20 H300"/>
+        </svg>
+
+        <!-- MOBILE ONLY: secure pill -->
+        <div class="m-secure"><i></i>End-to-end encrypted health vault</div>
       </div>
 
-      <!-- LIVE SCROLLING FEATURES MARQUEE (Hidden on Mobile) -->
+      <!-- LIVE SCROLLING FEATURES MARQUEE (Desktop only) -->
       <div class="telemetry-marquee">
         <div class="telemetry-inner">
-          <!-- Features Loop -->
           <div class="feat-item"><div class="feat-icon">⚡</div><div><strong>User Profile & Auth</strong><span>Secure, permission-based access.</span></div></div>
           <div class="feat-item"><div class="feat-icon">📄</div><div><strong>Report Management</strong><span>OCR-powered data extraction.</span></div></div>
           <div class="feat-item"><div class="feat-icon">🤖</div><div><strong>AI Report Analysis</strong><span>Simple explanations, no jargon.</span></div></div>
@@ -283,18 +651,42 @@
         </div>
       </div>
 
+      <!-- MOBILE ONLY: auto-scrolling feature chips (duplicated for seamless loop) -->
+      <div class="m-chips" aria-hidden="true">
+        <div class="m-chips-track">
+          <span class="m-chip"><b>📄</b>Report OCR</span>
+          <span class="m-chip"><b>🤖</b>AI Analysis</span>
+          <span class="m-chip"><b>⌚</b>Live BPM & SpO₂</span>
+          <span class="m-chip"><b>📈</b>Trend Alerts</span>
+          <span class="m-chip"><b>💊</b>Medicine Reminders</span>
+          <span class="m-chip"><b>🛡️</b>Emergency Card</span>
+          <span class="m-chip"><b>🧠</b>24/7 Assistant</span>
+          <span class="m-chip"><b>🍎</b>Nutrition</span>
+          <!-- loop copy -->
+          <span class="m-chip"><b>📄</b>Report OCR</span>
+          <span class="m-chip"><b>🤖</b>AI Analysis</span>
+          <span class="m-chip"><b>⌚</b>Live BPM & SpO₂</span>
+          <span class="m-chip"><b>📈</b>Trend Alerts</span>
+          <span class="m-chip"><b>💊</b>Medicine Reminders</span>
+          <span class="m-chip"><b>🛡️</b>Emergency Card</span>
+          <span class="m-chip"><b>🧠</b>24/7 Assistant</span>
+          <span class="m-chip"><b>🍎</b>Nutrition</span>
+        </div>
+      </div>
+
       <div class="brand-footer-note">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         <span>End-to-End Encrypted Health Vault Node</span>
       </div>
     </section>
 
-    <!-- RIGHT: Apple Liquid Glass Form Panel -->
+    <!-- RIGHT: Apple Liquid Glass Form Panel (bottom sheet on mobile) -->
     <section class="form-panel">
       <div class="liquid-card">
-        
+
         <!-- Interactive Pill Switcher -->
         <div class="glass-tabs">
+          <span class="m-tab-pill"></span>
           <button type="button" id="tabLogin" class="active" onclick="switchTab('login')">Sign In</button>
           <button type="button" id="tabSignup" onclick="switchTab('signup')">Initialize ID</button>
         </div>
@@ -307,7 +699,7 @@
           </div>
 
          <div class="server-error-banner <%= locals.loginError ? 'show' : '' %>" id="loginServerMsg"><%= locals.loginError || 'Invalid credentials supplied.' %></div>
-         
+
           <div class="input-group" id="loginEmailField">
             <label for="loginEmail">Email Address</label>
             <div class="input-wrapper">
@@ -320,6 +712,7 @@
             <label for="loginPassword">Access Password</label>
             <div class="input-wrapper">
               <input type="password" id="loginPassword" name="password" placeholder="••••••••••••" autocomplete="current-password" required>
+              <button type="button" class="m-eye" aria-label="Show password">👁</button>
             </div>
             <span class="error-hint">Password is required.</span>
           </div>
@@ -384,6 +777,7 @@
             <label for="signupPassword">Secure Password</label>
             <div class="input-wrapper">
               <input type="password" id="signupPassword" name="password" placeholder="Min 8 chars with 1 number" autocomplete="new-password" required>
+              <button type="button" class="m-eye" aria-label="Show password">👁</button>
             </div>
             <span class="input-helper">Minimum 8 characters including a numeric digit.</span>
             <span class="error-hint">Password does not meet security policies.</span>
@@ -393,6 +787,7 @@
             <label for="signupConfirm">Confirm Password</label>
             <div class="input-wrapper">
               <input type="password" id="signupConfirm" name="confirmPassword" placeholder="Re-enter password" autocomplete="new-password" required>
+              <button type="button" class="m-eye" aria-label="Show password">👁</button>
             </div>
             <span class="error-hint">Passwords do not match.</span>
           </div>
@@ -428,5 +823,49 @@
   </div>
 
 <script src="/js/auth-portal.js"></script>
+
+<!-- Mobile-only interaction enhancements (no effect on desktop) -->
+<script>
+(function () {
+  var isMobile = function () { return window.matchMedia('(max-width: 768px)').matches; };
+
+  // Show / hide password
+  document.querySelectorAll('.m-eye').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var input = btn.parentElement.querySelector('input');
+      var show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      btn.classList.toggle('on', show);
+      btn.textContent = show ? '🙈' : '👁';
+      btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    });
+  });
+
+  // Ripple on primary buttons + light haptic tap
+  document.querySelectorAll('.liquid-submit-btn').forEach(function (btn) {
+    btn.addEventListener('pointerdown', function (e) {
+      if (!isMobile()) return;
+      var r = btn.getBoundingClientRect();
+      var size = Math.max(r.width, r.height);
+      var dot = document.createElement('span');
+      dot.className = 'm-ripple';
+      dot.style.width = dot.style.height = size + 'px';
+      dot.style.left = (e.clientX - r.left - size / 2) + 'px';
+      dot.style.top = (e.clientY - r.top - size / 2) + 'px';
+      btn.appendChild(dot);
+      setTimeout(function () { dot.remove(); }, 700);
+      if (navigator.vibrate) navigator.vibrate(8);
+    });
+  });
+
+  // Haptic tick when switching tabs
+  ['tabLogin', 'tabSignup'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('click', function () {
+      if (isMobile() && navigator.vibrate) navigator.vibrate(10);
+    });
+  });
+})();
+</script>
 </body>
 </html>

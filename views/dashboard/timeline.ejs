@@ -3,17 +3,22 @@
 <head>
 <!-- 1. Imports your common Fonts, Title, and Global CSS -->
 <%- include('../partials/header', { title: 'Longitudinal Health Timeline' }) %>
-<!-- < %- include('../partials/header', { title: 'HealthOrbit - Profile & Privacy', cssFile: 'profile' }) % > -->
 <link rel="icon" href="/images/Logo.png">
 
 <style>
-/* 
+/*
 ==================================================================
   STRICTLY SCOPED TIMELINE CSS (PREFIXED WITH 'ho-')
-  (Note: Global variables and background orbs are now in global.css)
+  Design: dual-pane replay layout (original v1)
+  Data:   real backend-driven timelineEvents (original v2)
 ================================================================== 
 */
 .ho-mono { font-family: 'JetBrains Mono', monospace; }
+
+:root {
+  --ho-card-border: rgba(13, 122, 110, 0.12);
+  --ho-amber: #d97706;
+}
 
 /* Top Header */
 .ho-topbar {
@@ -21,15 +26,19 @@
   padding: 2rem 3rem 1.2rem; flex-shrink: 0; background: transparent;
   position: sticky; top: 0; z-index: 20;
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  flex-wrap: wrap; gap: 1rem;
 }
 .ho-topbar-text h1 { font-family: 'Fraunces', serif; font-weight: 800; font-size: 2.1rem; color: var(--ho-teal-900); margin-bottom: 0.2rem; letter-spacing: -0.8px; }
 .ho-topbar-text p { font-size: 0.92rem; color: var(--ho-text-muted); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
-.ho-pulse-dot { width: 8px; height: 8px; background: var(--ho-mint-400); border-radius: 50%; box-shadow: 0 0 10px var(--ho-mint-400); animation: hoPulse 2s infinite; }
+.ho-pulse-dot { width: 8px; height: 8px; background: var(--ho-mint-400); border-radius: 50%; box-shadow: 0 0 10px var(--ho-mint-400); animation: hoPulse 2s infinite; flex-shrink: 0; }
 @keyframes hoPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.4); } }
 
-/* Filter Tabs */
-.ho-filter-bar { display: flex; gap: 0.4rem; background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border); padding: 5px; border-radius: 999px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
-.ho-filter-btn { border: none; background: transparent; padding: 0.55rem 1.2rem; border-radius: 999px; font-weight: 700; font-size: 0.82rem; color: var(--ho-text-muted); cursor: pointer; transition: 0.25s; font-family: inherit; }
+/* Filter Tabs — now driven by real event-type counts */
+.ho-filter-bar { display: flex; gap: 0.4rem; background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border); padding: 5px; border-radius: 999px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow-x: auto; scrollbar-width: none; }
+.ho-filter-bar::-webkit-scrollbar { display: none; }
+.ho-filter-btn { border: none; background: transparent; padding: 0.55rem 1.1rem; border-radius: 999px; font-weight: 700; font-size: 0.8rem; color: var(--ho-text-muted); cursor: pointer; transition: 0.25s; font-family: inherit; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.35rem; }
+.ho-filter-btn .count { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; background: rgba(13,122,110,0.08); color: var(--ho-teal-800); padding: 1px 6px; border-radius: 999px; }
+.ho-filter-btn.active .count { background: rgba(255,255,255,0.25); color: #fff; }
 .ho-filter-btn.active { background: var(--ho-teal-900); color: #fff; box-shadow: 0 4px 12px rgba(11, 94, 85, 0.25); }
 .ho-filter-btn:hover:not(.active) { color: var(--ho-teal-900); background: rgba(13, 122, 110, 0.08); }
 
@@ -42,12 +51,20 @@
 /* ==========================================================
    LEFT PANE: INTERACTIVE VERTICAL TIMELINE
    ========================================================== */
-.ho-timeline-track { position: relative; padding-left: 2.2rem; display: flex; flex-direction: column; gap: 1.8rem; }
+.ho-timeline-track { position: relative; padding-left: 2.2rem; display: flex; flex-direction: column; gap: 1.6rem; }
 .ho-timeline-track::before {
   content: ''; position: absolute; left: 9px; top: 12px; bottom: 12px; width: 2.5px;
   background: linear-gradient(to bottom, var(--ho-mint-400), var(--ho-teal-700), rgba(13, 122, 110, 0.15));
   border-radius: 999px;
 }
+
+/* Date-group heading (kept from data-driven version, styled to fit v1) */
+.ho-tl-group-heading {
+  display: flex; align-items: center; gap: 0.6rem; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem; font-weight: 800; color: var(--ho-teal-800); text-transform: uppercase;
+  letter-spacing: 0.07em; margin: 0.2rem 0 -0.6rem 0;
+}
+.ho-tl-group-heading .n { font-weight: 700; color: var(--ho-text-muted); text-transform: none; letter-spacing: normal; }
 
 .ho-tl-event {
   position: relative; display: flex; flex-direction: column; gap: 0.4rem;
@@ -56,10 +73,11 @@
 }
 @keyframes hoSlideIn { to { opacity: 1; transform: translateX(0); } }
 .ho-tl-event:nth-child(1) { animation-delay: 0.05s; }
-.ho-tl-event:nth-child(2) { animation-delay: 0.12s; }
-.ho-tl-event:nth-child(3) { animation-delay: 0.2s; }
-.ho-tl-event:nth-child(4) { animation-delay: 0.28s; }
-.ho-tl-event:nth-child(5) { animation-delay: 0.35s; }
+.ho-tl-event:nth-child(2) { animation-delay: 0.1s; }
+.ho-tl-event:nth-child(3) { animation-delay: 0.15s; }
+.ho-tl-event:nth-child(4) { animation-delay: 0.2s; }
+.ho-tl-event:nth-child(5) { animation-delay: 0.25s; }
+.ho-tl-event:nth-child(n+6) { animation-delay: 0.3s; }
 
 /* Glowing Milestone Markers */
 .ho-tl-marker {
@@ -72,7 +90,8 @@
 .ho-tl-marker.report { border-color: var(--ho-teal-600); }
 .ho-tl-marker.wearable { border-color: var(--ho-mint-400); }
 .ho-tl-marker.med { border-color: var(--ho-coral); }
-.ho-tl-marker.doctor { border-color: var(--ho-purple); }
+.ho-tl-marker.symptom { border-color: var(--ho-amber); }
+.ho-tl-marker.measurement { border-color: var(--ho-teal-800); }
 
 .ho-tl-date-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; font-weight: 800; color: var(--ho-teal-700); letter-spacing: 0.04em; text-transform: uppercase; }
 
@@ -89,6 +108,7 @@
   box-shadow: 0 16px 35px rgba(13, 122, 110, 0.1);
   background: #ffffff;
 }
+.ho-tl-card:focus-visible { outline: 2px solid var(--ho-teal-600); outline-offset: 2px; }
 
 .ho-tl-card-header { display: flex; align-items: center; gap: 1rem; }
 .ho-tl-icon {
@@ -98,10 +118,13 @@
 .ho-tl-icon.report { background: rgba(16, 148, 133, 0.12); color: var(--ho-teal-700); }
 .ho-tl-icon.wearable { background: rgba(66, 184, 157, 0.15); color: var(--ho-teal-900); }
 .ho-tl-icon.med { background: var(--ho-coral-soft); color: var(--ho-coral); }
-.ho-tl-icon.doctor { background: rgba(142, 68, 173, 0.12); color: var(--ho-purple); }
+.ho-tl-icon.symptom { background: rgba(217, 119, 6, 0.14); color: var(--ho-amber); }
+.ho-tl-icon.measurement { background: rgba(13, 122, 110, 0.1); color: var(--ho-teal-800); }
 
+.ho-tl-card-body { min-width: 0; }
 .ho-tl-card-body strong { display: block; font-size: 1.05rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.2rem; }
 .ho-tl-card-body p { font-size: 0.86rem; color: var(--ho-text-muted); line-height: 1.5; font-weight: 500; }
+.ho-tl-card-body .src { font-size: 0.74rem; color: var(--ho-text-muted); font-weight: 700; margin-top: 0.3rem; display: block; }
 
 .ho-tl-pills { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
 .ho-tl-pill {
@@ -111,11 +134,13 @@
 }
 .ho-tl-pill.alert { background: var(--ho-coral-soft); color: var(--ho-danger); border-color: rgba(217, 75, 75, 0.2); }
 
+.ho-tl-more-link { font-size: 0.76rem; font-weight: 700; color: var(--ho-teal-700); margin-top: 0.6rem; display: inline-block; }
+
 /* ==========================================================
-   RIGHT PANE: MODULE 16 HEALTH JOURNEY REPLAY HUD
+   RIGHT PANE: HEALTH JOURNEY REPLAY HUD (now data-driven)
    ========================================================== */
 .ho-replay-panel {
-  position: sticky; top: 110px; height: calc(100vh - 140px);
+  position: sticky; top: 110px; height: calc(100vh - 140px); min-height: 480px;
   background: linear-gradient(145deg, var(--ho-teal-900) 0%, var(--ho-teal-700) 100%);
   border-radius: var(--ho-radius-xl); padding: 2.2rem; color: #fff;
   display: flex; flex-direction: column; justify-content: space-between;
@@ -131,7 +156,6 @@
 .ho-replay-header h2 { font-family: 'Fraunces', serif; font-size: 1.8rem; font-weight: 600; margin-bottom: 0.4rem; }
 .ho-replay-header p { font-size: 0.9rem; color: #dcebe8; line-height: 1.5; font-weight: 500; }
 
-/* Multimedia Scrubber Player */
 .ho-player-ui {
   background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.15);
   padding: 1.4rem; border-radius: var(--ho-radius-lg); margin: 1.5rem 0;
@@ -143,9 +167,9 @@
   width: 100%; height: 8px; background: rgba(255, 255, 255, 0.18);
   border-radius: 999px; position: relative; cursor: pointer; margin-bottom: 1.4rem;
 }
-.ho-scrubber-fill { position: absolute; left: 0; top: 0; height: 100%; width: 68%; background: var(--ho-mint-400); border-radius: 999px; transition: width 0.3s ease; }
+.ho-scrubber-fill { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--ho-mint-400); border-radius: 999px; transition: width 0.3s ease; }
 .ho-scrubber-thumb {
-  position: absolute; left: 68%; top: 50%; transform: translate(-50%, -50%);
+  position: absolute; left: 0%; top: 50%; transform: translate(-50%, -50%);
   width: 18px; height: 18px; background: #ffffff; border-radius: 50%;
   box-shadow: 0 0 12px rgba(0,0,0,0.4); cursor: grab; transition: left 0.3s ease;
 }
@@ -153,6 +177,7 @@
 .ho-controls { display: flex; justify-content: center; gap: 1.8rem; align-items: center; }
 .ho-ctrl-btn { background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; opacity: 0.8; transition: 0.2s; }
 .ho-ctrl-btn:hover { opacity: 1; transform: scale(1.15); }
+.ho-ctrl-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
 .ho-play-btn {
   width: 48px; height: 48px; background: var(--ho-coral); border-radius: 50%;
   display: flex; align-items: center; justify-content: center; opacity: 1; font-size: 1.2rem;
@@ -160,12 +185,12 @@
 }
 .ho-play-btn:hover { transform: scale(1.08); background: #d95a46; }
 
-/* AI Replay Synopsis */
 .ho-replay-summary {
   background: rgba(255, 255, 255, 0.09); border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--ho-radius-lg); padding: 1.4rem; flex: 1; overflow-y: auto;
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px); scrollbar-width: none;
 }
+.ho-replay-summary::-webkit-scrollbar { display: none; }
 .ho-replay-summary h4 { font-family: 'Fraunces', serif; font-size: 1.05rem; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.5rem; color: #fff; }
 .ho-replay-summary p { font-size: 0.88rem; line-height: 1.6; color: #dcebe8; font-weight: 500; }
 
@@ -175,7 +200,7 @@
 .ho-r-kpi strong { font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; }
 
 /* ==========================================================
-   MICRO-INSPECTOR POPUP MODAL
+   MICRO-INSPECTOR POPUP MODAL — now populated from real event data
    ========================================================== */
 .ho-modal-overlay {
   position: fixed; inset: 0; background: rgba(11, 94, 85, 0.45);
@@ -187,229 +212,281 @@
 .ho-modal-overlay.active { opacity: 1; visibility: visible; }
 
 .ho-modal-panel {
-  width: 100%; max-width: 540px; background: #ffffff;
+  width: 100%; max-width: 540px; max-height: 82vh; overflow-y: auto; background: #ffffff;
   border-radius: var(--ho-radius-xl); padding: 2.2rem;
   box-shadow: 0 30px 70px rgba(0,0,0,0.2); transform: translateY(30px) scale(0.96);
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex; flex-direction: column; gap: 1.4rem;
+  display: flex; flex-direction: column; gap: 1.4rem; scrollbar-width: none;
 }
+.ho-modal-panel::-webkit-scrollbar { display: none; }
 .ho-modal-overlay.active .ho-modal-panel { transform: translateY(0) scale(1); }
 
-.ho-modal-head { display: flex; justify-content: space-between; align-items: flex-start; }
+.ho-modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
 .ho-modal-head h3 { font-family: 'Fraunces', serif; font-size: 1.4rem; color: var(--ho-teal-900); font-weight: 700; }
 .ho-modal-close {
   background: rgba(13, 122, 110, 0.08); border: none; width: 34px; height: 34px;
   border-radius: 50%; font-size: 1.2rem; color: var(--ho-teal-900); cursor: pointer;
-  display: flex; align-items: center; justify-content: center; transition: 0.2s;
+  display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0;
 }
 .ho-modal-close:hover { background: rgba(13, 122, 110, 0.16); }
 
 .ho-detail-list { display: flex; flex-direction: column; gap: 0.75rem; }
-.ho-detail-row { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.1rem; background: var(--ho-bg-airy); border-radius: 12px; }
+.ho-detail-row { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.1rem; background: var(--ho-bg-airy); border-radius: 12px; gap: 1rem; }
 .ho-detail-row label { font-size: 0.85rem; font-weight: 700; color: var(--ho-text-muted); }
-.ho-detail-row span { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 800; color: var(--ho-teal-900); }
+.ho-detail-row span { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 800; color: var(--ho-teal-900); text-align: right; }
+.ho-detail-row.flag span { color: var(--ho-danger); }
+.ho-modal-links { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+.ho-modal-links a { font-size: 0.82rem; font-weight: 700; color: var(--ho-teal-700); text-decoration: none; }
+.ho-modal-links a:hover { color: var(--ho-coral); }
+
+/* ---------- Empty / Error state (single column, from data-driven version) ---------- */
+.ho-state-card {
+  background: var(--ho-glass-bg, rgba(255,255,255,0.78)); border: 1px solid var(--ho-card-border); border-radius: var(--ho-radius-lg);
+  padding: 3rem 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.8rem;
+  box-shadow: var(--ho-shadow-card, 0 10px 30px rgba(13,122,110,0.05)); margin: 0.5rem 3rem 4rem; max-width: 1080px;
+}
+.ho-state-card .emoji { font-size: 2.8rem; margin-bottom: 0.2rem; }
+.ho-state-card h3 { font-family: 'Fraunces', serif; font-size: 1.35rem; color: var(--ho-teal-900); }
+.ho-state-card p { font-size: 0.9rem; color: var(--ho-text-muted); max-width: 420px; line-height: 1.5; }
+.ho-btn-cta {
+  margin-top: 0.5rem; background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); color: #fff;
+  padding: 0.7rem 1.4rem; border-radius: 999px; text-decoration: none; font-weight: 700; font-size: 0.86rem;
+  box-shadow: 0 4px 14px rgba(11, 94, 85, 0.25);
+}
 
 /* Responsive Adjustments */
 @media (max-width: 1200px) {
   .ho-timeline-workspace { grid-template-columns: 1fr; }
-  .ho-replay-panel { position: relative; top: 0; height: auto; margin-top: 1rem; }
+  .ho-replay-panel { position: relative; top: 0; height: auto; min-height: 0; margin-top: 1rem; }
 }
 @media (max-width: 768px) {
   .ho-topbar { padding: 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
   .ho-timeline-workspace { padding: 1rem; }
   .ho-filter-bar { width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .ho-state-card { margin: 0.5rem 1.25rem 3rem; }
 }
-
-
-
-
-
 @media (max-width: 1024px) {
-    /* Using 'body .ho-main-content' makes this rule stronger than the original */
-    body .ho-main-content {
-       margin-top: 5.5rem;
-        padding: 0 !important; 
-    }
+    body .ho-main-content { margin-top: 5.5rem; padding: 0 !important; }
 }
 </style>
 </head>
 <body>
 
-<!-- 2. Imports the superb 3-orb background you wanted -->
+<!-- 2. Imports the 3-orb background -->
 <%- include('../partials/ambient') %>
 
 <div class="ho-app-layout">
-  
+
   <%- include('../partials/sidebar') %>
 
   <main class="ho-main-content">
-    
+
+    <%
+      // ---- Real data prep (backend-driven, from v2) ----
+      const evts = locals.timelineEvents || [];
+
+      const typeMeta = {
+        medical_report:     { cls: 'report',      icon: '📄', label: 'Reports' },
+        wearable_summary:   { cls: 'wearable',    icon: '⌚', label: 'Wearables' },
+        medication:         { cls: 'med',         icon: '💊', label: 'Medicines' },
+        medicine_log:       { cls: 'med',         icon: '💊', label: 'Medicines' },
+        symptom:            { cls: 'symptom',     icon: '📝', label: 'Symptoms' },
+        manual_measurement: { cls: 'measurement', icon: '📊', label: 'Measurements' }
+      };
+      function metaFor(evt) { return typeMeta[evt.eventType] || typeMeta.manual_measurement; }
+
+      const typeCounts = { medical_report: 0, wearable_summary: 0, medication: 0, symptom: 0, manual_measurement: 0 };
+      evts.forEach(function(e) {
+        const t = (e.eventType === 'medicine_log') ? 'medication' : e.eventType;
+        if (typeCounts.hasOwnProperty(t)) typeCounts[t]++; else typeCounts.manual_measurement++;
+      });
+
+      const groups = {};
+      evts.forEach(function(evt) {
+        const g = evt.dateGroup || 'Earlier Records';
+        if (!groups[g]) groups[g] = [];
+        groups[g].push(evt);
+      });
+
+      // ---- Build monthly replay buckets from real event dates ----
+      const monthBuckets = {};
+      evts.forEach(function(evt) {
+        if (!evt.date) return;
+        const d = new Date(evt.date);
+        if (isNaN(d)) return;
+        const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        if (!monthBuckets[key]) {
+          monthBuckets[key] = {
+            key: key,
+            label: d.toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase(),
+            sortDate: new Date(d.getFullYear(), d.getMonth(), 1),
+            total: 0, reports: 0, wearables: 0, meds: 0, symptoms: 0, flagged: 0
+          };
+        }
+        const b = monthBuckets[key];
+        b.total++;
+        if (evt.eventType === 'medical_report') b.reports++;
+        if (evt.eventType === 'wearable_summary') b.wearables++;
+        if (evt.eventType === 'medication' || evt.eventType === 'medicine_log') b.meds++;
+        if (evt.eventType === 'symptom') b.symptoms++;
+        if (evt.measurements) {
+          b.flagged += evt.measurements.filter(function(m) { return m.status && /low|high|abnormal/i.test(m.status); }).length;
+        }
+      });
+      const months = Object.values(monthBuckets).sort(function(a, b) { return a.sortDate - b.sortDate; });
+      months.forEach(function(m) {
+        const parts = [];
+        if (m.reports) parts.push(m.reports + ' report' + (m.reports > 1 ? 's' : ''));
+        if (m.wearables) parts.push(m.wearables + ' wearable sync' + (m.wearables > 1 ? 's' : ''));
+        if (m.meds) parts.push(m.meds + ' medication event' + (m.meds > 1 ? 's' : ''));
+        if (m.symptoms) parts.push(m.symptoms + ' symptom log' + (m.symptoms > 1 ? 's' : ''));
+        let summary = parts.length ? ('Recorded ' + parts.join(', ') + '.') : 'No notable activity recorded this month.';
+        if (m.flagged > 0) summary += ' ' + m.flagged + ' measurement' + (m.flagged > 1 ? 's were' : ' was') + ' flagged outside the normal range.';
+        m.summary = summary;
+      });
+    %>
+
     <header class="ho-topbar">
       <div class="ho-topbar-text">
         <h1>Longitudinal Health Timeline</h1>
-        <p><span class="ho-pulse-dot"></span> Normalized Multi-Source Ledger • Module 9 & 16 Architecture</p>
+        <p><span class="ho-pulse-dot"></span> Normalized Multi-Source Ledger • <%= evts.length %> Event<%= evts.length === 1 ? '' : 's' %> Logged</p>
       </div>
-      
-      <!-- Category Filter Bar -->
-      <div class="ho-filter-bar">
-        <button class="ho-filter-btn active" onclick="filterTimeline('all', this)">All</button>
-        <button class="ho-filter-btn" onclick="filterTimeline('report', this)">Reports</button>
-        <button class="ho-filter-btn" onclick="filterTimeline('wearable', this)">Wearables</button>
-        <button class="ho-filter-btn" onclick="filterTimeline('med', this)">Meds</button>
-        <button class="ho-filter-btn" onclick="filterTimeline('doctor', this)">Consults</button>
-      </div>
+
+      <% if (evts.length > 0) { %>
+        <!-- Category Filter Bar — real counts, real event types -->
+        <div class="ho-filter-bar">
+          <button class="ho-filter-btn active" data-filter="all">All <span class="count"><%= evts.length %></span></button>
+          <button class="ho-filter-btn" data-filter="medical_report">Reports <span class="count"><%= typeCounts.medical_report %></span></button>
+          <button class="ho-filter-btn" data-filter="wearable_summary">Wearables <span class="count"><%= typeCounts.wearable_summary %></span></button>
+          <button class="ho-filter-btn" data-filter="medication">Meds <span class="count"><%= typeCounts.medication %></span></button>
+          <button class="ho-filter-btn" data-filter="symptom">Symptoms <span class="count"><%= typeCounts.symptom %></span></button>
+          <button class="ho-filter-btn" data-filter="manual_measurement">Measurements <span class="count"><%= typeCounts.manual_measurement %></span></button>
+        </div>
+      <% } %>
     </header>
 
-    <div class="ho-timeline-workspace">
-      
-      <!-- LEFT PANE: INTERACTIVE VERTICAL TIMELINE -->
-      <div class="ho-timeline-track" id="timelineTrack">
-        
-        <!-- EVENT 1: OCR REPORT -->
-        <div class="ho-tl-event" data-type="report">
-          <div class="ho-tl-marker report"></div>
-          <span class="ho-tl-date-badge">Today • 10:42 AM</span>
-          <div class="ho-tl-card" onclick="openEventInspector('cbc')">
-            <div class="ho-tl-card-header">
-              <div class="ho-tl-icon report">📄</div>
-              <div class="ho-tl-card-body">
-                <strong>Complete Blood Count (CBC) Uploaded</strong>
-                <p>OCR engine extracted parameters. Vitamin D deficiency flagged for clinical review.</p>
+    <% if (locals.timelineError) { %>
+      <!-- Error State -->
+      <div class="ho-state-card">
+        <span class="emoji">⚠️</span>
+        <h3>We couldn't load your health timeline.</h3>
+        <p>A safe temporary error occurred retrieving clinical records. Please refresh the page to try again.</p>
+        <a href="/timeline" class="ho-btn-cta">Retry Loading</a>
+      </div>
+    <% } else if (evts.length === 0) { %>
+      <!-- Empty State -->
+      <div class="ho-state-card">
+        <span class="emoji">🌱</span>
+        <h3>No health events yet.</h3>
+        <p>Your chronological health story will unfold here automatically as you upload medical reports, log symptoms, or connect health devices.</p>
+        <a href="/ocr" class="ho-btn-cta">+ Upload First Medical Report</a>
+      </div>
+    <% } else { %>
+
+      <div class="ho-timeline-workspace">
+
+        <!-- LEFT PANE: INTERACTIVE VERTICAL TIMELINE (real, grouped events) -->
+        <div class="ho-timeline-track" id="timelineTrack">
+          <% for (const [groupTitle, groupEvents] of Object.entries(groups)) { %>
+            <div class="ho-tl-group-heading"><span><%= groupTitle %></span> <span class="n">(<%= groupEvents.length %>)</span></div>
+
+            <% groupEvents.forEach(function(evt, idx) {
+                const meta = metaFor(evt);
+                const flaggedMeasurements = (evt.measurements || []).filter(function(m) { return m.status && /low|high|abnormal/i.test(m.status); });
+                const pillMeasurements = (evt.measurements || []).slice(0, 3);
+            %>
+              <div class="ho-tl-event" data-type="<%= evt.eventType === 'medicine_log' ? 'medication' : evt.eventType %>">
+                <div class="ho-tl-marker <%= meta.cls %>"></div>
+                <span class="ho-tl-date-badge"><%= evt.dateFormatted %><%= evt.timeFormatted ? ' • ' + evt.timeFormatted : '' %></span>
+
+                <div class="ho-tl-card" tabindex="0" role="button" onclick="openEventInspector('evt_<%= evt.id %>')" onkeypress="if(event.key==='Enter') openEventInspector('evt_<%= evt.id %>')">
+                  <div class="ho-tl-card-header">
+                    <div class="ho-tl-icon <%= meta.cls %>"><%= meta.icon %></div>
+                    <div class="ho-tl-card-body">
+                      <strong><%= evt.title %></strong>
+                      <% if (evt.summary) { %><p><%= evt.summary %></p><% } %>
+                      <span class="src"><%= evt.sourceLabel %></span>
+                    </div>
+                  </div>
+
+                  <% if (pillMeasurements.length > 0) { %>
+                    <div class="ho-tl-pills">
+                      <% pillMeasurements.forEach(function(m) {
+                          const flagged = m.status && /low|high|abnormal/i.test(m.status);
+                      %>
+                        <span class="ho-tl-pill <%= flagged ? 'alert' : '' %>"><%= m.name %>: <%= m.value %><%= m.unit ? ' ' + m.unit : '' %><%= flagged ? ' (' + m.status + ')' : '' %></span>
+                      <% }) %>
+                      <% if (evt.measurements.length > 3) { %>
+                        <span class="ho-tl-pill">+<%= evt.measurements.length - 3 %> more</span>
+                      <% } %>
+                    </div>
+                  <% } %>
+                </div>
+
+                <!-- Hidden JSON payload feeding the inspector modal — no more hardcoded fake data -->
+                <script type="application/json" id="data_evt_<%= evt.id %>">
+                  <%- JSON.stringify({
+                    title: evt.title,
+                    desc: evt.summary || (evt.sourceLabel || ''),
+                    source: evt.sourceLabel || '',
+                    date: (evt.dateFormatted || '') + (evt.timeFormatted ? ' at ' + evt.timeFormatted : ''),
+                    measurements: (evt.measurements || []).map(function(m) {
+                      return { label: m.name, val: m.value + (m.unit ? ' ' + m.unit : '') + (m.status ? ' (' + m.status + ')' : ''), flag: !!(m.status && /low|high|abnormal/i.test(m.status)) };
+                    }),
+                    originalFileUrl: (evt.links && evt.links.originalFileUrl) || null,
+                    detailUrl: (evt.links && evt.links.detailUrl) || null
+                  }) %>
+                </script>
               </div>
-            </div>
-            <div class="ho-tl-pills">
-              <span class="ho-tl-pill">Hemoglobin: 13.2 g/dL</span>
-              <span class="ho-tl-pill alert">Vitamin D: 18 ng/mL (Low)</span>
-              <span class="ho-tl-pill">Platelets: 2.4 Lakh</span>
-            </div>
-          </div>
+            <% }) %>
+          <% } %>
         </div>
 
-        <!-- EVENT 2: MEDICATION STARTED -->
-        <div class="ho-tl-event" data-type="med">
-          <div class="ho-tl-marker med"></div>
-          <span class="ho-tl-date-badge">Aug 18, 2026</span>
-          <div class="ho-tl-card" onclick="openEventInspector('med_vitd')">
-            <div class="ho-tl-card-header">
-              <div class="ho-tl-icon med">💊</div>
-              <div class="ho-tl-card-body">
-                <strong>Prescription Initiated: Cholecalciferol</strong>
-                <p>Therapeutic regimen added: 60,000 IU weekly dosage following morning meal.</p>
-              </div>
-            </div>
-            <div class="ho-tl-pills">
-              <span class="ho-tl-pill">Frequency: 1x / Week</span>
-              <span class="ho-tl-pill">Duration: 8 Weeks</span>
-            </div>
-          </div>
-        </div>
+        <!-- RIGHT PANE: HEALTH JOURNEY REPLAY HUD (built from real monthly buckets) -->
+        <div>
+          <div class="ho-replay-panel">
 
-        <!-- EVENT 3: WEARABLE ANOMALY -->
-        <div class="ho-tl-event" data-type="wearable">
-          <div class="ho-tl-marker wearable"></div>
-          <span class="ho-tl-date-badge">Aug 15, 2026</span>
-          <div class="ho-tl-card" onclick="openEventInspector('bpm_anomaly')">
-            <div class="ho-tl-card-header">
-              <div class="ho-tl-icon wearable">⌚</div>
-              <div class="ho-tl-card-body">
-                <strong>Telemetry Shift: Elevated Resting BPM</strong>
-                <p>Resting heart rate baseline shifted to 82 BPM over a continuous 3-day window.</p>
-              </div>
+            <div class="ho-replay-header">
+              <h2>Health Journey Replay</h2>
+              <p>Scrub through your normalized history month by month. Each step reflects your actual logged events.</p>
             </div>
-            <div class="ho-tl-pills">
-              <span class="ho-tl-pill">Source: Apple HealthKit</span>
-              <span class="ho-tl-pill alert">Deviation: +12% Baseline</span>
-            </div>
-          </div>
-        </div>
 
-        <!-- EVENT 4: DOCTOR CONSULTATION -->
-        <div class="ho-tl-event" data-type="doctor">
-          <div class="ho-tl-marker doctor"></div>
-          <span class="ho-tl-date-badge">Aug 02, 2026</span>
-          <div class="ho-tl-card" onclick="openEventInspector('dr_visit')">
-            <div class="ho-tl-card-header">
-              <div class="ho-tl-icon doctor">🩺</div>
-              <div class="ho-tl-card-body">
-                <strong>Physician Visit: Dr. Alex Morgan</strong>
-                <p>Routine consultation. Doctor Visit Assistant generated pre-consult summary.</p>
+            <div class="ho-player-ui">
+              <div class="ho-month-label" id="replayMonthLabel">—</div>
+              <div class="ho-scrubber-track" id="scrubberTrack" onclick="scrubTimeline(event)">
+                <div class="ho-scrubber-fill" id="scrubberFill"></div>
+                <div class="ho-scrubber-thumb" id="scrubberThumb"></div>
+              </div>
+              <div class="ho-controls">
+                <button class="ho-ctrl-btn" id="prevBtn" onclick="stepMonth(-1)">⏮</button>
+                <button class="ho-ctrl-btn ho-play-btn" id="playBtn" onclick="toggleReplay()">▶</button>
+                <button class="ho-ctrl-btn" id="nextBtn" onclick="stepMonth(1)">⏭</button>
               </div>
             </div>
-            <div class="ho-tl-pills">
-              <span class="ho-tl-pill">Care Hospitals</span>
-              <span class="ho-tl-pill">Diagnosis: Vitals Review</span>
-            </div>
-          </div>
-        </div>
 
-        <!-- EVENT 5: DIAGNOSTIC REPORT -->
-        <div class="ho-tl-event" data-type="report">
-          <div class="ho-tl-marker report"></div>
-          <span class="ho-tl-date-badge">Jul 28, 2026</span>
-          <div class="ho-tl-card" onclick="openEventInspector('ecg_summary')">
-            <div class="ho-tl-card-header">
-              <div class="ho-tl-icon report">📈</div>
-              <div class="ho-tl-card-body">
-                <strong>Electrocardiogram (ECG) Report</strong>
-                <p>Normal sinus rhythm confirmed. No acute ST-T wave abnormalities detected.</p>
+            <div class="ho-replay-summary">
+              <h4>✨ Monthly Summary</h4>
+              <p id="replaySummaryText">Loading...</p>
+
+              <div class="ho-replay-kpi-grid">
+                <div class="ho-r-kpi">
+                  <span>Events Logged</span>
+                  <strong id="kpiEvents">—</strong>
+                </div>
+                <div class="ho-r-kpi">
+                  <span>Flagged Values</span>
+                  <strong id="kpiFlagged">—</strong>
+                </div>
               </div>
             </div>
-            <div class="ho-tl-pills">
-              <span class="ho-tl-pill">Heart Rate: 74 BPM</span>
-              <span class="ho-tl-pill">Status: Normal</span>
-            </div>
+
           </div>
         </div>
 
       </div>
+    <% } %>
 
-      <!-- RIGHT PANE: MODULE 16 HEALTH JOURNEY REPLAY HUD -->
-      <div>
-        <div class="ho-replay-panel">
-          
-          <div class="ho-replay-header">
-            <h2>Health Journey Replay</h2>
-            <p>Scrub longitudinally through your normalized history. Observe how biometrics, lab values, and symptoms evolved over time.</p>
-          </div>
-
-          <!-- Multimedia Player UI -->
-          <div class="ho-player-ui">
-            <div class="ho-month-label" id="replayMonthLabel">AUGUST 2026</div>
-            <div class="ho-scrubber-track" id="scrubberTrack" onclick="scrubTimeline(event)">
-              <div class="ho-scrubber-fill" id="scrubberFill"></div>
-              <div class="ho-scrubber-thumb" id="scrubberThumb"></div>
-            </div>
-            <div class="ho-controls">
-              <button class="ho-ctrl-btn" onclick="stepMonth(-1)">⏮</button>
-              <button class="ho-ctrl-btn ho-play-btn" id="playBtn" onclick="toggleReplay()">▶</button>
-              <button class="ho-ctrl-btn" onclick="stepMonth(1)">⏭</button>
-            </div>
-          </div>
-
-          <!-- AI Longitudinal Synopsis -->
-          <div class="ho-replay-summary">
-            <h4>✨ Longitudinal AI Summary</h4>
-            <p id="replaySummaryText">
-              During August, your resting heart rate exhibited a slight upward drift (+12%) following minor sleep reductions. Your uploaded CBC report revealed a Vitamin D deficiency (18 ng/mL), prompting the initiation of an 8-week Cholecalciferol protocol.
-            </p>
-            
-            <div class="ho-replay-kpi-grid">
-              <div class="ho-r-kpi">
-                <span>Avg Resting BPM</span>
-                <strong id="kpiBpm">78 <small style="font-size:0.75rem; font-family:sans-serif;">BPM</small></strong>
-              </div>
-              <div class="ho-r-kpi">
-                <span>Reports Logged</span>
-                <strong id="kpiReports">2 Docs</strong>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-      <%- include('../partials/footer') %>
+    <%- include('../partials/footer') %>
   </main>
 </div>
 
@@ -420,100 +497,96 @@
       <h3 id="inspectTitle">Event Details</h3>
       <button class="ho-modal-close" onclick="closeInspector()">✕</button>
     </div>
-    
+
     <p id="inspectDesc" style="font-size: 0.92rem; color: var(--ho-text-muted); line-height: 1.6;"></p>
-    
+
     <div class="ho-detail-list" id="inspectDetails">
-      <!-- Injected dynamically via JS -->
+      <!-- Injected dynamically via JS from the event's own JSON payload -->
     </div>
+
+    <div class="ho-modal-links" id="inspectLinks"></div>
   </div>
 </div>
 
 <script>
-  // Filter Engine
-  function filterTimeline(type, btn) {
-    document.querySelectorAll('.ho-filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
+  // ---------------- Filter Engine (real event types) ----------------
+  document.addEventListener('DOMContentLoaded', () => {
+    const filterBtns = document.querySelectorAll('.ho-filter-btn');
     const events = document.querySelectorAll('.ho-tl-event');
-    events.forEach(el => {
-      if (type === 'all' || el.getAttribute('data-type') === type) {
-        el.style.display = 'flex';
-      } else {
-        el.style.display = 'none';
-      }
+    const headings = document.querySelectorAll('.ho-tl-group-heading');
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const type = btn.getAttribute('data-filter');
+
+        events.forEach(el => {
+          el.style.display = (type === 'all' || el.getAttribute('data-type') === type) ? 'flex' : 'none';
+        });
+
+        // Hide a group heading if every event under it (until the next heading) is hidden
+        const track = document.getElementById('timelineTrack');
+        const children = Array.from(track.children);
+        let currentHeading = null;
+        let anyVisibleInGroup = false;
+        children.forEach((child, i) => {
+          if (child.classList.contains('ho-tl-group-heading')) {
+            if (currentHeading) currentHeading.style.display = anyVisibleInGroup ? 'flex' : 'none';
+            currentHeading = child;
+            anyVisibleInGroup = false;
+          } else if (child.classList.contains('ho-tl-event')) {
+            if (child.style.display !== 'none') anyVisibleInGroup = true;
+          }
+        });
+        if (currentHeading) currentHeading.style.display = anyVisibleInGroup ? 'flex' : 'none';
+      });
     });
-  }
+  });
 
-  // Event Inspection Data Dictionary
-  const eventDetails = {
-    cbc: {
-      title: "Complete Blood Count (CBC)",
-      desc: "Multi-parameter hematology scan parsed via OCR. Correlated with dietary Vitamin D deficiency.",
-      rows: [
-        { label: "Hemoglobin", val: "13.2 g/dL (Normal)" },
-        { label: "Vitamin D (25-OH)", val: "18.0 ng/mL (Low)" },
-        { label: "WBC Count", val: "7,200 /µL (Normal)" },
-        { label: "Source File", val: "Complete_Blood_Count.pdf" }
-      ]
-    },
-    med_vitd: {
-      title: "Cholecalciferol Therapy",
-      desc: "High-dose Vitamin D3 replenishment protocol logged in your medication schedule.",
-      rows: [
-        { label: "Dosage", val: "60,000 IU" },
-        { label: "Cadence", val: "Weekly (Sunday morning)" },
-        { label: "Target", val: "Elevate serum level > 30 ng/mL" }
-      ]
-    },
-    bpm_anomaly: {
-      title: "Wearable Anomaly Flag",
-      desc: "Multi-day biometric baseline deviation detected by HealthOrbit's statistical normalization engine.",
-      rows: [
-        { label: "Recorded Baseline", val: "82 BPM" },
-        { label: "Historical Baseline", val: "68 - 72 BPM" },
-        { label: "Sync Platform", val: "Apple HealthKit (REST Node)" }
-      ]
-    },
-    dr_visit: {
-      title: "Clinical Consultation",
-      desc: "In-person assessment. The Doctor Visit Assistant module prepared clinical telemetry exports.",
-      rows: [
-        { label: "Provider", val: "Dr. Alex Morgan" },
-        { label: "Location", val: "Care Hospitals, OPD Ward" },
-        { label: "Outcome", val: "Initiated supplement protocol" }
-      ]
-    },
-    ecg_summary: {
-      title: "Standard 12-Lead ECG",
-      desc: "Cardiac rhythm verification report uploaded and indexed in your medical records vault.",
-      rows: [
-        { label: "Rhythm", val: "Normal Sinus Rhythm" },
-        { label: "Ventricular Rate", val: "74 BPM" },
-        { label: "PR Interval", val: "148 ms" }
-      ]
-    }
-  };
-
+  // ---------------- Event Inspector — reads real per-event JSON, no hardcoded dictionary ----------------
   const modal = document.getElementById('eventModal');
 
-  function openEventInspector(key) {
-    const data = eventDetails[key];
-    if (!data) return;
+  function openEventInspector(domId) {
+    const payloadEl = document.getElementById('data_' + domId);
+    if (!payloadEl) return;
+    let data;
+    try { data = JSON.parse(payloadEl.textContent); } catch (e) { return; }
 
-    document.getElementById('inspectTitle').innerText = data.title;
-    document.getElementById('inspectDesc').innerText = data.desc;
+    document.getElementById('inspectTitle').innerText = data.title || 'Event Details';
+    document.getElementById('inspectDesc').innerText = data.desc || '';
 
     const list = document.getElementById('inspectDetails');
     list.innerHTML = '';
-    data.rows.forEach(r => {
+
+    if (data.source || data.date) {
       list.innerHTML += `
         <div class="ho-detail-row">
-          <label>${r.label}</label>
-          <span>${r.val}</span>
+          <label>Source</label>
+          <span>${data.source || '—'}${data.date ? ' · ' + data.date : ''}</span>
+        </div>
+      `;
+    }
+
+    (data.measurements || []).forEach(m => {
+      list.innerHTML += `
+        <div class="ho-detail-row ${m.flag ? 'flag' : ''}">
+          <label>${m.label}</label>
+          <span>${m.val}</span>
         </div>
       `;
     });
+
+    if (!data.measurements || data.measurements.length === 0) {
+      if (!data.source && !data.date) {
+        list.innerHTML = '<p style="font-size:0.85rem; color: var(--ho-text-muted); text-align:center; padding: 0.5rem 0;">No additional structured data for this event.</p>';
+      }
+    }
+
+    const linksEl = document.getElementById('inspectLinks');
+    linksEl.innerHTML = '';
+    if (data.originalFileUrl) linksEl.innerHTML += `<a href="${data.originalFileUrl}" target="_blank" rel="noopener">Original File ↗</a>`;
+    if (data.detailUrl) linksEl.innerHTML += `<a href="${data.detailUrl}">View Full Details →</a>`;
 
     modal.classList.add('active');
   }
@@ -523,38 +596,53 @@
       modal.classList.remove('active');
     }
   }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeInspector(); });
 
-  // Module 16 Replay Scrubber Simulation
-  const months = [
-    { name: "JUNE 2026", fill: "20%", bpm: "71 BPM", reports: "0 Docs", summary: "Stable physiological baseline. Sleep duration averaged 7.8 hours with consistent daily step cadence." },
-    { name: "JULY 2026", fill: "50%", bpm: "73 BPM", reports: "1 Doc", summary: "ECG summary uploaded showing healthy sinus rhythm. Physical training load peaked during week 3." },
-    { name: "AUGUST 2026", fill: "85%", bpm: "78 BPM", reports: "2 Docs", summary: "Resting BPM elevated to 82 BPM. CBC report revealed Vitamin D deficiency (18 ng/mL). Initiated weekly Cholecalciferol." }
-  ];
-  let currentMonthIndex = 2;
+  // ---------------- Replay Scrubber — now driven by real monthly buckets ----------------
+  const months = <%- JSON.stringify(months.map(function(m) { return { name: m.label, events: m.total, flagged: m.flagged, summary: m.summary }; })) %>;
+  let currentMonthIndex = months.length ? months.length - 1 : 0;
   let isPlaying = false;
   let playInterval = null;
 
   function updateReplayUI(index) {
+    if (!months.length) {
+      document.getElementById('replayMonthLabel').innerText = 'No data yet';
+      document.getElementById('replaySummaryText').innerText = 'Your monthly replay will populate once events are logged.';
+      document.getElementById('kpiEvents').innerText = '0';
+      document.getElementById('kpiFlagged').innerText = '0';
+      document.getElementById('scrubberFill').style.width = '0%';
+      document.getElementById('scrubberThumb').style.left = '0%';
+      return;
+    }
     const m = months[index];
+    const pct = months.length > 1 ? (index / (months.length - 1)) * 100 : 100;
     document.getElementById('replayMonthLabel').innerText = m.name;
-    document.getElementById('scrubberFill').style.width = m.fill;
-    document.getElementById('scrubberThumb').style.left = m.fill;
+    document.getElementById('scrubberFill').style.width = pct + '%';
+    document.getElementById('scrubberThumb').style.left = pct + '%';
     document.getElementById('replaySummaryText').innerText = m.summary;
-    document.getElementById('kpiBpm').innerText = m.bpm;
-    document.getElementById('kpiReports').innerText = m.reports;
+    document.getElementById('kpiEvents').innerText = m.events;
+    document.getElementById('kpiFlagged').innerText = m.flagged;
+
+    document.getElementById('prevBtn').disabled = index === 0;
+    document.getElementById('nextBtn').disabled = index === months.length - 1;
   }
 
   function stepMonth(dir) {
-    currentMonthIndex = (currentMonthIndex + dir + months.length) % months.length;
+    if (!months.length) return;
+    currentMonthIndex = Math.min(Math.max(currentMonthIndex + dir, 0), months.length - 1);
     updateReplayUI(currentMonthIndex);
   }
 
   function toggleReplay() {
+    if (!months.length) return;
     isPlaying = !isPlaying;
     const btn = document.getElementById('playBtn');
     if (isPlaying) {
       btn.innerText = '⏸';
-      playInterval = setInterval(() => stepMonth(1), 2400);
+      playInterval = setInterval(() => {
+        if (currentMonthIndex >= months.length - 1) { currentMonthIndex = -1; }
+        stepMonth(1);
+      }, 2200);
     } else {
       btn.innerText = '▶';
       clearInterval(playInterval);
@@ -562,11 +650,14 @@
   }
 
   function scrubTimeline(e) {
+    if (!months.length) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    const pos = (e.clientX - rect.left) / rect.width;
-    currentMonthIndex = Math.min(Math.floor(pos * months.length), months.length - 1);
+    const pos = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+    currentMonthIndex = Math.round(pos * (months.length - 1));
     updateReplayUI(currentMonthIndex);
   }
+
+  updateReplayUI(currentMonthIndex);
 </script>
 
 </body>

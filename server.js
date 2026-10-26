@@ -4,6 +4,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
+const mongoose = require('mongoose');
 
 // 2. CONFIGURATION IMPORTS
 const connectDB = require('./config/db');
@@ -33,24 +34,18 @@ if (!process.env.SESSION_SECRET) {
     process.exit(1);
 }
 
-
 // 6. EXPRESS INITIALIZATION
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 7. EXPRESS CONFIGURATION
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('trust proxy', 1);
 app.use(express.static(path.join(__dirname, 'public')));
-// app.use(express.urlencoded({ extended: true }));
-// app.use(express.json());
-
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.json({ limit: '50mb' }));
 
-
-// 8. SESSION CONFIGURATION
+// 7. SESSION CONFIGURATION
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -61,14 +56,11 @@ app.use(session({
     }
 }));
 
-// 9. PASSPORT INITIALIZATION
 app.use(passport.initialize());
 app.use(passport.session());
-
-// 10. GLOBAL MIDDLEWARE
 app.use(localsMiddleware);
 
-// 11. ROUTE MOUNTING
+// 8. ROUTE MOUNTING
 app.use('/', authRoutes);
 app.use('/', dashboardRoutes);
 app.use('/profile', profileRoutes);
@@ -82,34 +74,22 @@ app.use('/nutrition', nutritionRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/account', accountRoutes);
 
-// 12. GLOBAL 404 / FALLBACK BEHAVIOR
-app.use((req, res) => {
-    if ((req.session && req.session.userId) || (req.isAuthenticated && req.isAuthenticated())) {
-        return res.redirect('/error');
-    }
-    res.redirect('/auth');
-});
+// Fallback Behavior
+app.use((req, res) => res.redirect('/auth'));
 
-// 13. APPLICATION STARTUP SEQUENCE
+// 9. SERVER STARTUP
 async function startServer() {
     try {
-        // Step 1: Establish Database Connection
         await connectDB();
         
-        // --- BUG FIX: FORCE DROP THE LINGERING MONGODB INDEX ---
         try {
-            const mongoose = require('mongoose');
             await mongoose.connection.collection('digitalhealthids').dropIndex('userId_1');
-            console.log('[HealthOrbit] Successfully dropped legacy userId_1 unique index');
         } catch (err) {
-            console.log('[HealthOrbit] Unique index already removed or not found');
+            // Index already handled
         }
-        // --------------------------------------------------------
 
-        // Step 2: Initialize Background Workers Once
         initScheduler();
 
-        // Step 3: Bind HTTP Server (0.0.0.0 for Render compatibility)
         app.listen(PORT, '0.0.0.0', () => {
             console.log(`[HealthOrbit] Server running on port ${PORT}`);
         });
@@ -119,5 +99,4 @@ async function startServer() {
     }
 }
 
-// Execute Startup
 startServer();

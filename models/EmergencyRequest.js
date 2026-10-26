@@ -16,6 +16,8 @@ const emergencyRequestSchema = new mongoose.Schema({
     description: { type: String, required: true, trim: true, maxlength: 500 },
     bloodGroup: { type: String, trim: true },
     hospitalName: { type: String, trim: true, maxlength: 100 },
+    location: { type: String, trim: true }, 
+    donorIdentity: { type: String, trim: true }, 
     urgency: { 
         type: String, 
         enum: [

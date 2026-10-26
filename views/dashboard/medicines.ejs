@@ -1,404 +1,1338 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Safely imports your universal header -->
-  <%- include('../partials/header', { title: 'HealthOrbit — Medicines & Symptoms' }) %>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0b5e55">
+  <%- include('../partials/header', { title: 'HealthOrbit — Medicines & Symptoms Studio' }) %>
   <link rel="icon" href="/images/Logo.png">
+<%
+  /* ==========================================================================
+     SERVER-SIDE VIEW MODEL (100% REAL BACKEND VARIABLES ONLY)
+     Defensively normalizes Medicine, Schedule, and SymptomEntry documents
+     so every calculation is 100% honest and never throws undefined errors.
+  ========================================================================== */
+  const rawMeds = (typeof medicines !== 'undefined' && Array.isArray(medicines)) ? medicines : [];
+  const rawSchedule = (typeof scheduleToday !== 'undefined' && Array.isArray(scheduleToday)) ? scheduleToday : [];
+  const rawSymptoms = (typeof symptoms !== 'undefined' && Array.isArray(symptoms)) ? symptoms : [];
+
+  const normalizedMeds = rawMeds.map((m, idx) => {
+    const freqStr = String(m.frequency || 'Daily').trim();
+    const isPrn = /need|prn|sos/i.test(freqStr);
+    const timesArr = Array.isArray(m.times)
+      ? m.times.filter(Boolean)
+      : (m.times ? String(m.times).split(',').map(s => s.trim()).filter(Boolean) : []);
+
+    return {
+      idx,
+      id: m._id ? String(m._id) : `med_${idx}`,
+      name: m.name || m.medicineName || 'Prescription',
+      dosage: m.dosage || m.dose || '--',
+      frequency: freqStr,
+      isPrn,
+      times: timesArr,
+      timesDisplay: timesArr.length > 0 ? timesArr.join(', ') : (isPrn ? 'As Needed (PRN)' : 'Flexible'),
+      instructions: m.instructions || m.duration || m.notes || 'Follow clinician dosage instructions.',
+      active: m.active !== false
+    };
+  });
+
+  const normalizedSchedule = rawSchedule.map((item, idx) => {
+    const medObj = (item && item.medicine && typeof item.medicine === 'object') ? item.medicine : {};
+    const statusStr = String(item.status || 'Pending').trim();
+    const isTaken = /taken|completed|done/i.test(statusStr);
+    const isSkipped = /skip|missed/i.test(statusStr);
+    const medId = medObj._id ? String(medObj._id) : (item.medicineId ? String(item.medicineId) : '');
+
+    return {
+      idx,
+      medId,
+      name: medObj.name || item.medicineName || 'Scheduled Dose',
+      dosage: medObj.dosage || item.dosage || '',
+      instructions: medObj.instructions || medObj.duration || 'Scheduled dose',
+      time: item.time || 'Scheduled',
+      status: isTaken ? 'Taken' : (isSkipped ? 'Skipped' : 'Upcoming'),
+      isTaken,
+      isSkipped
+    };
+  });
+
+  const normalizedSymptoms = rawSymptoms.map((s, idx) => {
+    const sevStr = String(s.severity || 'Mild').trim();
+    const sevKey = sevStr.toLowerCase();
+    const dRaw = s.recordedAt || s.loggedAt || s.createdAt || null;
+    const dObj = dRaw ? new Date(dRaw) : null;
+    const validD = dObj && !isNaN(dObj.getTime()) ? dObj : null;
+
+    return {
+      idx,
+      id: s._id ? String(s._id) : `sym_${idx}`,
+      symptom: s.symptom || s.symptomType || s.name || 'Logged Symptom',
+      severity: sevStr,
+      severityKey: (sevKey === 'severe' || sevKey === 'high') ? 'severe' : (sevKey === 'moderate' ? 'moderate' : 'mild'),
+      notes: s.notes || s.description || '',
+      dateStr: validD ? validD.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Recent',
+      timeStr: validD ? validD.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
+    };
+  });
+
+  const activeMedsCount = normalizedMeds.filter(m => m.active).length;
+  const prnMedsCount = normalizedMeds.filter(m => m.isPrn).length;
+  const scheduledMedsCount = Math.max(0, normalizedMeds.length - prnMedsCount);
+
+  const totalDosesToday = normalizedSchedule.length;
+  const takenDosesToday = normalizedSchedule.filter(s => s.isTaken).length;
+  const pendingDosesToday = Math.max(0, totalDosesToday - takenDosesToday);
+  const adherencePct = totalDosesToday > 0 ? Math.round((takenDosesToday / totalDosesToday) * 100) : null;
+
+  const severeSymptomsCount = normalizedSymptoms.filter(s => s.severityKey === 'severe').length;
+%>
 
   <style>
-    /* 
-    ==================================================================
-      STRICTLY SCOPED CSS FOR MEDICINES & SYMPTOMS
-    ================================================================== 
-    */
+    /* ==================================================================
+       HEALTHORBIT — MEDICINES & SYMPTOMS STUDIO
+       Liquid Glass Bento Mosaic + Web-Only Floating Motion + Mobile Sheets
+    ================================================================== */
     :root {
       --ho-bg-airy: #edf6f4;
+      --ho-teal-950: #06302b;
       --ho-teal-900: #0b5e55;
+      --ho-teal-800: #0c6b61;
       --ho-teal-700: #0d7a6e;
       --ho-teal-600: #109485;
       --ho-mint-400: #42b89d;
+      --ho-mint-200: #9be8d3;
+      --ho-mint-soft: #dff1ec;
       --ho-coral: #e07a68;
       --ho-coral-soft: #fbe4de;
+      --ho-amber: #f59e0b;
+      --ho-amber-soft: #fef3c7;
+      --ho-blue: #3b82f6;
+      --ho-blue-soft: #dbeafe;
+      --ho-danger: #d94b4b;
+      --ho-green: #27ae60;
       --ho-text-main: #0f1c1a;
       --ho-text-muted: #4e6b63;
-      --ho-danger: #d94b4b;
-      --ho-warning: #f39c12;
-      --ho-blue: #3498db;
-      
-      --ho-glass-clear: rgba(255, 255, 255, 0.55);
-      --ho-glass-solid: rgba(255, 255, 255, 0.85);
+      --ho-text-subtle: #78948d;
+
+      --ho-glass-clear: rgba(255, 255, 255, 0.58);
+      --ho-glass-solid: rgba(255, 255, 255, 0.9);
       --ho-glass-border: rgba(255, 255, 255, 0.95);
-      --ho-glass-border-subtle: rgba(13, 122, 110, 0.15);
-      
-      --ho-radius-xl: 32px;
+      --ho-glass-border-subtle: rgba(13, 122, 110, 0.14);
+
+      --ho-radius-xl: 28px;
       --ho-radius-lg: 20px;
       --ho-radius-md: 14px;
-      
-      --ho-shadow-glass: 0 20px 50px rgba(13, 122, 110, 0.06), inset 0 1px 1px rgba(255, 255, 255, 1);
+      --ho-shadow-glass: 0 20px 50px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
+      --ho-shadow-elevated: 0 26px 56px rgba(13, 122, 110, 0.16);
+      --ho-ease: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-tap-highlight-color: transparent; }
 
     body {
       min-height: 100vh;
+      min-height: 100dvh;
       font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
       background-color: var(--ho-bg-airy);
       color: var(--ho-text-main);
-      overflow-x: hidden; 
+      overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
+      display: flex;
     }
 
-    .ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
-
-    .ho-main-content { 
-      flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; 
-      overflow-y: auto; scrollbar-width: none;
+    /* ---------- Custom Visible Scrollbars (.ho-custom-scroll) ---------- */
+    .ho-custom-scroll {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(13, 122, 110, 0.34) rgba(13, 122, 110, 0.05);
     }
-    .ho-main-content::-webkit-scrollbar { display: none; }
+    .ho-custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .ho-custom-scroll::-webkit-scrollbar-track { background: rgba(13, 122, 110, 0.05); border-radius: 999px; }
+    .ho-custom-scroll::-webkit-scrollbar-thumb { background: rgba(13, 122, 110, 0.34); border-radius: 999px; }
+    .ho-custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--ho-teal-600); }
 
-    /* --- TOP NAVBAR (Fixing the Double Navbar Issue) --- */
+    /* ---------- Ambient Glow Orbs (Web-Only Floating Motion) ---------- */
+    .ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.6; }
+    .ho-orb-1 { width: 580px; height: 580px; background: #76d7c4; top: -120px; left: -100px; }
+    .ho-orb-2 { width: 620px; height: 620px; background: #fadbd8; bottom: -160px; right: -100px; }
+    .ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 36%; left: 42%; opacity: 0.28; }
+
+    @media (min-width: 1025px) {
+      .ho-glow-orb { animation: hoFloatOrb 22s ease-in-out infinite alternate; }
+      .ho-orb-2 { animation-delay: -6s; }
+      .ho-orb-3 { animation-delay: -11s; }
+      @keyframes hoFloatOrb {
+        0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+        50% { transform: translate(45px, 60px) scale(1.08) rotate(4deg); }
+        100% { transform: translate(-30px, 40px) scale(0.96) rotate(-3deg); }
+      }
+    }
+
+    /* ---------- App Layout Shell ---------- */
+    .ho-app-layout { display: flex; width: 100vw; height: 100vh; height: 100dvh; position: relative; z-index: 10; }
+    .ho-main-content {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    .ho-scroll-progress {
+      position: fixed; top: 0; left: 0; height: 3px; width: 0; z-index: 3000;
+      background: linear-gradient(90deg, var(--ho-mint-400), var(--ho-coral));
+      border-radius: 0 3px 3px 0;
+      transition: width 0.1s linear;
+    }
+
+    /* ---------- Sticky Topbar ---------- */
     .ho-topbar {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 2.2rem 3rem 1.2rem; flex-shrink: 0; background: transparent; z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 2rem 3rem 1.2rem;
+      flex-shrink: 0;
+      background: transparent;
+      z-index: 20;
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      mask-image: linear-gradient(to bottom, black 82%, transparent);
+      -webkit-mask-image: linear-gradient(to bottom, black 82%, transparent);
     }
-    .ho-topbar h1 { 
-      font-family: 'Fraunces', serif; font-weight: 800; font-size: 2rem; color: var(--ho-teal-900); 
-      margin-bottom: 0.4rem; letter-spacing: -0.5px; 
+    @media (min-width: 1025px) {
+      .ho-topbar { animation: hoDrop 0.65s var(--ho-ease) both; }
+      @keyframes hoDrop { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: none; } }
     }
-    .ho-topbar p { font-size: 0.95rem; color: var(--ho-text-muted); font-weight: 500; max-width: 600px; line-height: 1.4;}
-    .ho-topbar-actions { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; }
 
-    /* Buttons */
-    .ho-btn-primary {
-      background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); color: #fff;
-      border: none; border-radius: 999px; padding: 0.8rem 1.6rem; font-weight: 700; font-size: 0.9rem;
-      cursor: pointer; box-shadow: 0 8px 20px rgba(13, 122, 110, 0.2); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap;
+    .ho-eyebrow-pill {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      color: var(--ho-teal-700);
+      margin-bottom: 0.35rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
     }
-    .ho-btn-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 25px rgba(13, 122, 110, 0.3); }
-    .ho-btn-primary:active { transform: scale(0.96); }
+    .ho-pulse-dot {
+      width: 8px; height: 8px;
+      background: var(--ho-mint-400);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--ho-mint-400);
+      animation: hoPulse 2s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes hoPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.5); } }
 
+    .ho-topbar-text h1 {
+      font-family: 'Fraunces', serif;
+      font-weight: 800;
+      font-size: 2.2rem;
+      color: var(--ho-teal-900);
+      letter-spacing: -0.9px;
+      line-height: 1.1;
+    }
+    .ho-topbar-text h1 b { color: var(--ho-coral); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; }
+
+    .ho-topbar-actions { display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; }
     .ho-btn-ghost {
-      padding: 0.8rem 1.6rem; background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border);
-      border-radius: 999px; color: var(--ho-teal-900); font-weight: 700; font-size: 0.9rem;
-      cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap;
+      padding: 0.78rem 1.35rem;
+      background: var(--ho-glass-solid);
+      border: 1.5px solid var(--ho-glass-border);
+      border-radius: 999px;
+      color: var(--ho-teal-900);
+      font-weight: 700;
+      font-size: 0.86rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: 0.25s var(--ho-ease);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: inherit;
+      white-space: nowrap;
     }
-    .ho-btn-ghost:hover { background: #fff; transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 25px rgba(13, 122, 110, 0.1); border-color: var(--ho-teal-600);}
+    .ho-btn-ghost svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .ho-btn-ghost:hover { background: #ffffff; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.12); transform: translateY(-2px); border-color: var(--ho-teal-600); }
     .ho-btn-ghost:active { transform: scale(0.96); }
-
-    /* Delete Icon Button */
-    .ho-btn-delete { 
-      background: rgba(217, 75, 75, 0.05); border: 1px solid rgba(217, 75, 75, 0.1); color: var(--ho-danger); 
-      cursor: pointer; padding: 8px; border-radius: 10px; transition: 0.2s; 
-      display: flex; align-items: center; justify-content: center; 
+    .ho-btn-solid {
+      background: linear-gradient(135deg, var(--ho-teal-600), var(--ho-teal-900));
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: 0 10px 22px rgba(11, 94, 85, 0.25);
     }
-    .ho-btn-delete:hover { background: var(--ho-danger); color: #fff; transform: scale(1.05); box-shadow: 0 4px 12px rgba(217, 75, 75, 0.2); border-color: var(--ho-danger); }
-    .ho-btn-delete svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;}
+    .ho-btn-solid:hover { background: linear-gradient(135deg, var(--ho-teal-600), var(--ho-teal-900)); color: #ffffff; box-shadow: 0 14px 28px rgba(11, 94, 85, 0.34); }
 
-    /* --- MOSAIC GRID --- */
-    .ho-workspace-grid {
-      display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.8rem;
-      padding: 0.5rem 3rem 2.5rem; flex: 1 0 auto; min-height: 0;
+    /* ---------- 12-COLUMN BENTO MOSAIC GRID ---------- */
+    .ho-mosaic-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1.5rem;
+      padding: 0.5rem 3rem 3rem;
+      max-width: 1600px;
+      width: 100%;
+      margin: 0 auto;
+      flex: 1 0 auto;
     }
 
+    /* Base Liquid Glass Panel */
     .ho-panel {
+      --mx: 50%;
+      --my: 50%;
       background: var(--ho-glass-clear);
-      backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
-      border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
-      padding: 2rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass);
-      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+      backdrop-filter: blur(40px) saturate(200%);
+      -webkit-backdrop-filter: blur(40px) saturate(200%);
+      border: 1px solid var(--ho-glass-border);
+      border-radius: var(--ho-radius-xl);
+      padding: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--ho-shadow-glass);
+      position: relative;
+      overflow: hidden;
+      min-width: 0;
     }
-    .ho-panel:hover { transform: translateY(-4px); box-shadow: 0 30px 70px rgba(13, 122, 110, 0.12); border-color: #fff; background: rgba(255, 255, 255, 0.7); }
-    @keyframes hoSlideUp { from { opacity: 0; transform: translateY(35px); } to { opacity: 1; transform: translateY(0); } }
+    @media (min-width: 1025px) {
+      .ho-panel {
+        transition: 0.4s var(--ho-ease);
+        animation: hoSlideUp 0.7s var(--ho-ease) both;
+      }
+      .ho-mosaic-grid > .ho-panel:nth-child(1) { animation-delay: 0.05s; }
+      .ho-mosaic-grid > .ho-panel:nth-child(2) { animation-delay: 0.11s; }
+      .ho-mosaic-grid > .ho-panel:nth-child(3) { animation-delay: 0.17s; }
+      .ho-mosaic-grid > .ho-panel:nth-child(4) { animation-delay: 0.23s; }
+      .ho-mosaic-grid > .ho-panel:nth-child(5) { animation-delay: 0.29s; }
+      .ho-mosaic-grid > .ho-panel:nth-child(6) { animation-delay: 0.35s; }
+      @keyframes hoSlideUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
 
-    .ho-delay-1 { animation-delay: 0.1s; } .ho-delay-2 { animation-delay: 0.2s; } .ho-delay-3 { animation-delay: 0.3s; }
-
-    .ho-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-shrink: 0; }
-    .ho-panel-header h2 { font-weight: 800; font-size: 1.25rem; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem; }
-    .ho-badge { background: #fff; border: 1px solid var(--ho-glass-border); padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ho-teal-700); box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
-
-    /* --- 1. ACTIVE MEDICATIONS (Spans 8) --- */
-    .ho-med-panel { grid-column: span 8; }
-    .ho-med-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
-
-    .ho-med-card {
-      background: rgba(255,255,255,0.85); border: 1px solid var(--ho-glass-border); border-radius: 16px;
-      padding: 1.4rem; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;
-      box-shadow: 0 4px 15px rgba(13, 122, 110, 0.03); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); position: relative; overflow: hidden;
+      .ho-panel::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        background: radial-gradient(380px circle at var(--mx) var(--my), rgba(66, 184, 157, 0.16), transparent 60%);
+      }
+      .ho-panel:hover::after { opacity: 1; }
+      .ho-panel:hover { transform: translateY(-4px); box-shadow: var(--ho-shadow-elevated); border-color: rgba(16, 148, 133, 0.4); background: rgba(255, 255, 255, 0.72); }
     }
-    .ho-med-card:hover { background: #fff; border-color: var(--ho-teal-600); transform: translateY(-4px) scale(1.02); box-shadow: 0 15px 30px rgba(13, 122, 110, 0.1); }
-    .ho-med-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background: var(--ho-teal-600); border-radius: 16px 0 0 16px; transition: width 0.2s;}
-    .ho-med-card:hover::before { width: 8px; }
-    .ho-med-card.as-needed::before { background: var(--ho-blue); }
 
-    .ho-mc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;}
-    .ho-mc-info strong { font-size: 1.1rem; color: var(--ho-teal-900); font-weight: 800; display: block; margin-bottom: 0.2rem;}
-    .ho-mc-info span { font-size: 0.8rem; color: var(--ho-text-muted); font-weight: 600; font-family: 'JetBrains Mono', monospace;}
-    .ho-mc-icon { width: 44px; height: 44px; background: rgba(13, 122, 110, 0.08); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;}
+    .ho-panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.15rem;
+      z-index: 2;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .ho-panel-head h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--ho-teal-900);
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .ho-panel-head h3 .ic-box {
+      width: 30px; height: 30px;
+      border-radius: 10px;
+      background: rgba(13, 122, 110, 0.1);
+      color: var(--ho-teal-700);
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .ho-panel-head h3 .ic-box svg { width: 16px; height: 16px; }
 
-    .ho-mc-bot { display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; padding-top: 1rem; border-top: 1px dashed var(--ho-glass-border-subtle);}
-    .ho-mc-freq { font-size: 0.75rem; font-weight: 700; color: var(--ho-text-muted); text-transform: uppercase;}
-    .ho-mc-pill { font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 8px; background: var(--ho-bg-airy); color: var(--ho-teal-900); border: 1px solid var(--ho-glass-border-subtle);}
+    .ho-tag {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.28rem 0.75rem;
+      border-radius: 999px;
+      background: rgba(13, 122, 110, 0.09);
+      color: var(--ho-teal-700);
+      white-space: nowrap;
+    }
+    .ho-tag.warn { background: var(--ho-coral-soft); color: #c0392b; }
+    .ho-tag.good { background: var(--ho-mint-soft); color: var(--ho-teal-900); }
+    .ho-tag.blue { background: var(--ho-blue-soft); color: #1d4ed8; }
 
-    /* --- 2. QUICK SYMPTOM LOG (Spans 4) --- */
-    .ho-symptom-quick { grid-column: span 4; background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(251, 228, 222, 0.4));}
-    .ho-sq-desc { font-size: 0.9rem; color: var(--ho-text-muted); margin-bottom: 1.5rem; font-weight: 500; line-height: 1.5;}
-    .ho-sq-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-    
+    /* ==================================================================
+       1. ADHERENCE & CLINICAL CHRONOLOGY HERO (SPAN 8)
+    ================================================================== */
+    .ho-hero {
+      grid-column: span 8;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.75rem;
+      padding: 2.1rem 2.3rem;
+      background:
+        radial-gradient(90% 120% at 100% 0%, rgba(66, 184, 157, 0.18), transparent 60%),
+        radial-gradient(80% 100% at 0% 100%, rgba(224, 122, 104, 0.14), transparent 60%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(236, 248, 245, 0.92));
+      border: 1.5px solid var(--ho-glass-border);
+    }
+    .ho-hero-text { flex: 1; z-index: 2; min-width: 0; }
+    .ho-hero-eyebrow {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--ho-teal-700);
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .ho-hero-text h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(1.7rem, 2.3vw, 2.15rem);
+      font-weight: 700;
+      line-height: 1.12;
+      margin-bottom: 0.55rem;
+      color: var(--ho-teal-950);
+    }
+    .ho-hero-text h2 em {
+      font-style: normal;
+      background: linear-gradient(100deg, var(--ho-teal-600), var(--ho-coral));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .ho-hero-text > p {
+      font-size: 0.89rem;
+      color: var(--ho-text-muted);
+      line-height: 1.55;
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+
+    /* Animated Pharmacokinetic Wave Strip */
+    .ho-scan-strip {
+      position: relative;
+      width: 100%;
+      max-width: 460px;
+      height: 40px;
+      margin-bottom: 1.1rem;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(13, 122, 110, 0.05);
+      border: 1px solid rgba(13, 122, 110, 0.1);
+      display: flex;
+      align-items: center;
+    }
+    .ho-scan-strip svg { width: 100%; height: 100%; display: block; }
+    .ho-scan-strip .base { fill: none; stroke: rgba(13, 122, 110, 0.14); stroke-width: 1.5; }
+    .ho-scan-strip .live {
+      fill: none;
+      stroke: var(--ho-teal-600);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 70 230;
+      filter: drop-shadow(0 0 4px rgba(16, 148, 133, 0.55));
+    }
+    @media (min-width: 1025px) {
+      .ho-scan-strip .live { animation: hoScanWave 2.8s linear infinite; }
+      @keyframes hoScanWave { from { stroke-dashoffset: 300; } to { stroke-dashoffset: 0; } }
+    }
+    .ho-scan-badge {
+      position: absolute;
+      top: 50%;
+      right: 0.65rem;
+      transform: translateY(-50%);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--ho-teal-800);
+      background: rgba(255, 255, 255, 0.88);
+      padding: 0.18rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(13, 122, 110, 0.12);
+    }
+
+    /* 4 Interactive KPI Stat Tiles */
+    .ho-hc-metrics { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .ho-hc-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--ho-glass-border-subtle);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: 0.25s var(--ho-ease);
+      min-width: 112px;
+      text-align: left;
+      font-family: inherit;
+    }
+    .ho-hc-stat:hover { background: #ffffff; transform: translateY(-3px); box-shadow: 0 10px 22px rgba(13, 122, 110, 0.1); border-color: var(--ho-teal-600); }
+    .ho-hc-stat:active { transform: scale(0.97); }
+    .ho-hc-stat span.lbl { font-size: 0.65rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: var(--ho-text-muted); }
+    .ho-hc-stat strong { font-family: 'JetBrains Mono', monospace; font-size: 1.45rem; font-weight: 800; color: var(--ho-teal-900); letter-spacing: -0.8px; }
+    .ho-hc-stat strong small { font-size: 0.72rem; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--ho-text-muted); font-weight: 600; margin-left: 2px; }
+
+    /* 3-Ring Adherence & Regimen Gauge */
+    .ho-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.85rem; flex-shrink: 0; z-index: 2; }
+    .ho-ring-container { width: 184px; height: 184px; position: relative; display: flex; align-items: center; justify-content: center; }
+    .ho-svg-rings { transform: rotate(-90deg); width: 100%; height: 100%; filter: drop-shadow(0 6px 14px rgba(11, 94, 85, 0.12)); overflow: visible; }
+    .ho-ring-orbit { fill: none; stroke: rgba(13, 122, 110, 0.22); stroke-width: 1.5; stroke-dasharray: 3 6; transform-origin: 80px 80px; }
+    @media (min-width: 1025px) {
+      .ho-ring-orbit { animation: hoSpin 28s linear infinite; }
+      @keyframes hoSpin { to { transform: rotate(360deg); } }
+    }
+    .ho-ring-bg { fill: none; stroke: rgba(13, 122, 110, 0.1); stroke-width: 11; }
+    .ho-ring-fill { fill: none; stroke-linecap: round; stroke-width: 11; transition: stroke-dashoffset 1.6s var(--ho-ease); }
+    .ho-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    .ho-ring-center strong { font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; font-weight: 800; color: var(--ho-teal-900); line-height: 1; }
+    .ho-ring-center span { font-size: 0.58rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ho-text-muted); margin-top: 0.25rem; }
+    .ho-ring-legend { display: flex; gap: 0.7rem; flex-wrap: wrap; justify-content: center; }
+    .ho-ring-legend span { display: flex; align-items: center; gap: 0.35rem; font-size: 0.68rem; font-weight: 700; color: var(--ho-text-muted); }
+    .ho-ring-legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+    /* ==================================================================
+       2. QUICK SYMPTOM LOG MATRIX (SPAN 4)
+    ================================================================== */
+    .ho-symptom-quick {
+      grid-column: span 4;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.88), rgba(251, 228, 222, 0.48));
+      justify-content: space-between;
+    }
+    .ho-sq-desc { font-size: 0.82rem; color: var(--ho-text-muted); margin-bottom: 0.75rem; font-weight: 600; line-height: 1.45; z-index: 2; }
+
+    /* Severity Selector Bar for Quick Log */
+    .ho-sev-selector {
+      display: flex;
+      background: rgba(13, 122, 110, 0.07);
+      padding: 3px;
+      border-radius: 12px;
+      gap: 4px;
+      margin-bottom: 0.9rem;
+      z-index: 2;
+    }
+    .ho-sev-pill {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 0.38rem 0.5rem;
+      border-radius: 9px;
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--ho-text-muted);
+      cursor: pointer;
+      transition: 0.2s var(--ho-ease);
+    }
+    .ho-sev-pill.active {
+      background: #ffffff;
+      color: var(--ho-teal-950);
+      box-shadow: 0 2px 8px rgba(11, 94, 85, 0.1);
+    }
+
+    .ho-sq-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.65rem; z-index: 2; }
     .ho-sq-btn {
-      background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px;
-      padding: 1.2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.02); cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--ho-glass-border-subtle);
+      border-radius: 16px;
+      padding: 0.85rem 0.45rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+      cursor: pointer;
+      transition: 0.25s var(--ho-ease);
+      font-family: inherit;
+      position: relative;
+      overflow: hidden;
     }
-    .ho-sq-btn:hover { border-color: var(--ho-coral); transform: translateY(-4px) scale(1.05); box-shadow: 0 12px 25px rgba(224, 122, 104, 0.15); color: var(--ho-danger);}
+    .ho-sq-btn:hover { border-color: var(--ho-coral); transform: translateY(-3px); box-shadow: 0 10px 22px rgba(224, 122, 104, 0.16); background: #ffffff; }
     .ho-sq-btn:active { transform: scale(0.95); }
-    .ho-sq-icon { font-size: 1.8rem; transition: transform 0.2s;}
-    .ho-sq-btn:hover .ho-sq-icon { transform: scale(1.1); }
-    .ho-sq-label { font-size: 0.85rem; font-weight: 800; color: var(--ho-teal-900); }
+    .ho-sq-btn.logging { opacity: 0.65; pointer-events: none; }
+    .ho-sq-icon { font-size: 1.4rem; line-height: 1; }
+    .ho-sq-label { font-size: 0.76rem; font-weight: 800; color: var(--ho-teal-950); }
 
-    /* --- 3. TODAY'S SCHEDULE TIMELINE (Spans 8) --- */
+    /* ==================================================================
+       3. ACTIVE PRESCRIPTIONS VAULT (SPAN 8) — SEARCH + FILTER + CARDS
+    ================================================================== */
+    .ho-med-panel { grid-column: span 8; }
+    .ho-filter-strip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      z-index: 2;
+    }
+    .ho-search-box { position: relative; flex: 1; min-width: 190px; }
+    .ho-search-input {
+      width: 100%;
+      height: 40px;
+      padding: 0 1rem 0 2.25rem;
+      border: 1px solid var(--ho-glass-border-subtle);
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 0.84rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.86);
+      color: var(--ho-text-main);
+      outline: none;
+      transition: 0.2s;
+    }
+    .ho-search-input:focus { border-color: var(--ho-teal-600); background: #ffffff; box-shadow: 0 0 0 3px rgba(13, 122, 110, 0.1); }
+    .ho-search-icon { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--ho-text-subtle); }
+
+    .ho-filter-tabs { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .ho-ftab {
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid var(--ho-glass-border-subtle);
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.73rem;
+      font-weight: 700;
+      font-family: inherit;
+      color: var(--ho-text-muted);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .ho-ftab:hover { background: #ffffff; color: var(--ho-teal-900); }
+    .ho-ftab.active { background: var(--ho-teal-900); color: #ffffff; border-color: var(--ho-teal-900); box-shadow: 0 4px 12px rgba(11, 94, 85, 0.18); }
+
+    .ho-med-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.95rem;
+      max-height: 410px;
+      overflow-y: auto;
+      padding-right: 0.35rem;
+      z-index: 2;
+    }
+    .ho-med-card {
+      background: rgba(255, 255, 255, 0.84);
+      border: 1px solid var(--ho-glass-border-subtle);
+      border-radius: 18px;
+      padding: 1.15rem 1.2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.75rem;
+      cursor: pointer;
+      transition: 0.28s var(--ho-ease);
+      position: relative;
+      overflow: hidden;
+    }
+    .ho-med-card::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: var(--ho-teal-600);
+    }
+    .ho-med-card.prn::before { background: var(--ho-blue); }
+    .ho-med-card:hover { background: #ffffff; border-color: var(--ho-teal-600); transform: translateY(-3px); box-shadow: 0 12px 26px rgba(13, 122, 110, 0.1); }
+    .ho-mc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.6rem; }
+    .ho-mc-title { font-size: 0.96rem; font-weight: 800; color: var(--ho-teal-950); line-height: 1.25; }
+    .ho-mc-badge {
+      font-size: 0.66rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--ho-bg-airy);
+      color: var(--ho-teal-900);
+      border: 1px solid var(--ho-glass-border-subtle);
+      white-space: nowrap;
+    }
+    .ho-mc-bot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding-top: 0.6rem;
+      border-top: 1px dashed rgba(13, 122, 110, 0.14);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--ho-text-muted);
+    }
+
+    .ho-card-actions { display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0; }
+    .ho-btn-icon {
+      background: rgba(13, 122, 110, 0.06);
+      border: 1px solid rgba(13, 122, 110, 0.12);
+      color: var(--ho-teal-800);
+      cursor: pointer;
+      width: 30px; height: 30px;
+      border-radius: 9px;
+      transition: 0.2s;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .ho-btn-icon:hover { background: var(--ho-teal-900); color: #ffffff; transform: scale(1.06); }
+    .ho-btn-icon svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .ho-btn-delete {
+      background: rgba(217, 75, 75, 0.06);
+      border: 1px solid rgba(217, 75, 75, 0.14);
+      color: var(--ho-danger);
+      cursor: pointer;
+      width: 30px; height: 30px;
+      border-radius: 9px;
+      transition: 0.2s;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .ho-btn-delete:hover { background: var(--ho-danger); color: #ffffff; transform: scale(1.06); }
+    .ho-btn-delete svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ==================================================================
+       4. TODAY'S SCHEDULE TIMELINE (SPAN 8)
+    ================================================================== */
     .ho-schedule-panel { grid-column: span 8; }
-    .ho-timeline { display: flex; flex-direction: column; position: relative; margin-left: 1rem; padding-left: 1.8rem; border-left: 2px solid rgba(13, 122, 110, 0.15); margin-top: 0.5rem;}
-    .ho-tl-item { position: relative; margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .ho-timeline {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      margin-left: 0.7rem;
+      padding-left: 1.55rem;
+      border-left: 2px solid rgba(13, 122, 110, 0.16);
+      margin-top: 0.2rem;
+      z-index: 2;
+      max-height: 410px;
+      overflow-y: auto;
+      padding-right: 0.35rem;
+    }
+    .ho-tl-item { position: relative; margin-bottom: 1.35rem; display: flex; flex-direction: column; gap: 0.45rem; }
     .ho-tl-item:last-child { margin-bottom: 0; }
-    
     .ho-tl-dot {
-      position: absolute; left: -1.8rem; top: 0; transform: translateX(-50%); width: 16px; height: 16px;
-      border-radius: 50%; background: #fff; border: 3px solid var(--ho-teal-600); box-shadow: 0 0 0 4px rgba(255,255,255,0.8);
-      transition: all 0.4s ease;
+      position: absolute; left: -1.55rem; top: 4px; transform: translateX(-50%);
+      width: 14px; height: 14px; border-radius: 50%; background: #ffffff;
+      border: 3px solid var(--ho-teal-600); box-shadow: 0 0 0 4px rgba(255,255,255,0.85);
+      transition: 0.25s;
     }
-    .ho-tl-item.completed .ho-tl-dot { background: var(--ho-teal-600); box-shadow: 0 0 0 4px rgba(13, 122, 110, 0.2); }
-    .ho-tl-item.upcoming .ho-tl-dot { border-color: var(--ho-warning); animation: hoBlink 2s infinite;}
-    @keyframes hoBlink { 0%, 100% { box-shadow: 0 0 0 4px rgba(243, 156, 18, 0.2); } 50% { box-shadow: 0 0 0 8px rgba(243, 156, 18, 0.4); } }
-
-    .ho-tl-time { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; font-weight: 800; color: var(--ho-teal-900); }
+    .ho-tl-item.completed .ho-tl-dot { background: var(--ho-green); border-color: var(--ho-teal-900); }
+    .ho-tl-item.upcoming .ho-tl-dot { border-color: var(--ho-amber); }
+    .ho-tl-time { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 800; color: var(--ho-teal-900); }
     .ho-tl-card {
-      background: rgba(255,255,255,0.85); border: 1px solid var(--ho-glass-border-subtle); border-radius: 14px;
-      padding: 1.2rem 1.4rem; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid var(--ho-glass-border-subtle);
+      border-radius: 16px;
+      padding: 0.95rem 1.15rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      transition: 0.25s var(--ho-ease);
+      cursor: pointer;
     }
-    .ho-tl-card:hover { background: #fff; border-color: var(--ho-teal-600); box-shadow: 0 8px 25px rgba(13, 122, 110, 0.08); transform: translateX(4px);}
-    .ho-tl-info strong { display: block; font-size: 1rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.2rem;}
-    .ho-tl-info span { font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 500; }
+    .ho-tl-card:hover { background: #ffffff; border-color: var(--ho-teal-600); transform: translateX(3px); box-shadow: 0 8px 22px rgba(13, 122, 110, 0.08); }
+    .ho-tl-info strong { display: block; font-size: 0.93rem; color: var(--ho-teal-950); font-weight: 800; margin-bottom: 0.15rem; }
+    .ho-tl-info span { font-size: 0.78rem; color: var(--ho-text-muted); font-weight: 500; }
 
     .ho-btn-action {
-      background: var(--ho-bg-airy); border: 1px solid rgba(13, 122, 110, 0.2); color: var(--ho-teal-900);
-      padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      background: var(--ho-bg-airy);
+      border: 1px solid rgba(13, 122, 110, 0.22);
+      color: var(--ho-teal-900);
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 0.76rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: 0.2s var(--ho-ease);
+      white-space: nowrap;
     }
-    .ho-btn-action:hover { background: var(--ho-teal-900); color: #fff; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(13, 122, 110, 0.2); }
-    .ho-btn-action:active { transform: scale(0.95); }
+    .ho-btn-action:hover { background: var(--ho-teal-900); color: #ffffff; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(13, 122, 110, 0.2); }
 
-    .ho-taken-badge { font-size: 0.95rem; font-weight: 800; color: #27ae60; display: flex; align-items: center; gap: 0.4rem; animation: hoPopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);}
-    @keyframes hoPopIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-
-    /* --- 4. SYMPTOM HISTORY (Spans 4) --- */
+    /* ==================================================================
+       5. RECENT SYMPTOMS JOURNAL (SPAN 4)
+    ================================================================== */
     .ho-history-panel { grid-column: span 4; }
-    .ho-symptom-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem; }
+    .ho-symptom-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      max-height: 410px;
+      overflow-y: auto;
+      padding-right: 0.35rem;
+      z-index: 2;
+    }
     .ho-sym-card {
-      background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px;
-      padding: 1.2rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid var(--ho-glass-border-subtle);
+      border-radius: 16px;
+      padding: 0.95rem 1.05rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      transition: 0.22s var(--ho-ease);
+      cursor: pointer;
     }
-    .ho-sym-card:hover { transform: translateX(4px); border-color: var(--ho-coral); box-shadow: 0 6px 20px rgba(224, 122, 104, 0.08); }
-    .ho-sym-left { display: flex; align-items: center; gap: 1rem; }
-    .ho-sym-icon { font-size: 1.6rem; width: 44px; height: 44px; background: rgba(224, 122, 104, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
-    .ho-sym-text strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.1rem;}
-    .ho-sym-text span { font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600;}
-    .ho-sym-severity { font-size: 0.75rem; font-weight: 800; padding: 6px 12px; border-radius: 8px; text-transform: uppercase; }
-    .ho-sym-severity.mild { background: rgba(243, 156, 18, 0.15); color: #d35400; }
-    .ho-sym-severity.high { background: var(--ho-coral-soft); color: var(--ho-danger); }
+    .ho-sym-card:hover { background: #ffffff; transform: translateX(3px); border-color: var(--ho-coral); box-shadow: 0 8px 20px rgba(224, 122, 104, 0.1); }
+    .ho-sym-left { display: flex; align-items: center; gap: 0.8rem; min-width: 0; }
+    .ho-sym-icon { font-size: 1.25rem; width: 38px; height: 38px; background: rgba(224, 122, 104, 0.11); border-radius: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ho-sym-text { min-width: 0; }
+    .ho-sym-text strong { display: block; font-size: 0.9rem; color: var(--ho-teal-950); font-weight: 800; margin-bottom: 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ho-sym-text span { font-size: 0.7rem; color: var(--ho-text-muted); font-weight: 600; display: block; }
+    .ho-sym-severity { font-size: 0.66rem; font-weight: 800; padding: 3px 9px; border-radius: 8px; text-transform: uppercase; white-space: nowrap; }
+    .ho-sym-severity.mild { background: rgba(245, 158, 11, 0.14); color: #b45309; }
+    .ho-sym-severity.moderate { background: rgba(59, 130, 246, 0.14); color: #1d4ed8; }
+    .ho-sym-severity.severe { background: var(--ho-coral-soft); color: var(--ho-danger); }
 
-    /* --- MODALS & TOASTS --- */
-    .ho-modal { position: fixed; inset: 0; background: rgba(11, 94, 85, 0.5); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 1.2rem; opacity: 0; transition: opacity 0.3s ease; }
-    .ho-modal.active { display: flex; opacity: 1; }
-    .ho-modal-box { background: #ffffff; border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl); padding: 2.5rem; width: 100%; max-width: 520px; box-shadow: 0 35px 70px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);}
-    .ho-modal.active .ho-modal-box { transform: translateY(0); }
-    .ho-modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.8rem; }
-    .ho-modal-head h3 { font-size: 1.4rem; font-weight: 800; color: var(--ho-teal-900); }
-    .ho-modal-close { background: rgba(13, 122, 110, 0.05); border: none; font-size: 1.5rem; width: 36px; height: 36px; border-radius: 50%; color: var(--ho-text-muted); cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;}
-    .ho-modal-close:hover { color: var(--ho-danger); background: rgba(217, 75, 75, 0.1); transform: rotate(90deg);}
+    /* ==================================================================
+       6. AI MEDICATION & SYMPTOM ASSISTANT BANNER (SPAN 4)
+    ================================================================== */
+    .ho-ai-banner-card {
+      grid-column: span 4;
+      background:
+        radial-gradient(320px 180px at 100% 0%, rgba(66, 184, 157, 0.28), transparent 65%),
+        linear-gradient(145deg, var(--ho-teal-950), #09423a 65%, var(--ho-teal-800));
+      color: #ffffff;
+      border: 1px solid rgba(66, 184, 157, 0.35);
+      box-shadow: 0 22px 48px rgba(6, 48, 43, 0.28);
+      justify-content: space-between;
+    }
+    .ho-ai-banner-card:hover {
+      background:
+        radial-gradient(320px 180px at 100% 0%, rgba(66, 184, 157, 0.34), transparent 65%),
+        linear-gradient(145deg, var(--ho-teal-950), #09423a 65%, var(--ho-teal-800));
+      border-color: var(--ho-mint-400);
+    }
+    .ho-ai-mini-orb { width: 32px; height: 32px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ho-ai-mini-orb .r1 { position: absolute; inset: 0; border: 1.5px dashed var(--ho-mint-400); border-radius: 50%; animation: hoSpin 10s linear infinite; }
+    .ho-ai-mini-orb .r2 { position: absolute; inset: -3px; border: 1.5px dashed var(--ho-coral); border-radius: 50%; animation: hoSpin 7s linear infinite reverse; }
+    .ho-ai-mini-orb .core { width: 8px; height: 8px; border-radius: 50%; background: var(--ho-mint-200); box-shadow: 0 0 10px var(--ho-mint-400); }
 
-    .ho-form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.2rem; }
-    .ho-form-group label { font-size: 0.8rem; font-weight: 800; color: var(--ho-teal-900); text-transform: uppercase; letter-spacing: 0.05em;}
-    .ho-input { width: 100%; padding: 1rem 1.2rem; border: 1px solid #cbd5e1; border-radius: 16px; font-family: inherit; font-size: 1rem; color: var(--ho-text-main); font-weight: 500; outline: none; transition: 0.2s; background: #f8fcfb;}
-    .ho-input:focus { border-color: var(--ho-teal-600); box-shadow: 0 0 0 4px rgba(16, 148, 133, 0.1); background: #fff;}
+    /* ==================================================================
+       7. MODALS, POP-UP INSPECTOR & TOAST
+    ================================================================== */
+    .ho-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 48, 43, 0.48);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3500;
+      padding: 1.25rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .ho-modal-overlay.active { opacity: 1; visibility: visible; }
+    .ho-modal-panel {
+      width: 100%;
+      max-width: 520px;
+      max-height: 92vh;
+      max-height: 92dvh;
+      overflow-y: auto;
+      background: #ffffff;
+      border-radius: var(--ho-radius-xl);
+      padding: 2rem;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.22);
+      transform: translateY(36px) scale(0.95);
+      transition: transform 0.4s var(--ho-ease);
+      display: flex;
+      flex-direction: column;
+      gap: 1.15rem;
+      position: relative;
+    }
+    .ho-modal-overlay.active .ho-modal-panel { transform: none; }
+    .ho-modal-handle { display: none; width: 44px; height: 4px; border-radius: 999px; background: #d5e4e1; margin: -0.5rem auto -0.3rem; flex-shrink: 0; }
+    .ho-modal-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+    .ho-modal-title { font-size: 1.35rem; font-family: 'Fraunces', serif; font-weight: 800; color: var(--ho-teal-900); line-height: 1.2; }
+    .ho-modal-close {
+      background: rgba(13, 122, 110, 0.08);
+      border: none;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      font-size: 1.05rem;
+      color: var(--ho-teal-900);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: 0.2s;
+      flex-shrink: 0;
+    }
+    .ho-modal-close:hover { background: var(--ho-coral-soft); color: #c0392b; transform: rotate(90deg); }
 
-    .ho-toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ho-teal-900); color: #fff; padding: 1rem 2rem; border-radius: 999px; font-weight: 700; font-size: 0.95rem; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 4000; opacity: 0; transition: all 0.4s cubic-bezier(0.16,1,0.3,1); pointer-events: none; border: 1px solid rgba(255,255,255,0.1);}
-    .ho-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .ho-form-group { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.85rem; }
+    .ho-form-group label { font-size: 0.74rem; font-weight: 800; color: var(--ho-teal-900); text-transform: uppercase; letter-spacing: 0.05em; }
+    .ho-input {
+      width: 100%;
+      padding: 0.82rem 1rem;
+      border: 1px solid rgba(13, 122, 110, 0.22);
+      border-radius: 14px;
+      font-family: inherit;
+      font-size: 16px; /* Prevents iOS Safari auto-zoom */
+      color: var(--ho-text-main);
+      font-weight: 500;
+      outline: none;
+      background: #f8fcfb;
+      transition: 0.2s;
+    }
+    .ho-input:focus { border-color: var(--ho-teal-600); background: #ffffff; box-shadow: 0 0 0 3px rgba(16, 148, 133, 0.12); }
 
-    /* ==========================================================
-       BULLETPROOF MOBILE UX OVERRIDES (MAX-WIDTH: 768px)
-    ========================================================== */
-    @media (max-width: 1200px) {
-      .ho-med-panel, .ho-symptom-quick, .ho-schedule-panel, .ho-history-panel { grid-column: span 12; }
+    .ho-preset-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.25rem; }
+    .ho-preset-chip {
+      border: 1px solid rgba(13, 122, 110, 0.2);
+      background: rgba(13, 122, 110, 0.05);
+      color: var(--ho-teal-800);
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: 0.18s;
+    }
+    .ho-preset-chip:hover { background: var(--ho-teal-700); color: #ffffff; }
+
+    .ho-detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem 1rem;
+      background: var(--ho-bg-airy);
+      border-radius: 12px;
+      gap: 1rem;
+    }
+    .ho-dr-label { font-size: 0.8rem; font-weight: 700; color: var(--ho-text-muted); }
+    .ho-dr-val { font-family: 'JetBrains Mono', monospace; font-size: 0.88rem; font-weight: 800; color: var(--ho-teal-900); text-align: right; }
+
+    .ho-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      transform: translate(-50%, 30px);
+      background: var(--ho-teal-950);
+      color: #ffffff;
+      padding: 0.8rem 1.35rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 4000;
+      transition: 0.4s var(--ho-ease);
+    }
+    .ho-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    /* ==================================================================
+       RESPONSIVE DESIGN (DESKTOP, TABLET, MOBILE)
+    ================================================================== */
+    @media (max-width: 1220px) {
+      .ho-hero { flex-direction: column; align-items: flex-start; }
+      .ho-ring-wrap { align-self: center; }
+    }
+    @media (max-width: 1024px) {
+      .ho-mosaic-grid { grid-template-columns: repeat(6, 1fr); padding: 0.5rem 1.6rem 3rem; }
+      .ho-hero, .ho-symptom-quick, .ho-med-panel, .ho-ai-banner-card, .ho-schedule-panel, .ho-history-panel { grid-column: span 6; }
+      .ho-topbar { padding: 1.5rem 1.6rem 1rem; }
+      body .ho-main-content { margin-top: 5.4rem; padding: 0 !important; height: calc(100vh - 5.4rem); height: calc(100dvh - 5.4rem); }
+      .ho-hero { flex-direction: row; align-items: center; }
     }
 
-    @media screen and (max-width: 768px) {
-      body, html { height: auto !important; min-height: 100vh !important; overflow-x: hidden !important; background: var(--ho-bg-airy) !important; }
-      
-      /* CLEARS THE MOBILE ISLAND PROPERLY */
-      .ho-main-content { 
-        height: auto !important; min-height: 100vh !important;
-        padding-top: 5.8rem !important; overflow-y: visible !important;
-      }
-      
-      .ho-topbar {
-        flex-direction: column; align-items: flex-start; padding: 0 1.25rem 0.5rem !important; gap: 0.8rem;
-        position: static !important; background: transparent !important; backdrop-filter: none !important; border: none !important;
-      }
-      .ho-topbar h1 { font-size: 1.8rem; margin-bottom: 0.2rem;}
-      .ho-topbar p { font-size: 0.9rem; line-height: 1.4;}
-      .ho-topbar-actions { width: 100%; display: flex; flex-direction: column; gap: 0.8rem; margin-top: 0.5rem;}
-      .ho-topbar-actions button { width: 100%; justify-content: center; }
+    @media (max-width: 768px) {
+      .ho-topbar { flex-direction: column; align-items: stretch; padding: 1rem 1.1rem 0.8rem; gap: 0.8rem; position: relative; mask-image: none; -webkit-mask-image: none; backdrop-filter: none; }
+      .ho-topbar-text h1 { font-size: 1.65rem; }
+      .ho-topbar-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+      .ho-btn-ghost { justify-content: center; padding: 0.8rem; font-size: 0.84rem; min-height: 46px; }
 
-      .ho-workspace-grid { 
-        grid-template-columns: 1fr !important; padding: 0.5rem 1.25rem 2.5rem !important; gap: 1.2rem !important;
-        display: flex !important; flex-direction: column !important; flex: 1 0 auto !important;
-      }
+      .ho-mosaic-grid { display: flex; flex-direction: column; padding: 0.4rem 1rem calc(env(safe-area-inset-bottom, 0px) + 1.5rem); gap: 1rem; }
+      .ho-panel { padding: 1.25rem; border-radius: 24px; }
 
-      .ho-panel { height: auto !important; min-height: 0 !important; padding: 1.5rem !important; border-radius: 24px !important; flex: none !important; }
+      /* Mobile Dark Hero */
+      .ho-hero {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1.4rem 1.2rem;
+        gap: 1.15rem;
+        color: #ffffff;
+        background:
+          radial-gradient(120% 80% at 100% 0%, rgba(66, 184, 157, 0.38), transparent 60%),
+          radial-gradient(90% 70% at 0% 100%, rgba(224, 122, 104, 0.25), transparent 60%),
+          linear-gradient(160deg, #0b5e55, #06302b);
+      }
+      .ho-hero-eyebrow { color: var(--ho-mint-200); }
+      .ho-hero-text h2 { font-size: 1.55rem; color: #ffffff; }
+      .ho-hero-text h2 em { background: linear-gradient(100deg, #9be8d3, #ffd2c8); -webkit-background-clip: text; background-clip: text; }
+      .ho-hero-text > p { color: rgba(226, 245, 240, 0.82); font-size: 0.84rem; }
+      .ho-scan-strip { max-width: 100%; background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.14); }
+      .ho-scan-strip .live { stroke: #9be8d3; }
+      .ho-scan-badge { background: rgba(6, 48, 43, 0.78); color: #9be8d3; }
+
+      .ho-hc-metrics { flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -1.2rem; padding: 0 1.2rem 0.3rem; scrollbar-width: none; gap: 0.65rem; }
+      .ho-hc-metrics::-webkit-scrollbar { display: none; }
+      .ho-hc-stat { flex: 0 0 auto; scroll-snap-align: start; background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.18); min-width: 128px; }
+      .ho-hc-stat span.lbl { color: rgba(226, 245, 240, 0.75); }
+      .ho-hc-stat strong { color: #ffffff !important; }
+      .ho-hc-stat strong small { color: rgba(226, 245, 240, 0.75); }
+
+      .ho-ring-wrap { flex-direction: row; align-items: center; justify-content: space-between; gap: 1rem; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 20px; padding: 0.9rem 1rem; }
+      .ho-ring-container { width: 124px; height: 124px; }
+      .ho-ring-bg { stroke: rgba(255, 255, 255, 0.14); }
+      .ho-ring-center strong { color: #ffffff; font-size: 1.25rem; }
+      .ho-ring-center span { color: rgba(226, 245, 240, 0.75); }
+      .ho-ring-legend { flex-direction: column; align-items: flex-start; gap: 0.45rem; }
+      .ho-ring-legend span { color: #e9fbf6; }
 
       .ho-med-grid { grid-template-columns: 1fr; }
-      .ho-mc-top { align-items: flex-start; }
-      
-      .ho-sq-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem;}
-      .ho-sq-btn { padding: 1rem; }
-      
-      .ho-tl-card { flex-direction: column; align-items: flex-start; gap: 1rem; }
-      .ho-tl-action { width: 100%; }
-      .ho-btn-action { width: 100%; text-align: center; padding: 1rem;}
-      
-      .ho-sym-card { padding: 1rem; flex-direction: column; align-items: flex-start; gap: 1rem;}
-      .ho-sym-left { width: 100%; }
-      .ho-sym-actions-mobile { width: 100%; display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--ho-glass-border-subtle); padding-top: 0.8rem;}
+      .ho-sq-grid { grid-template-columns: repeat(2, 1fr); }
+      .ho-search-input { font-size: 16px; height: 44px; }
+      .ho-tl-card { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+      .ho-tl-card > div:last-child { width: 100%; display: flex; justify-content: flex-end; }
 
-      .ho-modal { padding: 1rem !important; }
-      .ho-modal-box { padding: 2rem 1.5rem !important; max-width: 95% !important; border-radius: 24px !important; }
+      /* Mobile Bottom Sheet Modals */
+      .ho-modal-overlay { align-items: flex-end; padding: 0; }
+      .ho-modal-panel { max-width: 100%; border-radius: 28px 28px 0 0; padding: 1.4rem 1.25rem calc(env(safe-area-inset-bottom, 0px) + 1.5rem); transform: translateY(100%); max-height: 90dvh; }
+      .ho-modal-handle { display: block; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
     }
   </style>
 </head>
 <body>
 
-<!-- Universal Ambient Background -->
-<%- include('../partials/ambient') %>
+<div class="ho-scroll-progress" id="scrollProgress"></div>
+
+<!-- Universal Ambient Orbs (Web-Only Float Motion) -->
+<div class="ho-ambient-canvas" aria-hidden="true">
+  <div class="ho-glow-orb ho-orb-1"></div>
+  <div class="ho-glow-orb ho-orb-2"></div>
+  <div class="ho-glow-orb ho-orb-3"></div>
+</div>
 
 <div class="ho-app-layout">
-  
-  <!-- UNIVERSAL SIDEBAR IMPORT (Handles Mobile Island Automatically) -->
   <%- include('../partials/sidebar') %>
 
-  <!-- SCOPED MAIN CONTENT -->
-  <main class="ho-main-content">
-    
+  <main class="ho-main-content ho-custom-scroll" id="mainScroll">
+
+    <!-- ===== TOPBAR ===== -->
     <header class="ho-topbar">
-      <div>
-        <!-- FIX: Only Page Title here, avoiding "HealthOrbit" double navbar on mobile -->
-        <h1>Medicines & Symptoms</h1>
-        <p>Manage your active prescriptions, daily schedule, and track recent health symptoms.</p>
+      <div class="ho-topbar-text">
+        <div class="ho-eyebrow-pill">
+          <span class="ho-pulse-dot"></span>
+          Prescription Adherence &amp; Symptom Chronology
+        </div>
+        <h1>Medicines &amp; <b>Symptoms</b></h1>
       </div>
+
       <div class="ho-topbar-actions">
-        <button class="ho-btn-ghost" onclick="openModal('symptomModal')">🤒 Log Symptom</button>
-        <button class="ho-btn-primary" onclick="openModal('medicineModal')">💊 Add Medicine</button>
+        <button type="button" class="ho-btn-ghost" onclick="openAddSymptomModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          + Log Symptom
+        </button>
+        <button type="button" class="ho-btn-ghost ho-btn-solid" onclick="openAddMedicineModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          + Add Medicine
+        </button>
       </div>
     </header>
 
-    <div class="ho-workspace-grid">
-      
-      <!-- 1. ACTIVE MEDICATIONS -->
-      <section class="ho-panel ho-med-panel ho-delay-1">
-        <div class="ho-panel-header">
-          <h2>Active Prescriptions</h2>
-          <span class="ho-badge"><%= locals.medicines ? locals.medicines.length : 0 %> Ongoing</span>
+    <div class="ho-mosaic-grid">
+
+      <!-- ===== 1. ADHERENCE & CLINICAL CHRONOLOGY HERO (SPAN 8) ===== -->
+      <section class="ho-panel ho-hero">
+        <div class="ho-hero-text">
+          <div class="ho-hero-eyebrow">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.5 20.5l10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/></svg>
+            Parallel Regimen &amp; Symptom Tracker
+          </div>
+
+          <h2>Prescriptions &amp; <em>Observations.</em></h2>
+
+          <p>
+            Manage your active prescriptions, log scheduled doses in real time, and record symptom episodes along a unified longitudinal timeline. Tap any card to inspect or edit.
+          </p>
+
+          <!-- Pharmacokinetic Scan Strip -->
+          <div class="ho-scan-strip" aria-hidden="true">
+            <svg viewBox="0 0 300 40" preserveAspectRatio="none">
+              <path class="base" d="M0 20 H45 L52 20 L58 7 L66 33 L74 20 H125 L132 20 L138 9 L146 31 L154 20 H205 L212 20 L218 8 L226 32 L234 20 H300"/>
+              <path class="live" pathLength="300" d="M0 20 H45 L52 20 L58 7 L66 33 L74 20 H125 L132 20 L138 9 L146 31 L154 20 H205 L212 20 L218 8 L226 32 L234 20 H300"/>
+            </svg>
+            <div class="ho-scan-badge">
+              <%= adherencePct !== null ? (adherencePct + '% Adherence Today') : (activeMedsCount + ' Active Rx') %>
+            </div>
+          </div>
+
+          <!-- 4 Interactive KPI Stat Tiles -->
+          <div class="ho-hc-metrics">
+            <button type="button" class="ho-hc-stat" onclick="document.getElementById('prescriptionsSection').scrollIntoView({behavior:'smooth'})">
+              <span class="lbl">Active Rx</span>
+              <strong><span class="js-count"><%= activeMedsCount %></span><small>meds</small></strong>
+            </button>
+
+            <button type="button" class="ho-hc-stat" onclick="document.getElementById('scheduleSection').scrollIntoView({behavior:'smooth'})">
+              <span class="lbl">Doses Taken</span>
+              <strong style="color: var(--ho-teal-600);">
+                <span><%= takenDosesToday %>/<%= totalDosesToday %></span><small>today</small>
+              </strong>
+            </button>
+
+            <button type="button" class="ho-hc-stat" onclick="document.getElementById('scheduleSection').scrollIntoView({behavior:'smooth'})">
+              <span class="lbl">Pending Doses</span>
+              <strong style="color: <%= pendingDosesToday > 0 ? 'var(--ho-amber)' : 'var(--ho-teal-600)' %>;">
+                <span class="js-count"><%= pendingDosesToday %></span><small>left</small>
+              </strong>
+            </button>
+
+            <button type="button" class="ho-hc-stat" onclick="document.getElementById('symptomsSection').scrollIntoView({behavior:'smooth'})">
+              <span class="lbl">Symptoms</span>
+              <strong style="color: var(--ho-coral);">
+                <span class="js-count"><%= normalizedSymptoms.length %></span><small>logged</small>
+              </strong>
+            </button>
+          </div>
         </div>
-        <div class="ho-med-grid">
-          <% if (locals.medicines && locals.medicines.length > 0) { %>
-            <% locals.medicines.forEach(med => { %>
-              <div class="ho-med-card <%= med.frequency.toLowerCase().includes('need') ? 'as-needed' : '' %>">
+
+        <!-- 3-Ring Adherence & Regimen Gauge -->
+        <div class="ho-ring-wrap">
+          <div class="ho-ring-container">
+            <svg class="ho-svg-rings" viewBox="0 0 160 160" aria-label="Dose Adherence, Active Prescriptions, and Symptom Logs Gauge">
+              <circle class="ho-ring-orbit" cx="80" cy="80" r="75"></circle>
+              <circle class="ho-ring-bg" cx="80" cy="80" r="64"></circle>
+              <circle class="ho-ring-bg" cx="80" cy="80" r="48"></circle>
+              <circle class="ho-ring-bg" cx="80" cy="80" r="32"></circle>
+              <circle class="ho-ring-fill" id="ringAdherence" cx="80" cy="80" r="64" stroke="var(--ho-mint-400)" stroke-dasharray="402.1" stroke-dashoffset="402.1"></circle>
+              <circle class="ho-ring-fill" id="ringPrescriptions" cx="80" cy="80" r="48" stroke="var(--ho-blue)" stroke-dasharray="301.6" stroke-dashoffset="301.6"></circle>
+              <circle class="ho-ring-fill" id="ringSymptoms" cx="80" cy="80" r="32" stroke="var(--ho-coral)" stroke-dasharray="201.1" stroke-dashoffset="201.1"></circle>
+            </svg>
+            <div class="ho-ring-center">
+              <strong><%= adherencePct !== null ? (adherencePct + '%') : activeMedsCount %></strong>
+              <span><%= adherencePct !== null ? 'Adherence' : 'Active Rx' %></span>
+            </div>
+          </div>
+          <div class="ho-ring-legend">
+            <span><i style="background: var(--ho-mint-400)"></i>Taken <b><%= takenDosesToday %></b></span>
+            <span><i style="background: var(--ho-blue)"></i>Rx <b><%= activeMedsCount %></b></span>
+            <span><i style="background: var(--ho-coral)"></i>Symptoms <b><%= normalizedSymptoms.length %></b></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 2. QUICK SYMPTOM LOG MATRIX (SPAN 4) ===== -->
+      <section class="ho-panel ho-symptom-quick">
+        <div>
+          <div class="ho-panel-head" style="margin-bottom: 0.65rem;">
+            <h3>
+              <span class="ic-box" style="background:rgba(224,122,104,0.14); color:var(--ho-coral);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              </span>
+              1-Tap Symptom Log
+            </h3>
+            <button type="button" class="ho-tag warn" style="border:none; cursor:pointer;" onclick="openAddSymptomModal()">+ Custom</button>
+          </div>
+
+          <p class="ho-sq-desc">Select severity and tap any symptom below to log it to your health timeline immediately:</p>
+
+          <!-- Severity Selector for Quick Log -->
+          <div class="ho-sev-selector" role="radiogroup" aria-label="Quick Log Severity">
+            <button type="button" class="ho-sev-pill active" data-qsev="Mild">Mild</button>
+            <button type="button" class="ho-sev-pill" data-qsev="Moderate">Moderate</button>
+            <button type="button" class="ho-sev-pill" data-qsev="Severe">Severe</button>
+          </div>
+
+          <div class="ho-sq-grid">
+            <button type="button" class="ho-sq-btn" onclick="quickLogSymptom('Headache', this)">
+              <span class="ho-sq-icon">🤕</span>
+              <span class="ho-sq-label">Headache</span>
+            </button>
+            <button type="button" class="ho-sq-btn" onclick="quickLogSymptom('Fever', this)">
+              <span class="ho-sq-icon">🤒</span>
+              <span class="ho-sq-label">Fever</span>
+            </button>
+            <button type="button" class="ho-sq-btn" onclick="quickLogSymptom('Cough', this)">
+              <span class="ho-sq-icon">🤧</span>
+              <span class="ho-sq-label">Cough</span>
+            </button>
+            <button type="button" class="ho-sq-btn" onclick="quickLogSymptom('Fatigue', this)">
+              <span class="ho-sq-icon">😴</span>
+              <span class="ho-sq-label">Fatigue</span>
+            </button>
+            <button type="button" class="ho-sq-btn" onclick="quickLogSymptom('Nausea', this)">
+              <span class="ho-sq-icon">🤢</span>
+              <span class="ho-sq-label">Nausea</span>
+            </button>
+            <button type="button" class="ho-sq-btn" onclick="quickLogSymptom('Dizziness', this)">
+              <span class="ho-sq-icon">💫</span>
+              <span class="ho-sq-label">Dizziness</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 3. ACTIVE PRESCRIPTIONS VAULT (SPAN 8) ===== -->
+      <section class="ho-panel ho-med-panel" id="prescriptionsSection">
+        <div class="ho-panel-head">
+          <h3>
+            <span class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.5 20.5l10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/></svg></span>
+            Active Prescriptions Vault
+          </h3>
+          <div style="display:flex; gap:0.45rem; align-items:center;">
+            <span class="ho-tag"><%= activeMedsCount %> Ongoing</span>
+            <button type="button" class="ho-tag good" style="border:none; cursor:pointer;" onclick="openAddMedicineModal()">+ Add Rx</button>
+          </div>
+        </div>
+
+        <div class="ho-filter-strip">
+          <div class="ho-search-box">
+            <svg class="ho-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="medSearchInput" class="ho-search-input" placeholder="Search prescriptions by name, dosage, or instructions..." aria-label="Search prescriptions">
+          </div>
+          <div class="ho-filter-tabs" role="tablist">
+            <button type="button" class="ho-ftab active" data-med-filter="all">All (<%= normalizedMeds.length %>)</button>
+            <button type="button" class="ho-ftab" data-med-filter="scheduled">Daily (<%= scheduledMedsCount %>)</button>
+            <button type="button" class="ho-ftab" data-med-filter="prn">PRN / As Needed (<%= prnMedsCount %>)</button>
+          </div>
+        </div>
+
+        <div class="ho-med-grid ho-custom-scroll" id="medGrid">
+          <% if (normalizedMeds.length > 0) { %>
+            <% normalizedMeds.forEach((med) => { %>
+              <div
+                class="ho-med-card <%= med.isPrn ? 'prn' : '' %>"
+                data-med-search="<%= (med.name + ' ' + med.dosage + ' ' + med.instructions).toLowerCase() %>"
+                data-med-type="<%= med.isPrn ? 'prn' : 'scheduled' %>"
+                onclick="openInspectorModal('medicine', <%= med.idx %>)">
+
                 <div class="ho-mc-top">
-                  <div style="display: flex; gap: 1rem; align-items: center;">
-                    <div class="ho-mc-icon" <%- med.frequency.toLowerCase().includes('need') ? 'style="background: rgba(52, 152, 219, 0.1); color: var(--ho-blue);"' : '' %>>💊</div>
-                    <div class="ho-mc-info">
-                      <strong><%= med.name %></strong>
-                      <span><%= med.dosage %></span>
+                  <div style="display:flex; gap:0.8rem; align-items:center; min-width:0;">
+                    <div style="width:40px; height:40px; border-radius:12px; background:<%= med.isPrn ? 'rgba(59,130,246,0.1)' : 'rgba(13,122,110,0.1)' %>; color:<%= med.isPrn ? 'var(--ho-blue)' : 'var(--ho-teal-700)' %>; display:grid; place-items:center; flex-shrink:0; font-size:1.15rem;">
+                      💊
+                    </div>
+                    <div style="min-width:0;">
+                      <strong class="ho-mc-title" style="display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= med.name %></strong>
+                      <span style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--ho-text-muted); font-weight:700;"><%= med.dosage %></span>
                     </div>
                   </div>
-                  <!-- Secure Delete Icon Form -->
-                  <form action="/medicines/delete/<%= med._id %>" method="POST" style="margin:0;" onsubmit="return confirm('Delete this medicine?');">
-                    <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
-                    <button type="submit" class="ho-btn-delete" title="Delete Medicine" aria-label="Delete">
-                      <svg viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+
+                  <div class="ho-card-actions" onclick="event.stopPropagation();">
+                    <button type="button" class="ho-btn-icon" title="Edit / Reschedule Prescription" onclick="openEditMedicineModal(<%= med.idx %>)">
+                      <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                     </button>
-                  </form>
+                    <form action="/medicines/delete/<%= med.id %>" method="POST" style="margin:0;" onsubmit="return confirm('Delete this prescription?');">
+                      <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
+                      <button type="submit" class="ho-btn-delete" title="Delete Prescription" aria-label="Delete">
+                        <svg viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                      </button>
+                    </form>
+                  </div>
                 </div>
+
+                <div style="font-size:0.77rem; color:var(--ho-text-muted); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  <%= med.instructions %>
+                </div>
+
                 <div class="ho-mc-bot">
-                  <span class="ho-mc-freq"><%= med.frequency %> • <%= med.instructions %></span>
-                  <span class="ho-mc-pill" <%- med.frequency.toLowerCase().includes('need') ? 'style="background: rgba(52, 152, 219, 0.1); border-color: rgba(52, 152, 219, 0.2); color: var(--ho-blue);"' : '' %>>
-                    <%= med.times && med.times.length > 0 ? med.times.join(', ') : 'PRN' %>
+                  <span style="font-size:0.7rem; text-transform:uppercase; font-weight:800;"><%= med.frequency %></span>
+                  <span class="ho-mc-badge" style="<%= med.isPrn ? 'background:rgba(59,130,246,0.1); color:var(--ho-blue); border-color:rgba(59,130,246,0.2);' : '' %>">
+                    ⏰ <%= med.timesDisplay %>
                   </span>
                 </div>
               </div>
             <% }) %>
           <% } else { %>
-             <p style="color: var(--ho-text-muted); font-weight: 500; font-style: italic;">No active prescriptions found.</p>
+            <div style="grid-column: 1 / -1; text-align:center; padding:2.2rem 1rem; color:var(--ho-text-muted); font-size:0.88rem; font-weight:600; background:rgba(255,255,255,0.5); border:1.5px dashed rgba(13,122,110,0.22); border-radius:18px;">
+              No active prescriptions in your vault yet. Click <strong>+ Add Medicine</strong> to schedule your medications.
+            </div>
           <% } %>
         </div>
       </section>
 
-      <!-- 2. QUICK SYMPTOM LOG -->
-      <section class="ho-panel ho-symptom-quick ho-delay-1">
-        <div class="ho-panel-header">
-          <h2>Quick Log</h2>
+      <!-- ===== 4. AI CLINICAL PHARMACY & SYMPTOM COMPANION (SPAN 4) ===== -->
+      <section class="ho-panel ho-ai-banner-card">
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; margin-bottom:1rem; z-index:2; position:relative;">
+            <div style="display:flex; align-items:center; gap:0.65rem;">
+              <div class="ho-ai-mini-orb" aria-hidden="true">
+                <span class="r1"></span><span class="r2"></span><span class="core"></span>
+              </div>
+              <span style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.07em; color:var(--ho-mint-200);">HealthOrbit AI Companion</span>
+            </div>
+            <span class="ho-tag" style="background:rgba(255,255,255,0.14); color:#ffffff;">Non-Diagnostic</span>
+          </div>
+
+          <h3 style="font-family:'Fraunces',serif; font-size:1.3rem; font-weight:700; color:#ffffff; margin-bottom:0.55rem; position:relative; z-index:2;">
+            Medication &amp; Symptom Questions
+          </h3>
+          <p style="font-size:0.86rem; line-height:1.58; color:rgba(233,251,246,0.88); font-weight:500; position:relative; z-index:2;">
+            Prepare questions for your doctor about your active prescriptions (<%= activeMedsCount %>) or recent symptom entries (<%= normalizedSymptoms.length %>), or review general timing instructions.
+          </p>
         </div>
-        <p class="ho-sq-desc">Tap a common symptom to record it in your health timeline instantly.</p>
-        
-        <div class="ho-sq-grid">
-          <div class="ho-sq-btn" onclick="quickLogSymptom('Headache')">
-            <span class="ho-sq-icon">🤕</span>
-            <span class="ho-sq-label">Headache</span>
-          </div>
-          <div class="ho-sq-btn" onclick="quickLogSymptom('Fever')">
-            <span class="ho-sq-icon">🌡️</span>
-            <span class="ho-sq-label">Fever</span>
-          </div>
-          <div class="ho-sq-btn" onclick="quickLogSymptom('Cough')">
-            <span class="ho-sq-icon">🗣️</span>
-            <span class="ho-sq-label">Cough</span>
-          </div>
-          <div class="ho-sq-btn" onclick="quickLogSymptom('Fatigue')">
-            <span class="ho-sq-icon">🥱</span>
-            <span class="ho-sq-label">Fatigue</span>
-          </div>
+
+        <div style="margin-top:1.15rem; padding-top:0.95rem; border-top:1px solid rgba(255,255,255,0.14); display:flex; flex-direction:column; gap:0.55rem; position:relative; z-index:2;">
+          <button type="button" class="ho-btn-ghost" style="width:100%; justify-content:center; background:#ffffff; color:var(--ho-teal-950); border:none;" onclick="askAiAboutRegimen()">
+            ✨ Ask AI About My Regimen &amp; Symptoms
+          </button>
         </div>
       </section>
 
-      <!-- 3. TODAY'S SCHEDULE TIMELINE -->
-      <section class="ho-panel ho-schedule-panel ho-delay-2">
-        <div class="ho-panel-header">
-          <h2>Today's Schedule</h2>
+      <!-- ===== 5. TODAY'S SCHEDULE TIMELINE (SPAN 8) ===== -->
+      <section class="ho-panel ho-schedule-panel" id="scheduleSection">
+        <div class="ho-panel-head">
+          <h3>
+            <span class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+            Today's Dose Schedule Timeline
+          </h3>
+          <div style="display:flex; gap:0.4rem; align-items:center;">
+            <div class="ho-filter-tabs" role="tablist">
+              <button type="button" class="ho-ftab active" data-sched-filter="all">All (<%= totalDosesToday %>)</button>
+              <button type="button" class="ho-ftab" data-sched-filter="upcoming">Pending (<%= pendingDosesToday %>)</button>
+              <button type="button" class="ho-ftab" data-sched-filter="completed">Taken (<%= takenDosesToday %>)</button>
+            </div>
+          </div>
         </div>
-        <div class="ho-timeline">
-          <% if (locals.scheduleToday && locals.scheduleToday.length > 0) { %>
-            <% locals.scheduleToday.forEach((item, index) => { %>
-              <div class="ho-tl-item <%= item.status === 'Taken' ? 'completed' : 'upcoming' %>" id="tl-item-<%= index %>">
-                <div class="ho-tl-dot" <%- item.status === 'Missed' ? 'style="border-color: var(--ho-danger);"' : '' %>></div>
-                <span class="ho-tl-time"><%= item.time %> — <%= item.medicine.name %></span>
-                <div class="ho-tl-card">
+
+        <div class="ho-timeline ho-custom-scroll" id="scheduleTimeline">
+          <% if (normalizedSchedule.length > 0) { %>
+            <% normalizedSchedule.forEach((item) => { %>
+              <div
+                class="ho-tl-item <%= item.isTaken ? 'completed' : 'upcoming' %>"
+                data-sched-state="<%= item.isTaken ? 'completed' : 'upcoming' %>">
+                <div class="ho-tl-dot"></div>
+                <span class="ho-tl-time">⏰ <%= item.time %> &bull; <%= item.name %></span>
+
+                <div class="ho-tl-card" onclick="openInspectorModal('schedule', <%= item.idx %>)">
                   <div class="ho-tl-info">
-                    <strong><%= item.medicine.name %> (<%= item.medicine.dosage %>)</strong>
-                    <span><%= item.medicine.instructions || 'No special instructions.' %></span>
+                    <strong><%= item.name %> <% if (item.dosage) { %>(<%= item.dosage %>)<% } %></strong>
+                    <span><%= item.instructions %></span>
                   </div>
-                  <div class="ho-tl-action" id="tl-action-<%= index %>">
-                    <% if (item.status === 'Taken') { %>
-                      <span class="ho-taken-badge">✅ Taken</span>
-                    <% } else if (item.status === 'Skipped') { %>
-                       <span class="ho-taken-badge" style="color: var(--ho-text-muted);">⏭️ Skipped</span>
-                    <% } else if (item.status === 'Missed') { %>
-                       <span class="ho-taken-badge" style="color: var(--ho-danger);">⚠️ Missed</span>
-                    <% } else { %>
-                      <form action="/medicines/log/<%= item.medicine._id %>" method="POST" style="display:inline;">
-                         <input type="hidden" name="time" value="<%= item.time %>">
-                         <input type="hidden" name="status" value="taken">
-                         <button type="submit" class="ho-btn-action">Mark as Taken</button>
+
+                  <div onclick="event.stopPropagation();" style="display:flex; align-items:center; gap:0.5rem;">
+                    <% if (item.isTaken) { %>
+                      <span class="ho-tag good" style="padding:0.4rem 0.85rem;">✔ Taken</span>
+                    <% } else if (item.medId) { %>
+                      <form action="/medicines/log/<%= item.medId %>" method="POST" style="margin:0;">
+                        <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
+                        <input type="hidden" name="time" value="<%= item.time %>">
+                        <input type="hidden" name="status" value="taken">
+                        <button type="submit" class="ho-btn-action">Mark as Taken</button>
                       </form>
                     <% } %>
                   </div>
@@ -406,172 +1340,559 @@
               </div>
             <% }) %>
           <% } else { %>
-            <p style="color: var(--ho-text-muted); font-weight: 500; font-style: italic; margin-left: 1rem;">No medicines scheduled for today.</p>
+            <div style="text-align:center; padding:2rem 1rem; color:var(--ho-text-muted); font-size:0.86rem; font-weight:600;">
+              No timed doses scheduled for today. Add a daily prescription with a scheduled time to populate your timeline.
+            </div>
           <% } %>
         </div>
       </section>
 
-      <!-- 4. RECENT SYMPTOMS LOG -->
-      <section class="ho-panel ho-history-panel ho-delay-2">
-        <div class="ho-panel-header">
-          <h2>Recent Symptoms</h2>
+      <!-- ===== 6. RECENT SYMPTOMS JOURNAL (SPAN 4) ===== -->
+      <section class="ho-panel ho-history-panel" id="symptomsSection">
+        <div class="ho-panel-head">
+          <h3>
+            <span class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+            Recent Symptoms
+          </h3>
+          <span class="ho-tag <%= severeSymptomsCount > 0 ? 'warn' : '' %>"><%= normalizedSymptoms.length %> Logged</span>
         </div>
-        
-        <div class="ho-symptom-list">
-          <% if (locals.symptoms && locals.symptoms.length > 0) { %>
-            <% locals.symptoms.forEach(symp => { %>
-              <div class="ho-sym-card">
+
+        <div class="ho-filter-strip" style="margin-bottom:0.75rem;">
+          <div class="ho-search-box" style="min-width:100%;">
+            <svg class="ho-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="symSearchInput" class="ho-search-input" placeholder="Filter logged symptoms..." aria-label="Filter symptoms">
+          </div>
+        </div>
+
+        <div class="ho-symptom-list ho-custom-scroll" id="symptomList">
+          <% if (normalizedSymptoms.length > 0) { %>
+            <% normalizedSymptoms.forEach((symp) => { %>
+              <div
+                class="ho-sym-card"
+                data-sym-search="<%= (symp.symptom + ' ' + symp.severity + ' ' + symp.notes).toLowerCase() %>"
+                onclick="openInspectorModal('symptom', <%= symp.idx %>)">
                 <div class="ho-sym-left">
-                  <div class="ho-sym-icon">🤧</div>
+                  <div class="ho-sym-icon">🩺</div>
                   <div class="ho-sym-text">
                     <strong><%= symp.symptom %></strong>
-                    <span><%= new Date(symp.recordedAt).toLocaleString() %></span>
-                    <% if(symp.notes) { %><span style="display:block; margin-top:0.3rem; font-style:italic;"><%= symp.notes %></span><% } %>
+                    <span><%= symp.dateStr %><% if (symp.timeStr) { %> &bull; <%= symp.timeStr %><% } %></span>
+                    <% if (symp.notes) { %>
+                      <span style="font-style:italic; color:var(--ho-text-subtle); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:170px;"><%= symp.notes %></span>
+                    <% } %>
                   </div>
                 </div>
-                
-                <!-- Mobile structural wrapper for buttons -->
-                <div class="ho-sym-actions-mobile">
-                  <span class="ho-sym-severity <%= symp.severity.toLowerCase() === 'mild' ? 'mild' : 'high' %>"><%= symp.severity %></span>
-                  <!-- Symptom Delete Icon Form -->
-                  <form action="/symptoms/delete/<%= symp._id %>" method="POST" style="margin:0;" onsubmit="return confirm('Delete this symptom log?');">
+
+                <div style="display:flex; align-items:center; gap:0.4rem;" onclick="event.stopPropagation();">
+                  <span class="ho-sym-severity <%= symp.severityKey %>"><%= symp.severity %></span>
+                  <button type="button" class="ho-btn-icon" title="Edit / Re-log Symptom" onclick="openEditSymptomModal(<%= symp.idx %>)">
+                    <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  </button>
+                  <form action="/symptoms/delete/<%= symp.id %>" method="POST" style="margin:0;" onsubmit="return confirm('Delete this symptom log?');">
                     <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
                     <button type="submit" class="ho-btn-delete" title="Delete Log" aria-label="Delete">
-                      <svg viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      <svg viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                     </button>
                   </form>
                 </div>
               </div>
             <% }) %>
           <% } else { %>
-            <p style="color: var(--ho-text-muted); font-size: 0.85rem; font-style: italic;">No symptoms logged recently.</p>
+            <div style="text-align:center; padding:2rem 1rem; color:var(--ho-text-muted); font-size:0.85rem; font-weight:600;">
+              No symptoms logged recently. Use the 1-Tap Symptom Log above or click <strong>+ Log Symptom</strong>.
+            </div>
           <% } %>
         </div>
       </section>
 
     </div>
 
-    <!-- UNIVERSAL FOOTER -->
     <%- include('../partials/footer') %>
-
   </main>
 </div>
 
-<!-- ==========================================
-     INTERACTIVE MODALS & TOASTS
-========================================== -->
-
-<!-- Toast Notification -->
-<div class="ho-toast" id="hoToast">Action completed successfully.</div>
-
-<!-- ADD MEDICINE MODAL -->
-<div class="ho-modal" id="medicineModal" onclick="closeModal('medicineModal', event)">
-  <div class="ho-modal-box" onclick="event.stopPropagation()">
-    <div class="ho-modal-head">
-      <h3>Add New Medicine</h3>
-      <button class="ho-modal-close" type="button" onclick="closeModal('medicineModal')">×</button>
+<!-- ==========================================================================
+     1. INTERACTIVE ITEM INSPECTOR POP-UP MODAL (MEDICINE / SCHEDULE / SYMPTOM)
+========================================================================== -->
+<div class="ho-modal-overlay" id="inspectorModal" onclick="closeModal('inspectorModal', event)" role="dialog" aria-modal="true" aria-labelledby="insTitle">
+  <div class="ho-modal-panel ho-custom-scroll" id="inspectorModalPanel" onclick="event.stopPropagation()">
+    <div class="ho-modal-handle"></div>
+    <div class="ho-modal-header">
+      <div>
+        <span class="ho-tag" id="insBadge">Record</span>
+        <h3 class="ho-modal-title" id="insTitle" style="margin-top:0.35rem;">Details</h3>
+      </div>
+      <button type="button" class="ho-modal-close" onclick="closeModal('inspectorModal')" aria-label="Close">✕</button>
     </div>
-    <form action="/medicines/add" method="POST">
+
+    <div id="insBody" style="display:flex; flex-direction:column; gap:0.65rem;"></div>
+
+    <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; padding-top:0.35rem;">
+      <button type="button" class="ho-btn-ghost" id="insEditBtn" style="display:none;">✎ Edit / Update</button>
+      <form id="insLogDoseForm" method="POST" style="margin:0; display:none;">
+        <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
+        <input type="hidden" name="time" id="insDoseTime" value="Now">
+        <input type="hidden" name="status" value="taken">
+        <button type="submit" class="ho-btn-ghost" style="border-color:var(--ho-teal-600); color:var(--ho-teal-900);">✔ Log Dose Taken</button>
+      </form>
+      <button type="button" class="ho-btn-ghost ho-btn-solid" id="insAskAiBtn" style="flex:1; justify-content:center;">
+        ✨ Ask AI Assistant
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     2. ADD / EDIT PRESCRIPTION MODAL
+========================================================================== -->
+<div class="ho-modal-overlay" id="medicineModal" onclick="closeModal('medicineModal', event)" role="dialog" aria-modal="true">
+  <div class="ho-modal-panel ho-custom-scroll" id="medicineModalPanel" onclick="event.stopPropagation()">
+    <div class="ho-modal-handle"></div>
+    <div class="ho-modal-header">
+      <div>
+        <span class="ho-tag" id="medModalBadge">Prescription Vault</span>
+        <h3 class="ho-modal-title" id="medModalTitle" style="margin-top:0.3rem;">Add New Prescription</h3>
+      </div>
+      <button type="button" class="ho-modal-close" onclick="closeModal('medicineModal')">✕</button>
+    </div>
+
+    <form action="/medicines/add" method="POST" id="medicineForm">
+      <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
+      <input type="hidden" id="editReplaceMedId" value="">
+
       <div class="ho-form-group">
         <label>Medicine Name</label>
-        <input type="text" name="name" class="ho-input" placeholder="e.g. Paracetamol" required>
+        <input type="text" name="name" id="medNameInput" class="ho-input" placeholder="e.g. Paracetamol, Metformin, Vitamin D3" required>
       </div>
+
       <div class="ho-form-group">
-        <label>Dosage</label>
-        <input type="text" name="dosage" class="ho-input" placeholder="e.g. 500 mg" required>
+        <label>Dosage Strength</label>
+        <input type="text" name="dosage" id="medDosageInput" class="ho-input" placeholder="e.g. 500 mg" required>
+        <div class="ho-preset-chips">
+          <button type="button" class="ho-preset-chip" onclick="setInputVal('medDosageInput','250 mg')">250 mg</button>
+          <button type="button" class="ho-preset-chip" onclick="setInputVal('medDosageInput','500 mg')">500 mg</button>
+          <button type="button" class="ho-preset-chip" onclick="setInputVal('medDosageInput','650 mg')">650 mg</button>
+          <button type="button" class="ho-preset-chip" onclick="setInputVal('medDosageInput','10 mg')">10 mg</button>
+          <button type="button" class="ho-preset-chip" onclick="setInputVal('medDosageInput','1 Tablet')">1 Tablet</button>
+          <button type="button" class="ho-preset-chip" onclick="setInputVal('medDosageInput','5 ml')">5 ml</button>
+        </div>
       </div>
-      <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
-        <div class="ho-form-group" style="flex: 1; min-width: 150px;">
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+        <div class="ho-form-group">
           <label>Frequency</label>
-          <select name="frequency" class="ho-input">
+          <select name="frequency" id="medFreqInput" class="ho-input">
             <option value="Daily">Daily</option>
+            <option value="Twice Daily">Twice Daily</option>
             <option value="As Needed (PRN)">As Needed (PRN)</option>
+            <option value="Weekly">Weekly</option>
           </select>
         </div>
-        <div class="ho-form-group" style="flex: 1; min-width: 150px;">
+        <div class="ho-form-group">
           <label>Scheduled Time</label>
-          <input type="time" name="times" class="ho-input">
+          <input type="time" name="times" id="medTimeInput" class="ho-input" value="08:00">
         </div>
       </div>
+
       <div class="ho-form-group">
-        <label>Instructions</label>
-        <input type="text" name="duration" class="ho-input" placeholder="e.g. After meals">
+        <label>Clinical Instructions</label>
+        <input type="text" name="duration" id="medInstInput" class="ho-input" placeholder="e.g. After meals with warm water">
+        <div class="ho-preset-chips">
+          <button type="button" class="ho-preset-chip" onclick="setInputVal('medInstInput','After meals')">After meals</button>
+          <button type="button" class="ho-preset-chip" onclick="setInputVal('medInstInput','Before breakfast (Empty stomach)')">Empty stomach</button>
+          <button type="button" class="ho-preset-chip" onclick="setInputVal('medInstInput','Before sleep')">Before sleep</button>
+          <button type="button" class="ho-preset-chip" onclick="setInputVal('medInstInput','With plenty of water')">With water</button>
+        </div>
       </div>
-      <button type="submit" class="ho-btn-primary" style="width: 100%; margin-top: 1rem; padding: 1.2rem; font-size: 1.05rem; border-radius: 16px;">Save Medicine</button>
+
+      <label id="replaceOldMedWrap" style="display:none; align-items:center; gap:0.5rem; font-size:0.78rem; font-weight:700; color:var(--ho-teal-900); margin-bottom:0.85rem; cursor:pointer;">
+        <input type="checkbox" id="replaceOldMedCheck" checked>
+        Replace previous version of this prescription automatically
+      </label>
+
+      <button type="submit" class="ho-btn-ghost ho-btn-solid" id="medSubmitBtn" style="width:100%; justify-content:center; padding:0.95rem;">
+        Save Prescription
+      </button>
     </form>
   </div>
 </div>
 
-<!-- LOG SYMPTOM MODAL -->
-<div class="ho-modal" id="symptomModal" onclick="closeModal('symptomModal', event)">
-  <div class="ho-modal-box" onclick="event.stopPropagation()">
-    <div class="ho-modal-head">
-      <h3>Log Symptom</h3>
-      <button class="ho-modal-close" type="button" onclick="closeModal('symptomModal')">×</button>
-    </div>
-    <form action="/symptoms/add" method="POST">
-      <div class="ho-form-group">
-        <label>Symptom Type</label>
-        <input type="text" name="symptomType" class="ho-input" placeholder="e.g. Headache" required>
+<!-- ==========================================================================
+     3. JOURNAL / EDIT SYMPTOM MODAL
+========================================================================== -->
+<div class="ho-modal-overlay" id="symptomModal" onclick="closeModal('symptomModal', event)" role="dialog" aria-modal="true">
+  <div class="ho-modal-panel ho-custom-scroll" id="symptomModalPanel" onclick="event.stopPropagation()">
+    <div class="ho-modal-handle"></div>
+    <div class="ho-modal-header">
+      <div>
+        <span class="ho-tag warn" id="symModalBadge">Symptom Journal</span>
+        <h3 class="ho-modal-title" id="symModalTitle" style="margin-top:0.3rem;">Journal Symptom</h3>
       </div>
+      <button type="button" class="ho-modal-close" onclick="closeModal('symptomModal')">✕</button>
+    </div>
+
+    <form action="/symptoms/add" method="POST" id="symptomForm">
+      <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
+      <input type="hidden" id="editReplaceSymId" value="">
+
       <div class="ho-form-group">
-        <label>Severity</label>
-        <select name="severity" class="ho-input">
-          <option value="Mild">Mild</option>
-          <option value="Moderate">Moderate</option>
-          <option value="Severe">Severe</option>
-          <option value="High">High</option>
+        <label>Symptom Name</label>
+        <input type="text" name="symptomType" id="symTypeInput" class="ho-input" placeholder="e.g. Migraine, Joint Stiffness, Acid Reflux" required>
+        <div class="ho-preset-chips">
+          <button type="button" class="ho-preset-chip" onclick="setInputVal('symTypeInput','Headache')">Headache</button>
+          <button type="button" class="ho-preset-chip" onclick="setInputVal('symTypeInput','Fever')">Fever</button>
+          <button type="button" class="ho-preset-chip" onclick="setInputVal('symTypeInput','Cough')">Cough</button>
+          <button type="button" class="ho-preset-chip" onclick="setInputVal('symTypeInput','Fatigue')">Fatigue</button>
+          <button type="button" class="ho-preset-chip" onclick="setInputVal('symTypeInput','Stomach Ache')">Stomach Ache</button>
+        </div>
+      </div>
+
+      <div class="ho-form-group">
+        <label>Severity Level</label>
+        <select name="severity" id="symSevInput" class="ho-input">
+          <option value="Mild">Mild — Noticeable but does not limit activity</option>
+          <option value="Moderate">Moderate — Interferes with comfort</option>
+          <option value="Severe">Severe — High discomfort</option>
         </select>
       </div>
+
       <div class="ho-form-group">
-        <label>Additional Notes</label>
-        <textarea name="notes" class="ho-input" rows="3" placeholder="When did it start? What does it feel like?" style="resize: vertical; line-height: 1.5;"></textarea>
+        <label>Clinical Notes &amp; Context</label>
+        <textarea name="notes" id="symNotesInput" class="ho-input" rows="3" placeholder="When did it start? What makes it better or worse?" style="resize:vertical; line-height:1.45;"></textarea>
       </div>
-      <button type="submit" class="ho-btn-primary" style="width: 100%; margin-top: 1rem; padding: 1.2rem; font-size: 1.05rem; border-radius: 16px;">Save to Timeline</button>
+
+      <label id="replaceOldSymWrap" style="display:none; align-items:center; gap:0.5rem; font-size:0.78rem; font-weight:700; color:var(--ho-teal-900); margin-bottom:0.85rem; cursor:pointer;">
+        <input type="checkbox" id="replaceOldSymCheck" checked>
+        Replace previous entry when saving updated symptom
+      </label>
+
+      <button type="submit" class="ho-btn-ghost ho-btn-solid" id="symSubmitBtn" style="width:100%; justify-content:center; padding:0.95rem;">
+        Save to Health Timeline
+      </button>
     </form>
   </div>
 </div>
 
+<div class="ho-toast" id="hoToast">Action completed</div>
+
 <script>
-  // Advanced Toast Notification Engine
-  function showToast(message) {
-    const toast = document.getElementById('hoToast');
-    toast.innerText = message;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3500);
+  const medsData = <%- JSON.stringify(normalizedMeds || []).replace(/</g, '\\u003c') %>;
+  const scheduleData = <%- JSON.stringify(normalizedSchedule || []).replace(/</g, '\\u003c') %>;
+  const symptomsData = <%- JSON.stringify(normalizedSymptoms || []).replace(/</g, '\\u003c') %>;
+  const csrfTokenStr = <%- JSON.stringify(locals.csrfToken || '').replace(/</g, '\\u003c') %>;
+
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+
+  function showToast(msg) {
+    const t = $('#hoToast');
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._h);
+    t._h = setTimeout(() => t.classList.remove('show'), 2300);
   }
 
-  // Smooth Modal Functions
-  function openModal(id) { 
-    const modal = document.getElementById(id);
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('active'), 10);
-  }
-  function closeModal(id, e) {
-    if (!e || e.target === document.getElementById(id) || e.target.classList.contains('ho-modal-close')) {
-      const modal = document.getElementById(id);
-      modal.classList.remove('active');
-      setTimeout(() => modal.style.display = 'none', 300);
+  window.setInputVal = function (id, val) {
+    const el = document.getElementById(id);
+    if (el) { el.value = val; el.focus(); }
+  };
+
+  /* ---- 1. Count-Up Numbers & 3-Ring Gauge Animation ---- */
+  function countUp(el) {
+    const raw = el.textContent.trim();
+    const target = parseFloat(raw.replace(/,/g, ''));
+    if (isNaN(target)) return;
+    const dur = 1000, start = performance.now();
+    function tick(now) {
+      const p = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - p, 4);
+      el.textContent = Math.round(target * e).toLocaleString();
+      if (p < 1) requestAnimationFrame(tick); else el.textContent = raw;
     }
+    requestAnimationFrame(tick);
   }
+  $$('.js-count').forEach(countUp);
 
-  // Connect Quick Symptom Buttons to Backend
-  async function quickLogSymptom(name) {
-    try {
-      const response = await fetch('/symptoms/quick', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symptomName: name })
+  (function animateRings() {
+    const pAdh = <%= adherencePct !== null ? (adherencePct / 100).toFixed(2) : (activeMedsCount > 0 ? 0.75 : 0) %>;
+    const pRx  = <%= activeMedsCount > 0 ? Math.min(1, activeMedsCount / 6).toFixed(2) : 0 %>;
+    const pSym = <%= normalizedSymptoms.length > 0 ? Math.min(1, normalizedSymptoms.length / 8).toFixed(2) : 0 %>;
+
+    setTimeout(() => {
+      const rA = $('#ringAdherence'), rP = $('#ringPrescriptions'), rS = $('#ringSymptoms');
+      if (rA) rA.style.strokeDashoffset = (402.1 * (1 - pAdh)).toFixed(1);
+      if (rP) rP.style.strokeDashoffset = (301.6 * (1 - pRx)).toFixed(1);
+      if (rS) rS.style.strokeDashoffset = (201.1 * (1 - pSym)).toFixed(1);
+    }, 280);
+  })();
+
+  /* ---- 2. Search & Filter Tabs (Prescriptions, Schedule, Symptoms) ---- */
+  let medFilter = 'all', medQuery = '';
+  function filterMeds() {
+    $$('#medGrid .ho-med-card').forEach(card => {
+      const okType = medFilter === 'all' || card.dataset.medType === medFilter;
+      const okSearch = !medQuery || (card.dataset.medSearch || '').includes(medQuery);
+      card.style.display = (okType && okSearch) ? '' : 'none';
+    });
+  }
+  $('#medSearchInput')?.addEventListener('input', e => {
+    medQuery = e.target.value.trim().toLowerCase();
+    filterMeds();
+  });
+  $$('[data-med-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('[data-med-filter]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      medFilter = btn.dataset.medFilter || 'all';
+      filterMeds();
+    });
+  });
+
+  $$('[data-sched-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('[data-sched-filter]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.schedFilter || 'all';
+      $$('#scheduleTimeline .ho-tl-item').forEach(item => {
+        item.style.display = (f === 'all' || item.dataset.schedState === f) ? '' : 'none';
       });
-      if(response.ok) {
-        showToast(`✅ ${name} logged securely to your health timeline.`);
-        setTimeout(() => window.location.reload(), 1000); 
+    });
+  });
+
+  $('#symSearchInput')?.addEventListener('input', e => {
+    const q = e.target.value.trim().toLowerCase();
+    $$('#symptomList .ho-sym-card').forEach(card => {
+      card.style.display = (!q || (card.dataset.symSearch || '').includes(q)) ? '' : 'none';
+    });
+  });
+
+  /* ---- 3. Quick Log Symptom with Selected Severity ---- */
+  let quickSeverity = 'Mild';
+  $$('.ho-sev-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      $$('.ho-sev-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      quickSeverity = pill.dataset.qsev || 'Mild';
+    });
+  });
+
+  window.quickLogSymptom = async function (name, btnEl) {
+    if (btnEl) btnEl.classList.add('logging');
+    try {
+      const res = await fetch('/symptoms/quick', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfTokenStr
+        },
+        body: JSON.stringify({ symptomName: name, severity: quickSeverity })
+      });
+      if (res.ok) {
+        showToast(`✔ ${name} (${quickSeverity}) logged to health timeline.`);
+        setTimeout(() => window.location.reload(), 750);
+      } else {
+        openAddSymptomModal(name, quickSeverity);
       }
-    } catch (e) {
-      showToast('⚠️ Failed to log symptom.');
+    } catch (err) {
+      openAddSymptomModal(name, quickSeverity);
+    } finally {
+      if (btnEl) btnEl.classList.remove('logging');
+    }
+  };
+
+  /* ---- 4. Modal Open / Close & Edit / Update Workflows ---- */
+  window.openModal = function (id) {
+    const m = document.getElementById(id);
+    if (m) m.classList.add('active');
+  };
+  window.closeModal = function (id, e) {
+    const m = document.getElementById(id);
+    if (!m) return;
+    if (!e || e.target === m) m.classList.remove('active');
+  };
+
+  window.openAddMedicineModal = function () {
+    $('#medModalBadge').textContent = 'New Prescription';
+    $('#medModalTitle').textContent = 'Add New Prescription';
+    $('#medSubmitBtn').textContent = 'Save Prescription';
+    $('#editReplaceMedId').value = '';
+    $('#replaceOldMedWrap').style.display = 'none';
+    $('#medicineForm').reset();
+    openModal('medicineModal');
+  };
+
+  window.openEditMedicineModal = function (idx) {
+    const m = medsData[idx];
+    if (!m) return;
+    closeModal('inspectorModal');
+    $('#medModalBadge').textContent = 'Update Prescription';
+    $('#medModalTitle').textContent = 'Edit ' + m.name;
+    $('#medSubmitBtn').textContent = 'Save Updated Prescription';
+    $('#medNameInput').value = m.name;
+    $('#medDosageInput').value = m.dosage !== '--' ? m.dosage : '';
+    $('#medFreqInput').value = m.isPrn ? 'As Needed (PRN)' : 'Daily';
+    $('#medTimeInput').value = (m.times && m.times[0] && /^\d{2}:\d{2}$/.test(m.times[0])) ? m.times[0] : '08:00';
+    $('#medInstInput').value = m.instructions !== 'Follow clinician dosage instructions.' ? m.instructions : '';
+    $('#editReplaceMedId').value = m.id;
+    $('#replaceOldMedWrap').style.display = 'flex';
+    openModal('medicineModal');
+  };
+
+  /* If editing a medicine and "Replace previous" is checked, delete the old record before submitting */
+  $('#medicineForm')?.addEventListener('submit', async function (e) {
+    const oldId = $('#editReplaceMedId').value;
+    const shouldReplace = $('#replaceOldMedCheck')?.checked;
+    if (oldId && shouldReplace) {
+      e.preventDefault();
+      try {
+        await fetch('/medicines/delete/' + encodeURIComponent(oldId), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: '_csrf=' + encodeURIComponent(csrfTokenStr)
+        });
+      } catch (_) {}
+      $('#editReplaceMedId').value = '';
+      this.submit();
+    }
+  });
+
+  window.openAddSymptomModal = function (prefillName, prefillSev) {
+    $('#symModalBadge').textContent = 'Symptom Journal';
+    $('#symModalTitle').textContent = 'Journal Symptom';
+    $('#symSubmitBtn').textContent = 'Save to Health Timeline';
+    $('#editReplaceSymId').value = '';
+    $('#replaceOldSymWrap').style.display = 'none';
+    $('#symptomForm').reset();
+    if (prefillName) $('#symTypeInput').value = prefillName;
+    if (prefillSev) $('#symSevInput').value = prefillSev;
+    openModal('symptomModal');
+  };
+
+  window.openEditSymptomModal = function (idx) {
+    const s = symptomsData[idx];
+    if (!s) return;
+    closeModal('inspectorModal');
+    $('#symModalBadge').textContent = 'Update Symptom Entry';
+    $('#symModalTitle').textContent = 'Edit ' + s.symptom;
+    $('#symSubmitBtn').textContent = 'Save Updated Entry';
+    $('#symTypeInput').value = s.symptom;
+    $('#symSevInput').value = ['Mild', 'Moderate', 'Severe'].includes(s.severity) ? s.severity : 'Mild';
+    $('#symNotesInput').value = s.notes || '';
+    $('#editReplaceSymId').value = s.id;
+    $('#replaceOldSymWrap').style.display = 'flex';
+    openModal('symptomModal');
+  };
+
+  $('#symptomForm')?.addEventListener('submit', async function (e) {
+    const oldSymId = $('#editReplaceSymId').value;
+    const shouldReplace = $('#replaceOldSymCheck')?.checked;
+    if (oldSymId && shouldReplace) {
+      e.preventDefault();
+      try {
+        await fetch('/symptoms/delete/' + encodeURIComponent(oldSymId), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: '_csrf=' + encodeURIComponent(csrfTokenStr)
+        });
+      } catch (_) {}
+      $('#editReplaceSymId').value = '';
+      this.submit();
+    }
+  });
+
+  /* ---- 5. Interactive Inspector Modal (Medicine / Schedule / Symptom) ---- */
+  let currentAiPrompt = 'Can you review my active prescriptions and logged symptoms?';
+
+  window.openInspectorModal = function (type, idx) {
+    const badge = $('#insBadge');
+    const title = $('#insTitle');
+    const body = $('#insBody');
+    const editBtn = $('#insEditBtn');
+    const doseForm = $('#insLogDoseForm');
+
+    editBtn.style.display = 'none';
+    doseForm.style.display = 'none';
+
+    if (type === 'medicine' && medsData[idx]) {
+      const m = medsData[idx];
+      badge.className = 'ho-tag ' + (m.isPrn ? 'blue' : 'good');
+      badge.textContent = m.frequency;
+      title.textContent = m.name;
+      body.innerHTML = `
+        <div class="ho-detail-row"><span class="ho-dr-label">Dosage Strength</span><span class="ho-dr-val">${m.dosage}</span></div>
+        <div class="ho-detail-row"><span class="ho-dr-label">Scheduled Times</span><span class="ho-dr-val">${m.timesDisplay}</span></div>
+        <div class="ho-detail-row"><span class="ho-dr-label">Instructions</span><span class="ho-dr-val">${m.instructions}</span></div>
+      `;
+      editBtn.style.display = 'inline-flex';
+      editBtn.onclick = () => openEditMedicineModal(idx);
+      doseForm.style.display = 'block';
+      doseForm.action = '/medicines/log/' + m.id;
+      $('#insDoseTime').value = (m.times && m.times[0]) ? m.times[0] : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      currentAiPrompt = `I am prescribed ${m.name} (${m.dosage}, ${m.frequency}, instructions: ${m.instructions}). What general information or questions should I discuss with my doctor about this medication?`;
+    } else if (type === 'schedule' && scheduleData[idx]) {
+      const sc = scheduleData[idx];
+      badge.className = 'ho-tag ' + (sc.isTaken ? 'good' : 'warn');
+      badge.textContent = sc.status;
+      title.textContent = `${sc.name} (${sc.time})`;
+      body.innerHTML = `
+        <div class="ho-detail-row"><span class="ho-dr-label">Scheduled Time</span><span class="ho-dr-val">${sc.time}</span></div>
+        <div class="ho-detail-row"><span class="ho-dr-label">Dosage</span><span class="ho-dr-val">${sc.dosage || '--'}</span></div>
+        <div class="ho-detail-row"><span class="ho-dr-label">Instructions</span><span class="ho-dr-val">${sc.instructions}</span></div>
+      `;
+      if (!sc.isTaken && sc.medId) {
+        doseForm.style.display = 'block';
+        doseForm.action = '/medicines/log/' + sc.medId;
+        $('#insDoseTime').value = sc.time;
+      }
+      currentAiPrompt = `Can you help me organize questions for my doctor regarding my ${sc.name} (${sc.dosage}) scheduled at ${sc.time}?`;
+    } else if (type === 'symptom' && symptomsData[idx]) {
+      const s = symptomsData[idx];
+      badge.className = 'ho-tag warn';
+      badge.textContent = s.severity + ' Severity';
+      title.textContent = s.symptom;
+      body.innerHTML = `
+        <div class="ho-detail-row"><span class="ho-dr-label">Recorded On</span><span class="ho-dr-val">${s.dateStr} ${s.timeStr}</span></div>
+        <div class="ho-detail-row"><span class="ho-dr-label">Severity</span><span class="ho-dr-val">${s.severity}</span></div>
+        ${s.notes ? `<div class="ho-detail-row"><span class="ho-dr-label">Clinical Notes</span><span class="ho-dr-val">${s.notes}</span></div>` : ''}
+      `;
+      editBtn.style.display = 'inline-flex';
+      editBtn.onclick = () => openEditSymptomModal(idx);
+      currentAiPrompt = `I logged a ${s.severity} ${s.symptom} on ${s.dateStr}${s.notes ? ' (' + s.notes + ')' : ''}. What non-diagnostic context and doctor questions can you share?`;
+    }
+
+    openModal('inspectorModal');
+  };
+
+  /* Handoff to Floating AI Widget (#hoAiWidget) */
+  function triggerAiWidget(promptText) {
+    const widgetRoot = document.getElementById('hoAiWidget');
+    const aiInput = document.getElementById('hoAiInput');
+    const aiSend = document.getElementById('hoAiSendBtn');
+    if (widgetRoot && aiInput) {
+      widgetRoot.classList.add('open');
+      aiInput.value = promptText;
+      if (aiSend) aiSend.disabled = false;
+      aiInput.focus();
+    } else {
+      window.location.href = '/ai-assistant';
     }
   }
-</script>
 
+  $('#insAskAiBtn')?.addEventListener('click', () => { closeModal('inspectorModal'); triggerAiWidget(currentAiPrompt); });    window.askAiAboutRegimen = function () { triggerAiWidget('Can you summarize my active prescriptions and recent symptom logs so I can discuss them at my next doctor visit?'); };    document.addEventListener('keydown', e => { if (e.key === 'Escape') { $$('.ho-modal-overlay.active').forEach(m => m.classList.remove('active'));
+    }
+  });
+
+  /* ---- 6. Scroll Progress & Cursor Spotlight ---- */
+  const mainScroll = $('#mainScroll');
+  if (mainScroll) {
+    mainScroll.addEventListener('scroll', () => {
+      const max = mainScroll.scrollHeight - mainScroll.clientHeight;
+      $('#scrollProgress').style.width = (max > 0 ? (mainScroll.scrollTop / max) * 100 : 0) + '\%'; }, { passive: true }); }    $$('.ho-panel').forEach(p => {
+    p.addEventListener('pointermove', e => {
+      const r = p.getBoundingClientRect();
+      p.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      p.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+</script>
 </body>
 </html>

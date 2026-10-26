@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/header', { title: 'HealthOrbit — Living Body Twin' }) %>
+  <link rel="icon" href="/images/Logo.png">
+
+  <!-- Three.js Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+  <style>
+    /* ==================================================================
+       LIVING BODY TWIN - COMBINED STYLES & VARIABLES
+    ================================================================== */
+    :root {
+      --d-bg: #eef6f3;
+      --d-ink: #0c2a26;
+      --d-ink-2: #4a6861;
+      --d-ink-3: #8aa39c;
+      --d-teal-950: #06302b;
+      --d-teal-900: #0b5e55;
+      --d-teal-700: #0d7a6e;
+      --d-teal-500: #17a795;
+      --d-mint: #5fe0c4;
+      --d-coral: #e5806c;
+      --d-coral-soft: #fdeae5;
+      --d-blue: #4285f4;
+      --d-amber: #e09a2b;
+      --d-red: #e5484d;
+      --d-card: rgba(255, 255, 255, 0.72);
+      --d-card-solid: #ffffff;
+      --d-edge: rgba(255, 255, 255, 0.95);
+      --d-line: rgba(11, 94, 85, 0.11);
+      --d-shadow: 0 18px 40px -22px rgba(6, 48, 43, 0.28);
+      --d-r-xl: 28px;
+      --d-r-lg: 20px;
+      --d-r-md: 14px;
+    }
+
+    body { overflow: hidden; background: var(--d-bg); }
+
+    .bt-wrap { display: flex; flex-direction: column; height: 100vh; padding: 1.6rem 2.4rem 2.5rem; max-width: 1600px; margin: 0 auto; width: 100%;}
+
+    /* Header & Family Rail */
+    .bt-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1.5rem; flex-shrink: 0;}
+    .bt-title h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: 2.2rem; color: var(--d-teal-950); letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 0.2rem; }
+    .bt-title h1 em { font-style: normal; color: var(--d-coral); }
+    .bt-identity-subtitle { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; font-weight: 750; color: var(--d-teal-700); background: rgba(13, 122, 110, 0.08); padding: 6px 14px; border-radius: 999px; }
+
+    .bt-family-rail { display: flex; gap: 0.8rem; overflow-x: auto; scrollbar-width: none; padding-bottom: 0.5rem; }
+    .bt-family-rail::-webkit-scrollbar { display: none; }
+    .bt-fam-card { display: flex; align-items: center; gap: 0.8rem; background: var(--d-card); border: 1px solid var(--d-line); padding: 0.6rem 1rem 0.6rem 0.6rem; border-radius: 999px; cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(20px); white-space: nowrap; }
+    .bt-fam-card:hover { background: #fff; border-color: var(--d-teal-500); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(13, 122, 110, 0.1); }
+    .bt-fam-card.active { border-color: var(--d-teal-700); background: #fff; box-shadow: inset 0 0 0 1px var(--d-teal-700); }
+    .bt-fam-av { width: 34px; height: 34px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; flex-shrink: 0; }
+    .bt-fam-info { display: flex; flex-direction: column; }
+    .bt-fam-info strong { font-size: 0.85rem; font-weight: 800; color: var(--d-teal-950); }
+    .bt-fam-info span { font-size: 0.65rem; font-weight: 700; color: var(--d-ink-3); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* Main Stage */
+    .bt-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; position: relative; overflow: hidden; padding: 0; border-radius: var(--d-r-xl); background: radial-gradient(circle at 50% 42%, rgba(255,255,255,0.85), #c9e2dd); border: 1px solid var(--d-edge); box-shadow: var(--d-shadow); }
+
+    /* Floating Controls (Top) */
+    .bt-top-controls { position: absolute; top: 1.5rem; left: 1.5rem; right: 1.5rem; display: flex; justify-content: space-between; z-index: 20; pointer-events: none; }
+    .bt-top-controls > * { pointer-events: auto; }
+
+    .bt-mode-switch { display: flex; background: rgba(255,255,255,0.6); backdrop-filter: blur(20px); border: 1px solid var(--d-edge); padding: 4px; border-radius: 999px; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.08); }
+    .bt-mode-btn { border: none; background: transparent; padding: 0.6rem 1.4rem; font-size: 0.85rem; font-weight: 800; color: var(--d-ink-2); cursor: pointer; border-radius: 999px; transition: 0.2s; }
+    .bt-mode-btn:hover { color: var(--d-teal-950); }
+    .bt-mode-btn.active { background: var(--d-teal-950); color: #fff; box-shadow: 0 4px 12px rgba(11, 94, 85, 0.2); }
+
+    .bt-layers-popover { position: relative; }
+    .bt-btn-glass { background: rgba(255,255,255,0.7); color: var(--d-teal-950); backdrop-filter: blur(20px); padding: 0.8rem 1.4rem; border-radius: 999px; border: 1px solid var(--d-edge); font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.2s; }
+    .bt-btn-glass:hover { background: #fff; border-color: var(--d-teal-500); }
+
+    .bt-layers-menu { position: absolute; top: calc(100% + 0.5rem); left: 0; background: var(--d-card-solid); border: 1px solid var(--d-line); border-radius: var(--d-r-md); padding: 1.2rem; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 220px; display: none; flex-direction: column; gap: 1rem; z-index: 50; }
+    .bt-layers-menu.show { display: flex; animation: fadeIn 0.2s ease; }
+    .bt-layer-toggle { display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; font-weight: 700; color: var(--d-teal-950); cursor: pointer; }
+    .bt-layer-toggle input { accent-color: var(--d-teal-700); width: 16px; height: 16px; cursor: pointer; }
+
+    /* Viewport */
+    .bt-viewport { position: absolute; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; pointer-events: none;}
+    #ho-3d-canvas-container { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5;}
+
+    .bt-placeholder-text { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 700; color: var(--d-ink-3); text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.6; text-align: center; background: rgba(255,255,255,0.7); padding: 10px 20px; border-radius: 12px;}
+
+    .bt-camera-controls { position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 0.5rem; z-index: 20; pointer-events: auto; }
+    .bt-cam-btn { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border: 1px solid var(--d-edge); color: var(--d-teal-950); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-weight: 800;}
+    .bt-cam-btn:hover { background: #fff; border-color: var(--d-teal-500); transform: scale(1.05); }
+
+    /* Progressive Details Panel (Right Slide-over) */
+    .bt-details-drawer { position: absolute; top: 0; right: 0; bottom: 0; width: 380px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(40px); border-left: 1px solid var(--d-line); padding: 2.5rem 2rem; z-index: 30; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; overflow-y: auto; box-shadow: -15px 0 40px rgba(0,0,0,0.05); pointer-events: auto; }
+    .bt-details-drawer.open { transform: translateX(0); }
+    .bt-details-drawer .close-btn { align-self: flex-end; background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--d-ink-3); line-height: 1; margin-bottom: 1rem;}
+    .bt-region-title { font-family: 'Fraunces', serif; font-weight: 800; font-size: 1.5rem; color: var(--d-teal-950); margin-bottom: 1.5rem; text-transform: uppercase; }
+
+    .bt-event-card { background: #fff; border: 1px solid var(--d-line); border-radius: var(--d-r-md); padding: 1.2rem; margin-bottom: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border-left: 4px solid var(--d-coral); }
+    .bt-event-card.amber { border-left-color: var(--d-amber); }
+    .bt-event-card.blue { border-left-color: var(--d-blue); }
+    .bt-event-card.cyan { border-left-color: var(--d-teal-500); }
+    .bt-event-card strong { display: block; font-size: 1rem; font-weight: 800; color: var(--d-teal-950); margin-bottom: 0.4rem; line-height: 1.3;}
+    .bt-event-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--d-ink-2); font-weight: 600; display: block; margin-bottom: 0.6rem; }
+    .bt-event-source { font-size: 0.75rem; font-weight: 750; color: var(--d-teal-700); background: rgba(13,122,110,0.08); padding: 4px 10px; border-radius: 6px; display: inline-block; }
+
+    /* Timeline Dock (Bottom) */
+    .bt-bottom-dock { position: absolute; bottom: 1.5rem; left: 1.5rem; right: 1.5rem; display: flex; justify-content: center; z-index: 20; pointer-events: none; }
+    .bt-timeline-card { background: rgba(255,255,255,0.85); backdrop-filter: blur(30px); border: 1px solid var(--d-edge); border-radius: var(--d-r-xl); padding: 1.2rem 2rem; width: 100%; max-width: 800px; box-shadow: 0 15px 40px rgba(11, 94, 85, 0.1); pointer-events: auto; display: flex; flex-direction: column; gap: 1rem; }
+    .bt-tl-header { display: flex; justify-content: space-between; align-items: center; }
+    .bt-tl-title { font-size: 0.85rem; font-weight: 800; color: var(--d-teal-950); text-transform: uppercase; letter-spacing: 0.05em; }
+    .bt-tl-date { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 1.2rem; color: var(--d-coral); transition: 0.3s; }
+    .bt-slider-row { display: flex; align-items: center; gap: 1rem; width: 100%; }
+
+    input[type=range] { flex: 1; -webkit-appearance: none; background: transparent; touch-action: none; }
+    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; background: rgba(13, 122, 110, 0.15); border-radius: 999px; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 22px; width: 22px; border-radius: 50%; background: var(--d-teal-700); cursor: pointer; margin-top: -7px; box-shadow: 0 0 0 4px rgba(13, 122, 110, 0.2); transition: 0.1s; }
+    input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
+
+    .bt-btn-primary { background: var(--d-teal-950); color: #fff; border: none; padding: 0.8rem; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 0.5rem; justify-content: center;}
+    .bt-btn-primary:hover { background: var(--d-teal-900); transform: translateY(-2px); }
+
+    /* Privacy Overlay */
+    .bt-overlay-state { position: absolute; inset: 0; background: rgba(238, 246, 243, 0.95); backdrop-filter: blur(10px); z-index: 25; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; transition: opacity 0.3s ease; pointer-events: auto; }
+    .bt-overlay-state svg { width: 56px; height: 56px; color: var(--d-ink-3); margin-bottom: 1.5rem; }
+    .bt-overlay-state h3 { font-family: 'Fraunces', serif; font-size: 1.8rem; color: var(--d-teal-950); margin-bottom: 0.5rem; }
+    .bt-overlay-state p { font-size: 1rem; color: var(--d-ink-2); font-weight: 600; max-width: 400px; line-height: 1.5; margin-bottom: 1.5rem;}
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Modal Evidence Overlay */
+    .ho-modal { position: fixed; inset: 0; background: rgba(11, 94, 85, 0.45); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 1.2rem; opacity: 0; transition: opacity 0.3s ease; pointer-events: auto; }
+    .ho-modal.active { display: flex; opacity: 1; }
+    .ho-modal-box { background: #ffffff; border: 1px solid var(--d-edge); border-radius: var(--d-r-xl); padding: 2.5rem; width: 100%; max-width: 600px; box-shadow: 0 35px 70px rgba(0,0,0,0.2); transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);}
+    .ho-modal.active .ho-modal-box { transform: translateY(0); }
+    .ho-modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.8rem; }
+    .ho-modal-head h3 { font-size: 1.4rem; font-weight: 800; color: var(--d-teal-950); }
+    .ho-modal-close { background: none; border: none; font-size: 2.2rem; color: var(--d-ink-3); cursor: pointer; transition: 0.2s; line-height: 1;}
+
+    /* Mobile */
+    @media (max-width: 1024px) {
+      .ho-main-content { margin-top: 5rem; padding: 0 !important;}
+      .bt-wrap { padding: 1rem 1rem 1rem; }
+      .bt-header { flex-direction: column; align-items: flex-start; gap: 1rem;}
+      .bt-top-controls { flex-direction: column; gap: 1rem; align-items: flex-start;}
+      .bt-details-drawer { width: 100%; top: auto; height: 65vh; border-left: none; border-top: 1px solid var(--d-line); border-radius: 24px 24px 0 0; transform: translateY(100%); }
+      .bt-details-drawer.open { transform: translateY(0); }
+      .bt-camera-controls { top: auto; bottom: 8rem; right: 1rem; transform: none; flex-direction: row;}
+      .bt-bottom-dock { bottom: 1rem; left: 1rem; right: 1rem; }
+      .bt-timeline-card { padding: 1.2rem; border-radius: 20px;}
+    }
+
+
+
+
+
+
+
+
+
+    /* ==================================================================
+   LIVING BODY TWIN — MOBILE (<= 1024px) — REPLACES your old
+   "@media (max-width: 1024px) { ... }" block. Desktop CSS untouched.
+   Layout: compact header → full-bleed 3D stage → floating timeline
+   dock (always reachable) → floating detail card above the dock.
+================================================================== */
+@media (max-width: 1024px) {
+  :root { --bt-dock: 118px; }
+
+  body { overscroll-behavior: none; }
+  .ho-main-content { margin-top: 5rem; padding: 0 !important; }
+  .bt-top-controls .desktop-only { display: none; }
+
+  /* ---------- Shell: use real visible height (dvh) ---------- */
+  .bt-wrap {
+    height: calc(100vh - 5rem);
+    height: calc(100dvh - 5rem);
+    padding: 0.6rem 0.75rem calc(0.75rem + env(safe-area-inset-bottom));
+  }
+
+  /* ---------- Header: one title row + story-style member rail ---------- */
+  .bt-header {
+    flex-direction: column; align-items: stretch;
+    gap: 0.55rem; margin-bottom: 0.6rem;
+  }
+  .bt-title { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+  .bt-title h1 { font-size: 1.45rem; margin: 0; white-space: nowrap; }
+  .bt-identity-subtitle {
+    font-size: 0.7rem; padding: 5px 10px; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .bt-family-rail {
+    margin: 0 -0.75rem; padding: 0.1rem 0.75rem 0.15rem;
+    gap: 0.5rem; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+  }
+  .bt-fam-card {
+    scroll-snap-align: start; flex-shrink: 0;
+    padding: 5px 14px 5px 5px; gap: 0.55rem; min-height: 46px;
+  }
+  .bt-fam-av { width: 36px; height: 36px; font-size: 0.85rem; }
+  .bt-fam-info strong { font-size: 0.8rem; }
+  .bt-fam-info span { font-size: 0.58rem; }
+
+  /* ---------- Stage ---------- */
+  .bt-stage { border-radius: 24px; }
+
+  /* 3D canvas stops above the dock so the figure's feet are never covered */
+  #ho-3d-canvas-container,
+  .bt-viewport {
+    bottom: calc(var(--bt-dock) + env(safe-area-inset-bottom));
+    height: auto;
+  }
+  #ho-3d-canvas-container canvas { touch-action: none; display: block; }
+  .bt-placeholder-text { font-size: 0.7rem; padding: 8px 14px; }
+
+  /* ---------- Top controls: icon-only Layers + compact segmented switch ---------- */
+  .bt-top-controls {
+    top: 0.75rem; left: 0.75rem; right: 0.75rem;
+    flex-direction: row; align-items: center; justify-content: space-between; gap: 0.5rem;
+  }
+  .bt-btn-glass#btnToggleLayers {
+    font-size: 0; gap: 0; width: 44px; height: 44px; padding: 0;
+    justify-content: center; border-radius: 50%;
+  }
+  .bt-layers-menu { width: 230px; padding: 0.4rem 1rem; gap: 0; }
+  .bt-layer-toggle { min-height: 46px; font-size: 0.9rem; }
+  .bt-layer-toggle input { width: 20px; height: 20px; }
+
+  .bt-mode-switch { padding: 3px; }
+  .bt-mode-btn { padding: 0.65rem 0.95rem; min-height: 40px; font-size: 0.78rem; white-space: nowrap; }
+
+  /* ---------- Camera: slim vertical rail under the mode switch ---------- */
+  .bt-camera-controls {
+    right: 0.75rem; top: 4.4rem; bottom: auto; transform: none;
+    flex-direction: column; gap: 0.45rem;
+  }
+  .bt-cam-btn { width: 42px; height: 42px; border-radius: 50%; }
+  .bt-cam-btn[title="Reset Camera"] { margin-top: 0.35rem !important; }
+
+  /* ---------- Timeline dock: floating glass, thumb-reachable ---------- */
+  .bt-bottom-dock {
+    left: 0.75rem; right: 0.75rem;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  }
+  .bt-timeline-card { padding: 0.7rem 1rem 0.5rem; gap: 0.15rem; border-radius: 24px; max-width: none; }
+  .bt-tl-title { font-size: 0.68rem; }
+  .bt-tl-date { font-size: 1.05rem; }
+  .bt-slider-row { gap: 0.7rem; }
+  #btnPlayJourney {
+    width: 46px; height: 46px; padding: 0 !important; flex-shrink: 0;
+    justify-content: center; border-radius: 50% !important;
+    background: var(--d-teal-950); color: #fff; border: none;
+  }
+  input[type=range] { height: 46px; }
+  input[type=range]::-webkit-slider-runnable-track { height: 10px; }
+  input[type=range]::-webkit-slider-thumb { height: 30px; width: 30px; margin-top: -10px; box-shadow: 0 0 0 5px rgba(13,122,110,0.2), 0 3px 8px rgba(0,0,0,0.2); }
+  input[type=range]::-moz-range-track { height: 10px; background: rgba(13,122,110,0.15); border-radius: 999px; }
+  input[type=range]::-moz-range-thumb { height: 30px; width: 30px; border: none; border-radius: 50%; background: var(--d-teal-700); box-shadow: 0 0 0 5px rgba(13,122,110,0.2); }
+
+  /* ---------- Detail card: floats ABOVE the dock, timeline stays usable ---------- */
+  .bt-details-drawer {
+    top: auto; left: 0.75rem; right: 0.75rem; width: auto;
+    bottom: calc(var(--bt-dock) + env(safe-area-inset-bottom) + 0.5rem);
+    height: auto; max-height: 40%;
+    padding: 1rem 1rem 1rem; border: 1px solid var(--d-edge); border-radius: 22px;
+    box-shadow: 0 18px 40px -12px rgba(6,48,43,0.35);
+    transform: translateY(16px) scale(0.98); opacity: 0; pointer-events: none;
+    transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.25s ease;
+  }
+  .bt-details-drawer.open { transform: none; opacity: 1; pointer-events: auto; }
+  .bt-details-drawer .close-btn {
+    position: absolute; top: 6px; right: 6px; width: 40px; height: 40px;
+    font-size: 1.6rem; margin: 0; display: flex; align-items: center; justify-content: center;
+  }
+  .bt-region-title { font-size: 1.05rem; margin: 0 0 0.7rem; padding-right: 2.5rem; }
+  .bt-event-card { padding: 0.85rem 0.9rem; margin-bottom: 0.7rem; }
+  .bt-event-card strong { font-size: 0.92rem; }
+  .bt-event-meta { margin-bottom: 0.4rem; }
+  .bt-details-drawer > div[style*="flex-direction:column"] { flex-direction: row !important; margin-top: 0.5rem !important; gap: 0.5rem !important; }
+  .bt-details-drawer > div[style*="flex-direction:column"] button { flex: 1; min-height: 46px; padding: 0.6rem 0.5rem; font-size: 0.78rem; border-radius: 14px; }
+  .bt-details-drawer div[style*="padding: 2rem 0"] { padding: 0.4rem 0 !important; }
+  .bt-details-drawer div[style*="padding: 2rem 0"] span { font-size: 2.2rem !important; }
+  .bt-details-drawer div[style*="padding-top: 1.5rem"] { padding-top: 0.7rem !important; }
+
+  /* ---------- Privacy overlay ---------- */
+  .bt-overlay-state { padding: 1.5rem; }
+  .bt-overlay-state svg { width: 44px; height: 44px; margin-bottom: 1rem; }
+  .bt-overlay-state h3 { font-size: 1.4rem; }
+  .bt-overlay-state p { font-size: 0.92rem; margin-bottom: 1.2rem; }
+
+  /* ---------- Evidence modal → bottom sheet ---------- */
+  .ho-modal { align-items: flex-end; padding: 0; }
+  .ho-modal-box {
+    max-width: none; border-radius: 28px 28px 0 0; max-height: 88vh; max-height: 88dvh; overflow-y: auto;
+    padding: 1.6rem 1.25rem calc(1.4rem + env(safe-area-inset-bottom));
+    transform: translateY(40px); position: relative;
+  }
+  .ho-modal-box::before {
+    content: ""; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 4px; border-radius: 4px; background: rgba(11,94,85,0.18);
+  }
+  .ho-modal-head { margin-bottom: 1.1rem; }
+  .ho-modal-head h3 { font-size: 1.15rem; }
+  .ho-modal-close { width: 44px; height: 44px; margin-right: -10px; }
+}
+
+/* ---------- Small phones ---------- */
+@media (max-width: 380px) {
+  .bt-title h1 { font-size: 1.25rem; }
+  .bt-mode-btn { padding: 0.65rem 0.7rem; font-size: 0.72rem; }
+  .bt-identity-subtitle { max-width: 45%; }
+}
+
+/* ---------- Phone landscape: maximise the figure ---------- */
+@media (max-width: 1024px) and (max-height: 520px) and (orientation: landscape) {
+  :root { --bt-dock: 84px; }
+  .bt-header { display: none; }
+  .bt-wrap { height: calc(100dvh - 4rem); padding-top: 0.4rem; }
+  .bt-timeline-card { padding: 0.35rem 0.9rem; }
+  .bt-tl-header { position: absolute; right: 1rem; top: -1.6rem; gap: 0.6rem; }
+  .bt-bottom-dock { left: 20%; right: 20%; }
+  .bt-details-drawer { left: auto; width: 320px; top: 0.75rem; bottom: calc(var(--bt-dock) + 0.5rem); max-height: none; }
+}
+
+/* ---------- Touch devices: no sticky hover states ---------- */
+@media (hover: none) {
+  .bt-fam-card:hover, .bt-cam-btn:hover, .bt-btn-primary:hover { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-details-drawer, .ho-modal-box { transition: none; }
+}
+
+  </style>
+</head>
+<body>
+
+<%- include('../partials/ambient') %>
+
+<div class="ho-app-layout">
+  <%- include('../partials/sidebar') %>
+
+  <main class="ho-main-content">
+    <div class="bt-wrap">
+
+      <!-- Header & Family Selector -->
+      <header class="bt-header">
+        <div class="bt-title">
+          <h1>Living <em>Body Twin</em></h1>
+          <span class="bt-identity-subtitle" id="bt-identity-subtitle">Loading...</span>
+        </div>
+        <div class="bt-family-rail" id="bt-family-rail">
+            <!-- Injected via JS -->
+        </div>
+      </header>
+
+      <!-- 3D Stage Area -->
+      <div class="bt-stage">
+
+        <!-- 3D Canvas Background -->
+        <div id="ho-3d-canvas-container"></div>
+        <div class="bt-viewport">
+            <div class="bt-placeholder-text" id="bt-canvas-text">[ INITIALIZING SCENE ]</div>
+        </div>
+
+        <!-- Floating UI Overlays -->
+        <div class="bt-top-controls">
+          <!-- Layers Popover -->
+          <div class="bt-layers-popover">
+            <button class="bt-btn-glass" id="btnToggleLayers">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg> Layers
+            </button>
+            <div class="bt-layers-menu" id="layersMenu">
+              <label class="bt-layer-toggle"><input type="checkbox" checked style="accent-color: var(--d-coral);"> Current Issues</label>
+              <label class="bt-layer-toggle"><input type="checkbox" checked style="accent-color: var(--d-amber);"> Follow-up Records</label>
+              <label class="bt-layer-toggle"><input type="checkbox" checked style="accent-color: var(--d-blue);"> Historical Records</label>
+              <label class="bt-layer-toggle"><input type="checkbox" style="accent-color: var(--d-teal-500);"> Wearables & Measurements</label>
+            </div>
+          </div>
+
+          <!-- Mode Switcher -->
+          <div class="bt-mode-switch">
+            <button class="bt-mode-btn active" id="btnMapMode">Health Map</button>
+            <button class="bt-mode-btn" id="btnProgressMode">Body Progress</button>
+          </div>
+
+          <div style="width: 100px;" class="desktop-only"></div>
+        </div>
+
+        <!-- Camera Controls -->
+        <div class="bt-camera-controls">
+            <button class="bt-cam-btn" title="Front View" onclick="BodyTwin3D.resetCamera('front')">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </button>
+            <button class="bt-cam-btn" title="Back View" onclick="BodyTwin3D.resetCamera('back')">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </button>
+            <button class="bt-cam-btn" title="Reset Camera" style="margin-top: 1rem;" onclick="BodyTwin3D.resetCamera('front')">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+            </button>
+        </div>
+
+        <!-- Privacy Overlay -->
+        <div class="bt-overlay-state" id="bt-privacy-overlay" style="display:none;"></div>
+
+        <!-- Details Slide-Out Drawer -->
+        <div class="bt-details-drawer" id="bt-details-panel">
+            <!-- Injected via JS on marker click -->
+        </div>
+
+        <!-- Bottom Timeline Dock -->
+        <div class="bt-bottom-dock" id="bt-timeline-dock">
+            <div class="bt-timeline-card">
+                <div class="bt-tl-header">
+                    <span class="bt-tl-title" id="ho-timeline-title">Health Journey</span>
+                    <span class="bt-tl-date" id="ho-current-date-display">...</span>
+                </div>
+                <div class="bt-slider-row">
+                    <button class="bt-btn-glass" style="padding: 0.6rem; border-radius: 12px; box-shadow:none;" id="btnPlayJourney">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    </button>
+                    <!-- Stop pointer events from bubbling to orbit controls -->
+                    <input type="range" id="ho-time-slider" min="0" max="1" value="0" onpointerdown="event.stopPropagation()" ontouchstart="event.stopPropagation()">
+                </div>
+            </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- "Why Highlighted?" Modal Evidence -->
+<div class="ho-modal" id="evidenceModal" onclick="document.getElementById('evidenceModal').classList.remove('active'); setTimeout(()=> document.getElementById('evidenceModal').style.display='none', 300);">
+  <div class="ho-modal-box" onclick="event.stopPropagation()">
+    <div class="ho-modal-head">
+      <h3>Why is this highlighted?</h3>
+      <button type="button" class="ho-modal-close" onclick="document.getElementById('evidenceModal').classList.remove('active'); setTimeout(()=> document.getElementById('evidenceModal').style.display='none', 300);">&times;</button>
+    </div>
+    <div style="text-align: left;">
+        <p style="color: var(--d-ink-2); font-weight: 500; margin-bottom: 1.5rem;">HealthOrbit found a stored health record associated with this body region.</p>
+        <div style="background: var(--d-bg); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--d-line); margin-bottom: 1.5rem;">
+            <strong style="display: block; font-size: 0.85rem; color: var(--d-ink-3); text-transform: uppercase; margin-bottom: 0.3rem;">Recorded Information</strong>
+            <div style="font-size: 1.1rem; color: var(--d-teal-950); font-weight: 800; margin-bottom: 1rem;" id="evTitle">Distal radius fracture</div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <strong style="display: block; font-size: 0.75rem; color: var(--d-ink-3); text-transform: uppercase;">Source</strong>
+                    <div style="font-weight: 700; color: var(--d-teal-700);" id="evSource">X-Ray Report</div>
+                </div>
+                <div>
+                    <strong style="display: block; font-size: 0.75rem; color: var(--d-ink-3); text-transform: uppercase;">Date</strong>
+                    <div style="font-weight: 700; color: var(--d-teal-700);" id="evDate">12 Jun 2026</div>
+                </div>
+                <div>
+                    <strong style="display: block; font-size: 0.75rem; color: var(--d-ink-3); text-transform: uppercase;">Mapped Region</strong>
+                    <div style="font-weight: 700; color: var(--d-teal-700);" id="evRegion">Left Forearm</div>
+                </div>
+                <div>
+                    <strong style="display: block; font-size: 0.75rem; color: var(--d-ink-3); text-transform: uppercase;">Confidence</strong>
+                    <div style="font-weight: 700; color: var(--d-mint);">High</div>
+                </div>
+            </div>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--d-ink-3); text-align: center; font-weight: 600;">This visualization represents information from stored health records and is not a medical diagnosis.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================================================================
+     JAVASCRIPT LOGIC (MOCK DATA, UI STATE, THREE.JS ENGINE)
+================================================================== -->
+<script>
+/* ------------------------------------------------------------------
+   1. MOCK DATA LAYER (Frontend Hackathon DB) — unchanged from before
+------------------------------------------------------------------ */
+const MockDB = {
+    members: [
+        { id: "demo-self", name: "Atharv", relationship: "Self", access: "full", model: "adult" },
+        { id: "demo-mother", name: "Demo Mother", relationship: "Mother", access: "shared", model: "adult-female" },
+        { id: "demo-child", name: "Demo Child", relationship: "Child", access: "shared", model: "child" },
+        { id: "demo-father", name: "Demo Father", relationship: "Father", access: "limited", model: "adult" }
+    ],
+    markers: {
+        "demo-self": [
+            { dateId: "May 2026", region: "LEFT_FOREARM", state: "none", color: "none" },
+            { dateId: "Jun 2026", region: "LEFT_FOREARM", state: "Current record", color: "coral", title: "Distal radius fracture", date: "12 Jun 2026", source: "X-Ray Report" },
+            { dateId: "Jul 2026", region: "LEFT_FOREARM", state: "Follow-up record", color: "amber", title: "Orthopedic Follow-up", date: "08 Jul 2026", source: "Clinical Visit" },
+            { dateId: "Sep 2026", region: "LEFT_FOREARM", state: "Historical record", color: "blue", title: "Physical Therapy Assessment", date: "15 Sep 2026", source: "Measurement" }
+        ],
+        "demo-mother": [
+            { dateId: "Aug 2026", region: "CHEST", state: "Measurement record", color: "cyan", title: "Echocardiogram Routine", date: "10 Aug 2026", source: "Medical Report" },
+            { dateId: "Sep 2026", region: "CHEST", state: "Measurement record", color: "cyan", title: "Echocardiogram Routine", date: "10 Aug 2026", source: "Medical Report" }
+        ],
+        "demo-child": [
+            { dateId: "Jan 2026", region: "RIGHT_KNEE", state: "none", color: "none" },
+            { dateId: "Sep 2026", region: "RIGHT_KNEE", state: "Current record", color: "coral", title: "Sports Injury Assessment", date: "02 Sep 2026", source: "Clinical Visit" }
+        ]
+    },
+    progress: {
+        "demo-self": { type: "weight", target: 72, history: { "Jan 2026": 82, "Mar 2026": 79, "May 2026": 77, "Jun 2026": 76, "Jul 2026": 75, "Sep 2026": 74 } },
+        "demo-mother": { type: "weight", target: 65, history: { "Jan 2026": 68, "May 2026": 67, "Aug 2026": 66, "Sep 2026": 65 } },
+        "demo-child": { type: "growth", target: null, history: { "2024": "110 cm", "2025": "115 cm", "Jan 2026": "118 cm", "Sep 2026": "122 cm" } }
+    },
+    timelines: {
+        "demo-self": ["Jan 2026", "Mar 2026", "May 2026", "Jun 2026", "Jul 2026", "Sep 2026"],
+        "demo-mother": ["Jan 2026", "May 2026", "Aug 2026", "Sep 2026"],
+        "demo-child": ["2024", "2025", "Jan 2026", "Sep 2026"]
+    }
+};
+
+const BodyTwinDataService = {
+    getFamilyMembers: () => MockDB.members,
+    getMemberById: (id) => MockDB.members.find(m => m.id === id),
+    getTimeline: (memberId) => MockDB.timelines[memberId] || [],
+    getMarkersForDate: (memberId, dateId) => {
+        return (MockDB.markers[memberId] || []).filter(m => m.dateId === dateId && m.state !== "none");
+    },
+    getProgress: (memberId) => MockDB.progress[memberId] || null
+};
+
+/* ------------------------------------------------------------------
+   2. THREE.JS ENGINE & CANONICAL REGION ANCHOR SYSTEM
+   CORRECTED: the fallback body is now a proportionally realistic,
+   clothed, rest-pose (arms at sides, not T-pose) humanoid built from
+   smooth capsule-style limbs instead of blocky raw cylinders, with
+   male/female/child silhouettes and a subtle breathing idle animation.
+------------------------------------------------------------------ */
+const BodyTwin3D = (function() {
+    let scene, camera, renderer, controls, raycaster, mouse;
+    let bodyModel = null;
+    let bodyParts = {};          // name -> mesh/group, used for region anchoring + raycasting
+    let markersGroup = new THREE.Group();
+    let container;
+    let clock = new THREE.Clock();
+    let usingFallback = false;
+
+    // Canonical mapping. meshName now matches the part names the fallback
+    // builder actually creates, so highlight/focus/markers all resolve
+    // correctly instead of silently no-op'ing against a mismatched name.
+    const BodyRegionSystem = {
+        HEAD:           { meshName: 'head',         fallbackPos: {x:0,    y:2.52, z:0.22} },
+        CHEST:          { meshName: 'chest',        fallbackPos: {x:0,    y:1.75, z:0.32} },
+        ABDOMEN:        { meshName: 'waist',        fallbackPos: {x:0,    y:1.38, z:0.26} },
+        LEFT_FOREARM:   { meshName: 'leftForearm',  fallbackPos: {x:-0.58,y:1.08, z:0.08} },
+        RIGHT_FOREARM:  { meshName: 'rightForearm', fallbackPos: {x:0.58, y:1.08, z:0.08} },
+        LEFT_KNEE:      { meshName: 'leftShin',     fallbackPos: {x:-0.16,y:0.0,  z:0.12} },
+        RIGHT_KNEE:     { meshName: 'rightShin',    fallbackPos: {x:0.16, y:0.0,  z:0.12} }
+    };
+
+    function init(domElement) {
+        container = domElement;
+
+        scene = new THREE.Scene();
+        scene.add(markersGroup);
+
+        const width = container.clientWidth || window.innerWidth * 0.7;
+        const height = container.clientHeight || window.innerHeight * 0.7;
+
+        camera = new THREE.PerspectiveCamera(32, width / height, 0.1, 100);
+        camera.position.set(0, 1.0, 6.2);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.05;
+
+        container.appendChild(renderer.domElement);
+
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.08;
+        controls.minDistance = 3.2;
+        controls.maxDistance = 11;
+        controls.maxPolarAngle = Math.PI * 0.62;
+        controls.minPolarAngle = Math.PI * 0.25;
+        controls.target.set(0, 1.1, 0);
+
+        raycaster = new THREE.Raycaster();
+        mouse = new THREE.Vector2();
+        renderer.domElement.addEventListener('click', onCanvasClick);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
+        scene.add(ambientLight);
+
+        const mainLight = new THREE.DirectionalLight(0xfff3e8, 0.95);
+        mainLight.position.set(2.2, 4.5, 4.5);
+        scene.add(mainLight);
+
+        const fillLight = new THREE.DirectionalLight(0x9fd8ce, 0.45);
+        fillLight.position.set(-4, 1.5, 3);
+        scene.add(fillLight);
+
+        const rimLight = new THREE.DirectionalLight(0x5fe0c4, 0.5);
+        rimLight.position.set(0, 4, -6);
+        scene.add(rimLight);
+
+        window.addEventListener('resize', onWindowResize);
+        setTimeout(onWindowResize, 100);
+
+        animate();
+    }
+
+    function loadModel(modelType, onLoadComplete) {
+        if (bodyModel) {
+            scene.remove(bodyModel);
+            bodyModel = null;
+            bodyParts = {};
+        }
+
+        const loaderText = document.getElementById('bt-canvas-text');
+        if (loaderText) {
+            loaderText.style.display = 'block';
+            loaderText.textContent = `[ LOADING BODY TWIN: ${modelType.toUpperCase()} ]`;
+        }
+
+        const loader = new THREE.GLTFLoader();
+        const modelUrl = `/models/body/${modelType}.glb`;
+
+        loader.load(
+            modelUrl,
+            function (gltf) {
+                if (loaderText) loaderText.style.display = 'none';
+                usingFallback = false;
+                bodyModel = gltf.scene;
+
+                const box = new THREE.Box3().setFromObject(bodyModel);
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const scale = 3.2 / maxDim;
+
+                bodyModel.scale.set(scale, scale, scale);
+                bodyModel.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+
+                bodyModel.traverse(child => { if (child.isMesh) bodyParts[child.name] = child; });
+
+                scene.add(bodyModel);
+                if (onLoadComplete) onLoadComplete();
+            },
+            undefined,
+            function () {
+                console.warn(`[HealthOrbit 3D] No GLB at ${modelUrl} yet — using the detailed procedural fallback body.`);
+                createDetailedFallback(modelType);
+                if (onLoadComplete) onLoadComplete();
+            }
+        );
+    }
+
+    // ----------------------------------------------------------------
+    // DETAILED PROCEDURAL FALLBACK — replaces the old blocky T-pose
+    // cylinders. Smooth capsule-style limbs (cylinder + sphere caps),
+    // realistic proportion differences for male / female / child, a
+    // natural arms-at-sides rest pose, simple respectful clothing on
+    // the torso/hips (not bare skin), and subtle hair geometry.
+    // ----------------------------------------------------------------
+    function createDetailedFallback(modelType) {
+        const loaderText = document.getElementById('bt-canvas-text');
+        if (loaderText) loaderText.style.display = 'none';
+        usingFallback = true;
+        bodyParts = {};
+
+        const isFemale = modelType === 'adult-female';
+        const isChild = modelType === 'child';
+
+        const SKIN = isFemale ? 0xe8c0a0 : (isChild ? 0xedc9a8 : 0xe3b48d);
+        const CLOTH = isFemale ? 0x4a5b76 : (isChild ? 0xe09a2b : 0x0d7a6e);
+        const HAIR = isFemale ? 0x3b2a22 : 0x271d16;
+
+        const skinMat = new THREE.MeshStandardMaterial({ color: SKIN, roughness: 0.6, metalness: 0.0 });
+        const clothMat = new THREE.MeshStandardMaterial({ color: CLOTH, roughness: 0.85, metalness: 0.0 });
+        const hairMat = new THREE.MeshStandardMaterial({ color: HAIR, roughness: 0.92, metalness: 0.0 });
+
+        const shoulderW = isChild ? 0.3 : (isFemale ? 0.4 : 0.46);
+        const waistW    = isChild ? 0.26: (isFemale ? 0.27: 0.33);
+        const hipW      = isChild ? 0.27: (isFemale ? 0.37: 0.32);
+        const scale     = isChild ? 0.62: (isFemale ? 0.95: 1.0);
+
+        const g = new THREE.Group();
+        g.scale.setScalar(scale);
+
+        function part(name, geo, mat, pos, rot) {
+            const m = new THREE.Mesh(geo, mat);
+            m.position.set(pos[0], pos[1], pos[2]);
+            if (rot) m.rotation.set(rot[0] || 0, rot[1] || 0, rot[2] || 0);
+            m.name = name;
+            g.add(m);
+            bodyParts[name] = m;
+            return m;
+        }
+
+        // smooth capsule limb: cylinder body + two sphere end-caps grouped
+        // as one unit (r128 has no native CapsuleGeometry)
+        function capsule(name, rTop, rBot, length, mat, pos, rotZ) {
+            const grp = new THREE.Group();
+            const cyl = new THREE.Mesh(new THREE.CylinderGeometry(rTop, rBot, length, 20), mat);
+            grp.add(cyl);
+            const top = new THREE.Mesh(new THREE.SphereGeometry(rTop, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), mat);
+            top.position.y = length / 2; grp.add(top);
+            const bot = new THREE.Mesh(new THREE.SphereGeometry(rBot, 16, 12, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), mat);
+            bot.position.y = -length / 2; grp.add(bot);
+            grp.position.set(pos[0], pos[1], pos[2]);
+            if (rotZ) grp.rotation.z = rotZ;
+            grp.name = name;
+            grp.children.forEach(c => c.userData.region = name);
+            g.add(grp);
+            bodyParts[name] = grp;
+            return grp;
+        }
+
+        // Torso: tapered chest -> waist -> pelvis for a real silhouette
+        part('chest', new THREE.CylinderGeometry(shoulderW, waistW + 0.03, 0.56, 24), clothMat, [0, 1.75, 0]);
+        part('waist', new THREE.CylinderGeometry(waistW, hipW, 0.26, 24), clothMat, [0, 1.42, 0]);
+        part('pelvis', new THREE.CylinderGeometry(hipW, hipW - 0.04, 0.34, 20), clothMat, [0, 1.18, 0]);
+
+        // Shoulder caps smooth the chest-to-arm junction
+        part('leftShoulderCap', new THREE.SphereGeometry(0.12, 16, 12), clothMat, [-shoulderW + 0.02, 1.98, 0]);
+        part('rightShoulderCap', new THREE.SphereGeometry(0.12, 16, 12), clothMat, [shoulderW - 0.02, 1.98, 0]);
+
+        part('neck', new THREE.CylinderGeometry(0.09, 0.11, 0.18, 16), skinMat, [0, 2.1, 0]);
+        part('head', new THREE.SphereGeometry(0.21, 26, 22), skinMat, [0, 2.36, 0]);
+
+        // Simple, tasteful hair silhouette
+        if (isFemale) {
+            part('hair', new THREE.SphereGeometry(0.235, 18, 14, 0, Math.PI * 2, 0, Math.PI * 0.6), hairMat, [0, 2.4, -0.015]);
+            part('hairBack', new THREE.CylinderGeometry(0.17, 0.1, 0.42, 16), hairMat, [0, 2.1, -0.09]);
+        } else {
+            part('hair', new THREE.SphereGeometry(0.215, 18, 14, 0, Math.PI * 2, 0, Math.PI * 0.5), hairMat, [0, 2.41, -0.01]);
+        }
+
+        // Arms in a natural, slightly-relaxed rest pose (not T-pose): a
+        // small inward rotation at the shoulder so forearms angle toward
+        // the body, reading as a calm standing figure.
+        const armAngle = 0.18;
+        capsule('leftUpperArm', 0.085, 0.072, 0.56, skinMat, [-(shoulderW + 0.09), 1.74, 0], armAngle);
+        capsule('leftForearm', 0.07, 0.06, 0.52, skinMat, [-(shoulderW + 0.17), 1.18, 0.04], armAngle * 1.4);
+        part('leftHand', new THREE.SphereGeometry(0.062, 14, 12), skinMat, [-(shoulderW + 0.23), 0.86, 0.07]);
+
+        capsule('rightUpperArm', 0.085, 0.072, 0.56, skinMat, [shoulderW + 0.09, 1.74, 0], -armAngle);
+        capsule('rightForearm', 0.07, 0.06, 0.52, skinMat, [shoulderW + 0.17, 1.18, 0.04], -armAngle * 1.4);
+        part('rightHand', new THREE.SphereGeometry(0.062, 14, 12), skinMat, [shoulderW + 0.23, 0.86, 0.07]);
+
+        // Legs: thigh + shin as smooth capsules, simple foot
+        function leg(side) {
+            const sign = side === 'left' ? -1 : 1;
+            const x = sign * (hipW * 0.52);
+            capsule(side + 'Thigh', 0.115, 0.09, 0.66, skinMat, [x, 0.78, 0]);
+            capsule(side + 'Shin', 0.082, 0.062, 0.62, skinMat, [x, 0.14, 0]);
+            part(side + 'Foot', new THREE.BoxGeometry(0.13, 0.07, 0.26, 2, 1, 2), skinMat, [x, -0.22, 0.05]);
+        }
+        leg('left'); leg('right');
+
+        g.position.y = -0.25;
+        scene.add(g);
+        bodyModel = g;
+    }
+
+    function highlightRegion(regionName, colorCode) {
+        if (!bodyModel) return;
+        const colors = { coral: 0xe5806c, amber: 0xe09a2b, blue: 0x4285f4, cyan: 0x17a795 };
+        const hexColor = colors[colorCode] || 0x000000;
+
+        Object.values(bodyParts).forEach(obj => {
+            const target = obj.isMesh ? obj : (obj.children && obj.children[0]);
+            if (target && target.material && target.material.emissive) target.material.emissive.setHex(0x000000);
+        });
+
+        const sys = BodyRegionSystem[regionName];
+        if (!sys) return;
+        const node = bodyParts[sys.meshName];
+        if (!node) return;
+        const target = node.isMesh ? node : node.children[0];
+        if (target && target.material && target.material.emissive) {
+            target.material.emissive.setHex(hexColor);
+            target.material.emissiveIntensity = 0.45;
+        }
+    }
+
+    function renderMarkers(markerDataList) {
+        markersGroup.clear();
+        Object.values(bodyParts).forEach(obj => {
+            const target = obj.isMesh ? obj : (obj.children && obj.children[0]);
+            if (target && target.material && target.material.emissive) target.material.emissive.setHex(0x000000);
+        });
+
+        const colors = { coral: 0xe5806c, amber: 0xe09a2b, blue: 0x4285f4, cyan: 0x17a795 };
+
+        markerDataList.forEach(data => {
+            const sys = BodyRegionSystem[data.region];
+            if (!sys) return;
+
+            highlightRegion(data.region, data.color);
+
+            const anchorGroup = new THREE.Group();
+            anchorGroup.position.set(sys.fallbackPos.x, sys.fallbackPos.y, sys.fallbackPos.z);
+
+            const geo = new THREE.SphereGeometry(0.055, 16, 16);
+            const mat = new THREE.MeshBasicMaterial({ color: colors[data.color] || 0xffffff });
+            const sphere = new THREE.Mesh(geo, mat);
+            sphere.userData = data;
+            anchorGroup.add(sphere);
+
+            const ringGeo = new THREE.RingGeometry(0.08, 0.1, 28);
+            const ringMat = new THREE.MeshBasicMaterial({ color: colors[data.color], side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.userData = { isRing: true };
+            anchorGroup.add(ring);
+
+            markersGroup.add(anchorGroup);
+        });
+    }
+
+    function applyMorphTarget(percentage) {
+        if (!bodyModel) return;
+        let morphApplied = false;
+        bodyModel.traverse((child) => {
+            if (child.isMesh && child.morphTargetInfluences && child.morphTargetInfluences.length > 0) {
+                child.morphTargetInfluences[0] = percentage;
+                morphApplied = true;
+            }
+        });
+        if (!morphApplied) {
+            // Illustrative-only, dampened whole-figure scale — honestly
+            // labeled in the UI, never claimed as a real body morph.
+            const influence = 1 + (percentage - 0.5) * 0.18;
+            bodyModel.scale.x = (bodyModel.userData.baseScale || bodyModel.scale.y) * influence;
+            bodyModel.scale.z = (bodyModel.userData.baseScale || bodyModel.scale.y) * influence;
+            if (!bodyModel.userData.baseScale) bodyModel.userData.baseScale = bodyModel.scale.y;
+        }
+    }
+
+    function focusRegion(regionName) {
+        const sys = BodyRegionSystem[regionName];
+        if (!sys) return;
+        const pos = sys.fallbackPos;
+        const targetPos = new THREE.Vector3(pos.x, pos.y, pos.z);
+        camera.position.lerp(new THREE.Vector3(targetPos.x * 1.1, targetPos.y + 0.2, targetPos.z + 2.6), 0.12);
+        controls.target.lerp(targetPos, 0.12);
+    }
+
+    function onCanvasClick(event) {
+        if (!container) return;
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        let targets = [];
+        markersGroup.children.forEach(g => targets.push(...g.children));
+        const intersects = raycaster.intersectObjects(targets);
+
+        if (intersects.length > 0) {
+            const hit = intersects[0].object;
+            if (hit.userData && !hit.userData.isRing && hit.userData.region) {
+                focusRegion(hit.userData.region);
+                document.dispatchEvent(new CustomEvent('markerClicked', { detail: hit.userData }));
+            }
+        }
+    }
+
+    function resetCamera(view) {
+        controls.target.set(0, 1.1, 0);
+        if (view === 'front') camera.position.set(0, 1.0, 6.2);
+        if (view === 'back') camera.position.set(0, 1.0, -6.2);
+        controls.update();
+    }
+
+    function onWindowResize() {
+        if (!container) return;
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        if (width === 0 || height === 0) return;
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        const t = clock.getElapsedTime();
+
+        if (bodyModel) {
+            // Subtle breathing/idle sway — small enough to feel alive,
+            // never distracting from the health data itself.
+            bodyModel.position.y = (usingFallback ? -0.25 : 0) + Math.sin(t * 0.9) * 0.012;
+            if (usingFallback && bodyParts.chest) {
+                bodyParts.chest.scale.y = 1 + Math.sin(t * 0.9) * 0.012;
+            }
+        }
+
+        markersGroup.children.forEach((group, i) => {
+            const s = 1 + Math.sin(t * 2.4 + i) * 0.18;
+            group.children.forEach(c => {
+                if (c.userData && c.userData.isRing) { c.lookAt(camera.position); c.scale.setScalar(s); }
+            });
+        });
+
+        renderer.render(scene, camera);
+    }
+
+    return { init, loadModel, renderMarkers, applyMorphTarget, resetCamera };
+})();
+
+/* ------------------------------------------------------------------
+   3. FRONTEND STATE & UI LOGIC — unchanged behavior
+------------------------------------------------------------------ */
+document.addEventListener("DOMContentLoaded", async () => {
+    const state = {
+        memberId: "demo-self",
+        mode: "map",
+        currentTimelineIndex: 0,
+        timelineKeys: [],
+        playInterval: null
+    };
+
+    const avatarColors = { "demo-self": "#0b5e55", "demo-mother": "#9c4f84", "demo-child": "#c2812a", "demo-father": "#355f99" };
+
+    const els = {
+        familyRail: document.getElementById('bt-family-rail'),
+        identitySubtitle: document.getElementById('bt-identity-subtitle'),
+        canvasContainer: document.getElementById('ho-3d-canvas-container'),
+        canvasText: document.getElementById('bt-canvas-text'),
+        modeSwitch: document.querySelector('.bt-mode-switch'),
+        btnMapMode: document.getElementById('btnMapMode'),
+        btnProgressMode: document.getElementById('btnProgressMode'),
+        privacyOverlay: document.getElementById('bt-privacy-overlay'),
+        timelineDock: document.getElementById('bt-timeline-dock'),
+        timeSlider: document.getElementById('ho-time-slider'),
+        dateDisplay: document.getElementById('ho-current-date-display'),
+        timelineTitle: document.getElementById('ho-timeline-title'),
+        detailsPanel: document.getElementById('bt-details-panel'),
+        layersBtn: document.getElementById('btnToggleLayers'),
+        layersMenu: document.getElementById('layersMenu'),
+        btnPlay: document.getElementById('btnPlayJourney')
+    };
+
+    BodyTwin3D.init(els.canvasContainer);
+
+    els.btnMapMode.addEventListener('click', () => setMode('map'));
+    els.btnProgressMode.addEventListener('click', () => {
+        const member = BodyTwinDataService.getMemberById(state.memberId);
+        setMode(member && member.model === 'child' ? 'growth' : 'progress');
+    });
+
+    els.timeSlider.addEventListener('input', (e) => {
+        state.currentTimelineIndex = parseInt(e.target.value);
+        updateTimelineView();
+    });
+
+    els.btnPlay.addEventListener('click', togglePlay);
+    els.layersBtn.addEventListener('click', () => els.layersMenu.classList.toggle('show'));
+
+    document.addEventListener('click', (e) => {
+        if (!els.layersBtn.contains(e.target) && !els.layersMenu.contains(e.target)) {
+            els.layersMenu.classList.remove('show');
+        }
+    });
+
+    document.addEventListener('markerClicked', (e) => openDetailDrawer(e.detail));
+
+    loadMember(state.memberId);
+
+    function renderFamilyRail() {
+        els.familyRail.innerHTML = BodyTwinDataService.getFamilyMembers().map(m => `
+            <div class="bt-fam-card ${m.id === state.memberId ? 'active' : ''}" data-id="${m.id}">
+                <div class="bt-fam-av" style="background:${avatarColors[m.id] || '#0b5e55'}">${m.name.charAt(0)}</div>
+                <div class="bt-fam-info">
+                    <strong>${m.name}</strong>
+                    <span>${m.relationship} ${m.access !== 'full' ? '· ' + m.access : ''}</span>
+                </div>
+            </div>
+        `).join('');
+
+        els.familyRail.querySelectorAll('.bt-fam-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const id = e.currentTarget.getAttribute('data-id');
+                if (id !== state.memberId) loadMember(id);
+            });
+        });
+    }
+
+    function loadMember(id) {
+        state.memberId = id;
+        const member = BodyTwinDataService.getMemberById(id);
+        if (!member) return;
+
+        renderFamilyRail();
+        els.identitySubtitle.textContent = `${member.name} • ${member.relationship === 'Self' ? 'My Body' : 'Shared with you'}`;
+        els.detailsPanel.classList.remove('open');
+        stopPlay();
+
+        if (member.access === 'limited') {
+            els.privacyOverlay.style.display = 'flex';
+            els.privacyOverlay.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <h3>Limited Access</h3>
+                <p>Body Twin health information has not been shared with you by this family member.</p>
+                <a href="/profile" class="bt-btn-primary" style="padding: 0.8rem 2rem; text-decoration:none;">View Permissions</a>
+            `;
+            els.modeSwitch.style.display = 'none';
+            els.timelineDock.style.display = 'none';
+            BodyTwin3D.renderMarkers([]);
+            return;
+        }
+
+        els.privacyOverlay.style.display = 'none';
+        els.modeSwitch.style.display = 'flex';
+        els.timelineDock.style.display = 'flex';
+
+        BodyTwin3D.loadModel(member.model, () => {
+            updateTimelineView();
+        });
+
+        els.btnProgressMode.textContent = member.model === 'child' ? 'Growth Journey' : 'Body Progress';
+        setMode('map');
+
+        state.timelineKeys = BodyTwinDataService.getTimeline(id);
+        if (state.timelineKeys.length > 0) {
+            els.timeSlider.max = state.timelineKeys.length - 1;
+            els.timeSlider.value = state.timelineKeys.length - 1;
+            state.currentTimelineIndex = state.timelineKeys.length - 1;
+        } else {
+            els.dateDisplay.textContent = 'No Data';
+        }
+    }
+
+    function setMode(mode) {
+        state.mode = mode;
+        els.btnMapMode.classList.toggle('active', mode === 'map');
+        els.btnProgressMode.classList.toggle('active', mode !== 'map');
+        els.detailsPanel.classList.remove('open');
+
+        els.timelineTitle.textContent = mode === 'map' ? 'Health Journey' : (mode === 'growth' ? 'Growth Journey' : 'Weight Progress');
+
+        if (mode === 'map') BodyTwin3D.applyMorphTarget(0.5);
+        updateTimelineView();
+    }
+
+    function updateTimelineView() {
+        if (state.timelineKeys.length === 0) {
+            BodyTwin3D.renderMarkers([]);
+            return;
+        }
+
+        const currentDate = state.timelineKeys[state.currentTimelineIndex];
+        els.dateDisplay.textContent = currentDate;
+        els.dateDisplay.style.color = 'var(--d-coral)';
+        setTimeout(() => els.dateDisplay.style.color = 'var(--d-teal-950)', 300);
+
+        if (state.mode === 'map') {
+            const markers = BodyTwinDataService.getMarkersForDate(state.memberId, currentDate);
+            BodyTwin3D.renderMarkers(markers);
+
+            if (els.detailsPanel.classList.contains('open')) {
+                if (markers.length === 0) els.detailsPanel.classList.remove('open');
+                else openDetailDrawer(markers[0]);
+            }
+        } else {
+            BodyTwin3D.renderMarkers([]);
+            const prog = BodyTwinDataService.getProgress(state.memberId);
+            const val = prog ? (prog.history[currentDate] || '--') : '--';
+
+            const morphPercentage = state.currentTimelineIndex / (state.timelineKeys.length - 1 || 1);
+            BodyTwin3D.applyMorphTarget(1 - morphPercentage);
+
+            els.detailsPanel.innerHTML = `
+                <button class="close-btn" onclick="document.getElementById('bt-details-panel').classList.remove('open')">&times;</button>
+                <h2 class="bt-region-title" style="margin-bottom:0.5rem;">${state.mode === 'growth' ? 'Growth Journey' : 'Body Progress'}</h2>
+                <p style="font-size:0.85rem; color:var(--d-ink-3); margin-bottom:1.5rem; font-weight:600;">Illustrative visualization</p>
+                <div class="bt-event-card cyan">
+                    <strong>Recorded Measurement</strong>
+                    <span class="bt-event-meta">${currentDate}</span>
+                </div>
+                <div style="text-align:center; padding: 2rem 0;">
+                    <span style="font-family:'JetBrains Mono', monospace; font-size:3rem; font-weight:800; color:var(--d-teal-950);">${val}</span>
+                </div>
+                ${(prog && prog.target) ? `
+                <div style="text-align:center; font-weight:700; color:var(--d-ink-3); border-top: 1px dashed var(--d-line); padding-top: 1.5rem;">
+                    Target: ${prog.target} kg<br>
+                </div>` : ''}
+            `;
+            els.detailsPanel.classList.add('open');
+        }
+    }
+
+    function openDetailDrawer(markerData) {
+        if (!markerData) return;
+        els.detailsPanel.innerHTML = `
+            <button class="close-btn" onclick="document.getElementById('bt-details-panel').classList.remove('open')">&times;</button>
+            <h2 class="bt-region-title">${markerData.region.replace('_', ' ')}</h2>
+            <div class="bt-event-card ${markerData.color}">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <strong>${markerData.title}</strong>
+                    <span style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:var(--d-${markerData.color}); background:var(--d-bg); padding:2px 6px; border-radius:4px;">${markerData.state}</span>
+                </div>
+                <span class="bt-event-meta">${markerData.date}</span>
+                <span class="bt-event-source">${markerData.source}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.8rem; margin-top:1.5rem;">
+                <button class="bt-btn-primary" style="justify-content:center;">View Original Record</button>
+                <button class="d-btn" style="background:var(--d-card); color:var(--d-teal-950); border:1px solid var(--d-edge); box-shadow:none; justify-content:center;" onclick="document.getElementById('evidenceModal').classList.add('active'); document.getElementById('evidenceModal').style.display='flex'; document.getElementById('evTitle').innerText='${markerData.title}'; document.getElementById('evSource').innerText='${markerData.source}'; document.getElementById('evDate').innerText='${markerData.date}'; document.getElementById('evRegion').innerText='${markerData.region.replace('_',' ')}';">Why is this highlighted?</button>
+            </div>
+        `;
+        els.detailsPanel.classList.add('open');
+    }
+
+    function togglePlay() {
+        if (state.playInterval) stopPlay();
+        else startPlay();
+    }
+
+    function startPlay() {
+        els.btnPlay.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`;
+        state.playInterval = setInterval(() => {
+            state.currentTimelineIndex++;
+            if (state.currentTimelineIndex >= state.timelineKeys.length) state.currentTimelineIndex = 0;
+            els.timeSlider.value = state.currentTimelineIndex;
+            updateTimelineView();
+        }, 1500);
+    }
+
+    function stopPlay() {
+        clearInterval(state.playInterval);
+        state.playInterval = null;
+        els.btnPlay.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+
+</body>
+</html>

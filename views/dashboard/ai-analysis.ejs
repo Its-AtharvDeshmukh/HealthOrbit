@@ -2,544 +2,1514 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HealthOrbit — AI Medical Analyst</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0b5e55">
+  <title>HealthOrbit — AI Medical Analyst Studio</title>
   <link rel="icon" href="/images/Logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/sidebar.css">
+<%
+  /* ==================================================================
+     SERVER-SIDE VIEW MODEL (100% REAL BACKEND VARIABLES ONLY)
+  ================================================================== */
+  const aView = (typeof analysisView !== 'undefined' && analysisView) ? analysisView : null;
+  const selRep = (aView && aView.selectedReport) ? aView.selectedReport : null;
+  const allParams = (aView && Array.isArray(aView.extractedParameters)) ? aView.extractedParameters : [];
+  const findings = (aView && Array.isArray(aView.importantFindings)) ? aView.importantFindings : [];
+  const comparisons = (aView && Array.isArray(aView.longitudinalComparisons)) ? aView.longitudinalComparisons : [];
+  const questions = (aView && Array.isArray(aView.doctorQuestions)) ? aView.doctorQuestions : [];
+  const reportsList = (aView && Array.isArray(aView.recentReports)) ? aView.recentReports : [];
+
+  const totalParamsCount = selRep && selRep.parameterCount ? selRep.parameterCount : allParams.length;
+  const outsideRangeCount = allParams.filter(p => p.statusClass === 'warn').length;
+  const withinRangeCount = allParams.filter(p => p.statusClass === 'good').length;
+  const neutralRangeCount = Math.max(0, allParams.length - outsideRangeCount - withinRangeCount);
+  const comparedCount = comparisons.filter(c => c.hasComparison).length;
+
+  /* Parse printed numeric reference range bounds deterministically */
+  function parseRangeBounds(valStr, rangeStr) {
+    if (!rangeStr || typeof rangeStr !== 'string') return null;
+    const cleanVal = parseFloat(String(valStr || '').replace(/,/g, '').trim());
+    if (isNaN(cleanVal)) return null;
+    const cleanRange = rangeStr.replace(/,/g, '').trim();
+    const dashMatch = cleanRange.match(/([\d.]+)\s*(?:-|to|–)\s*([\d.]+)/i);
+    if (dashMatch) {
+      const low = parseFloat(dashMatch[1]);
+      const high = parseFloat(dashMatch[2]);
+      if (!isNaN(low) && !isNaN(high) && high > low) {
+        const span = high - low;
+        const minScale = low - span * 0.28;
+        const maxScale = high + span * 0.28;
+        const pct = Math.max(5, Math.min(95, ((cleanVal - minScale) / (maxScale - minScale)) * 100));
+        return {
+          hasBounds: true,
+          low,
+          high,
+          val: cleanVal,
+          markerPct: Number(pct.toFixed(1)),
+          zoneLeftPct: Number((((low - minScale) / (maxScale - minScale)) * 100).toFixed(1)),
+          zoneWidthPct: Number(((span / (maxScale - minScale)) * 100).toFixed(1))
+        };
+      }
+    }
+    return null;
+  }
+
+  const enrichedParams = allParams.map((p, idx) => {
+    const bounds = parseRangeBounds(p.value, p.referenceRange);
+    const pNameLower = String(p.name || '').toLowerCase().trim();
+    const matchedComp = comparisons.find(c =>
+      c.hasComparison &&
+      (String(c.metric || '').toLowerCase().trim() === pNameLower ||
+       pNameLower.includes(String(c.metric || '').toLowerCase().trim()) ||
+       String(c.metric || '').toLowerCase().trim().includes(pNameLower))
+    ) || null;
+    const numVal = parseFloat(String(p.value || '').replace(/,/g, '').trim());
+
+    return {
+      idx,
+      name: p.name || 'Parameter',
+      value: p.value !== undefined && p.value !== null ? String(p.value) : '--',
+      numericValue: !isNaN(numVal) && /^-?\d+(\.\d+)?$/.test(String(p.value || '').replace(/,/g, '').trim()) ? numVal : null,
+      unit: p.unit || '',
+      referenceRange: p.referenceRange || 'Not provided in report',
+      category: p.category || 'Clinical Panel',
+      status: p.status || 'Observed',
+      statusClass: p.statusClass || 'neutral',
+      bounds,
+      comparison: matchedComp
+    };
+  });
+%>
+
   <style>
+    /* ==================================================================
+       AI MEDICAL ANALYST STUDIO — PREMIUM BENTO GLASS DESIGN SYSTEM
+    ================================================================== */
     :root {
       --ho-bg-airy: #edf6f4;
+      --ho-teal-950: #06302b;
       --ho-teal-900: #0b5e55;
       --ho-teal-800: #0c6b61;
       --ho-teal-700: #0d7a6e;
       --ho-teal-600: #109485;
       --ho-mint-400: #42b89d;
+      --ho-mint-200: #9be8d3;
+      --ho-mint-soft: #dff1ec;
       --ho-coral: #e07a68;
       --ho-coral-soft: #fbe4de;
+      --ho-amber: #e09a2b;
+      --ho-blue: #3b82f6;
+      --ho-blue-soft: #dbeafe;
+      --ho-green: #27ae60;
+      --ho-red: #e5484d;
       --ho-text-main: #0f1c1a;
       --ho-text-muted: #4e6b63;
-      
-      --ho-glass-clear: rgba(255, 255, 255, 0.55);
-      --ho-glass-solid: rgba(255, 255, 255, 0.88);
+      --ho-text-subtle: #78948d;
+
+      --ho-glass-clear: rgba(255, 255, 255, 0.56);
+      --ho-glass-solid: rgba(255, 255, 255, 0.9);
       --ho-glass-border: rgba(255, 255, 255, 0.95);
-      --ho-glass-border-subtle: rgba(13, 122, 110, 0.15);
-      
-      --ho-radius-xl: 26px;
-      --ho-radius-lg: 18px;
-      --ho-radius-md: 12px;
-      --ho-shadow-glass: 0 16px 40px rgba(13, 122, 110, 0.06), inset 0 1px 1px rgba(255, 255, 255, 1);
+      --ho-glass-border-subtle: rgba(13, 122, 110, 0.14);
+
+      --ho-radius-xl: 28px;
+      --ho-radius-lg: 20px;
+      --ho-radius-md: 14px;
+      --ho-shadow-glass: 0 20px 50px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
+      --ho-shadow-elevated: 0 26px 56px rgba(13, 122, 110, 0.15);
+      --ho-ease: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-tap-highlight-color: transparent; }
+
     body {
       min-height: 100vh;
+      min-height: 100dvh;
       font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
       background-color: var(--ho-bg-airy);
       color: var(--ho-text-main);
-      overflow-x: hidden;
+      overflow: hidden;
       -webkit-font-smoothing: antialiased;
       display: flex;
     }
 
-    .ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-    .ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.45; }
-    .ho-orb-1 { width: 650px; height: 650px; background: #a3e4d7; top: -140px; left: -110px; }
-    .ho-orb-2 { width: 600px; height: 600px; background: #fce4dc; bottom: -150px; right: -120px; }
+    /* ---------- Custom Visible Scrollbars (.ho-custom-scroll) ---------- */
+    .ho-custom-scroll {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(13, 122, 110, 0.34) rgba(13, 122, 110, 0.05);
+    }
+    .ho-custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .ho-custom-scroll::-webkit-scrollbar-track { background: rgba(13, 122, 110, 0.05); border-radius: 999px; }
+    .ho-custom-scroll::-webkit-scrollbar-thumb { background: rgba(13, 122, 110, 0.34); border-radius: 999px; }
+    .ho-custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--ho-teal-600); }
 
-    .ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
+    /* ---------- Ambient Dynamic Glow Orbs ---------- */
+    .ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.6; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
+    .ho-orb-1 { width: 580px; height: 580px; background: #76d7c4; top: -120px; left: -100px; }
+    .ho-orb-2 { width: 620px; height: 620px; background: #fadbd8; bottom: -160px; right: -100px; animation-delay: -5s; }
+    .ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 36%; left: 42%; opacity: 0.28; animation-delay: -10s; }
+    @keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(55px, 65px) scale(1.14); } }
+
+    /* ---------- App Layout & Top Scroll Progress ---------- */
+    .ho-app-layout { display: flex; width: 100vw; height: 100vh; height: 100dvh; position: relative; z-index: 10; }
     .ho-main-content {
-      flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh;
-      overflow-y: auto; scrollbar-width: none;
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
     }
-    .ho-main-content::-webkit-scrollbar { display: none; }
 
-    /* Topbar */
+    .ho-scroll-progress {
+      position: fixed; top: 0; left: 0; height: 3px; width: 0; z-index: 3000;
+      background: linear-gradient(90deg, var(--ho-mint-400), var(--ho-coral));
+      border-radius: 0 3px 3px 0;
+      transition: width 0.1s linear;
+    }
+
+    /* ---------- Sticky Studio Topbar ---------- */
     .ho-topbar {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 2.2rem 3rem 1.4rem; flex-shrink: 0; position: sticky; top: 0;
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 2rem 3rem 1.2rem;
+      flex-shrink: 0;
+      background: transparent;
+      z-index: 20;
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      mask-image: linear-gradient(to bottom, black 82%, transparent);
+      -webkit-mask-image: linear-gradient(to bottom, black 82%, transparent);
+      animation: hoDrop 0.65s var(--ho-ease) both;
     }
+    @keyframes hoDrop { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: none; } }
+
+    .ho-eyebrow-pill {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      color: var(--ho-teal-700);
+      margin-bottom: 0.35rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .ho-pulse-dot {
+      width: 8px; height: 8px;
+      background: var(--ho-mint-400);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--ho-mint-400);
+      animation: hoPulse 2s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes hoPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.5); } }
+
     .ho-topbar-text h1 {
-      font-family: 'Fraunces', serif; font-weight: 800; font-size: 2.1rem;
-      color: var(--ho-teal-900); letter-spacing: -0.8px; display: flex; align-items: center; gap: 0.7rem;
+      font-family: 'Fraunces', serif;
+      font-weight: 800;
+      font-size: 2.2rem;
+      color: var(--ho-teal-900);
+      letter-spacing: -0.9px;
+      line-height: 1.1;
     }
-    .ho-topbar-text p { font-size: 0.92rem; color: var(--ho-text-muted); font-weight: 600; margin-top: 0.2rem; }
-    .ho-topbar-actions { display: flex; align-items: center; gap: 0.8rem; }
-    
-    .ho-ai-core-mini {
-      width: 32px; height: 32px; border-radius: 50%; background: radial-gradient(circle, #fff, var(--ho-mint-400));
-      position: relative; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(66, 184, 157, 0.5);
-    }
-    .ho-ai-core-mini::before {
-      content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 1.5px dashed var(--ho-teal-700);
-      animation: hoSpin 6s linear infinite;
-    }
-    @keyframes hoSpin { 100% { transform: rotate(360deg); } }
+    .ho-topbar-text h1 b { color: var(--ho-coral); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; }
 
-    .ho-btn-primary {
-      padding: 0.75rem 1.6rem; background: linear-gradient(135deg, var(--ho-coral), #d46350); color: #fff;
-      border-radius: 999px; font-weight: 700; font-size: 0.9rem; text-decoration: none; border: none; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 6px 20px rgba(224, 122, 104, 0.3);
-      transition: all 0.2s ease;
-    }
-    .ho-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(224, 122, 104, 0.4); }
+    .ho-topbar-actions { display: flex; gap: 0.7rem; align-items: center; flex-wrap: wrap; }
     .ho-btn-ghost {
-      padding: 0.75rem 1.5rem; background: var(--ho-glass-solid); border: 1px solid var(--ho-glass-border-subtle);
-      border-radius: 999px; color: var(--ho-teal-900); font-weight: 700; font-size: 0.9rem; cursor: pointer;
-      text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease;
-    }
-    .ho-btn-ghost:hover { background: #fff; border-color: var(--ho-teal-600); transform: translateY(-1px); }
-
-    /* Mosaic Grid */
-    .ho-mosaic-grid {
-      display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem;
-      padding: 0.5rem 3rem 2.5rem; flex: 1;
-    }
-    .ho-panel {
-      background: var(--ho-glass-clear);
-      backdrop-filter: blur(35px) saturate(180%); -webkit-backdrop-filter: blur(35px) saturate(180%);
-      border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
-      padding: 1.8rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass);
-      position: relative; overflow: hidden;
-    }
-    .ho-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; gap: 0.5rem; }
-    .ho-panel-head h3 { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 700; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem; }
-    .ho-badge {
-      background: rgba(13, 122, 110, 0.1); color: var(--ho-teal-700); padding: 4px 12px;
-      border-radius: 999px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 0.8rem 1.45rem;
+      background: var(--ho-glass-solid);
+      border: 1.5px solid var(--ho-glass-border);
+      border-radius: 999px;
+      color: var(--ho-teal-900);
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: 0.25s var(--ho-ease);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: inherit;
       white-space: nowrap;
     }
+    .ho-btn-ghost svg { width: 16px; height: 16px; }
+    .ho-btn-ghost:hover { background: #ffffff; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.12); transform: translateY(-2px); border-color: var(--ho-teal-600); }
+    .ho-btn-ghost:active { transform: scale(0.96); }
+    .ho-btn-solid {
+      background: linear-gradient(135deg, var(--ho-teal-600), var(--ho-teal-900));
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: 0 10px 22px rgba(11, 94, 85, 0.25);
+    }
+    .ho-btn-solid:hover { background: linear-gradient(135deg, var(--ho-teal-600), var(--ho-teal-900)); color: #ffffff; box-shadow: 0 14px 28px rgba(11, 94, 85, 0.34); }
 
-    /* Section 1: Summary Banner */
-    .ho-summary-banner { grid-column: span 12; background: linear-gradient(135deg, var(--ho-teal-900), #084039); color: #fff; border: none; padding: 2.2rem 2.8rem; }
-    .ho-sum-layout { display: flex; justify-content: space-between; align-items: flex-start; gap: 2rem; }
-    .ho-sum-text h2 { font-family: 'Fraunces', serif; font-size: 1.75rem; font-weight: 700; line-height: 1.25; margin-bottom: 0.6rem; }
-    .ho-sum-text p { font-size: 0.96rem; color: #dcebe8; line-height: 1.6; max-width: 850px; }
-    .ho-report-meta-tag { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ho-mint-400); margin-bottom: 0.4rem; display: block; }
-
-    /* Section 2: Report Switcher Strip */
-    .ho-report-strip {
-      grid-column: span 12; background: var(--ho-glass-solid); border: 1px solid var(--ho-glass-border-subtle);
-      border-radius: var(--ho-radius-lg); padding: 1rem 1.6rem; display: flex; justify-content: space-between;
-      align-items: center; flex-wrap: wrap; gap: 1rem;
-    }
-    .ho-strip-info { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
-    .ho-strip-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.1rem; color: var(--ho-teal-900); margin-right: 0.5rem; }
-    .ho-strip-pill { background: rgba(13, 122, 110, 0.08); padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; color: var(--ho-teal-800); white-space: nowrap;}
-
-    /* Section 3: Extracted Data Table (Truncated Cells) */
-    .ho-table-panel { grid-column: span 12; }
-    .ho-table-wrapper { width: 100%; overflow-x: auto; max-height: 440px; overflow-y: auto; scrollbar-width: thin; }
-    .ho-ref-table { width: 100%; border-collapse: collapse; min-width: 650px; table-layout: fixed; }
-    .ho-ref-table th {
-      text-align: left; padding: 0.9rem 1.1rem; font-size: 0.74rem; color: var(--ho-text-muted);
-      text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 2px solid var(--ho-glass-border-subtle);
-      position: sticky; top: 0; background: #fff; z-index: 2;
-    }
-    /* Strictly Constrain Table Cells */
-    .ho-ref-table td {
-      padding: 0.95rem 1.1rem; border-bottom: 1px solid rgba(13, 122, 110, 0.08); font-size: 0.88rem; 
-      color: var(--ho-teal-900); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .ho-ref-table th:nth-child(1), .ho-ref-table td:nth-child(1) { width: 35%; }
-    .ho-ref-table th:nth-child(2), .ho-ref-table td:nth-child(2) { width: 20%; }
-    .ho-ref-table tr:hover td { background: rgba(255, 255, 255, 0.65); }
-    .mono-val { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 0.95rem; }
-
-    /* Pills */
-    .ho-pill { display: inline-flex; padding: 3px 9px; border-radius: 999px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
-    .ho-pill.good { background: #dff1ec; color: var(--ho-teal-800); }
-    .ho-pill.warn { background: var(--ho-coral-soft); color: #c0392b; }
-    .ho-pill.neutral { background: rgba(94, 115, 111, 0.1); color: var(--ho-text-muted); }
-
-    /* Section 4 & 5: Findings & Explanation */
-    .ho-findings-panel { grid-column: span 6; }
-    .ho-finding-feed { display: flex; flex-direction: column; gap: 0.85rem; }
-    .ho-finding-card {
-      display: flex; align-items: flex-start; justify-content: space-between; padding: 1.1rem 1.3rem;
-      background: rgba(255,255,255,0.78); border: 1px solid var(--ho-glass-border-subtle); border-radius: 14px;
-      transition: all 0.2s ease; gap: 1rem; width: 100%;
-    }
-    .ho-finding-card:hover { background: #fff; transform: translateX(3px); border-color: var(--ho-teal-600); }
-    
-    /* Strict Truncation for Hallucinated OCR Content */
-    .ho-fc-left { display: flex; align-items: flex-start; gap: 0.9rem; min-width: 0; flex: 1; }
-    .ho-fc-meta { min-width: 0; flex: 1; }
-    .ho-fc-meta strong { 
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;
-      font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800; line-height: 1.3; margin-bottom: 0.2rem; word-break: break-word;
-    }
-    .ho-fc-meta span { 
-      font-size: 0.74rem; color: var(--ho-text-muted); font-weight: 600; 
-      display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .ho-fc-val { 
-      font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 800; text-align: right; 
-      color: var(--ho-teal-900); flex-shrink: 0; max-width: 35%; word-break: break-all;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-    }
-    .ho-fc-val small { font-size: 0.72rem; color: var(--ho-text-muted); font-family: 'Plus Jakarta Sans', sans-serif; display: block; margin-top: 0.2rem;}
-
-    .ho-explanation-panel { grid-column: span 6; }
-    .ho-expl-box {
-      background: rgba(255,255,255,0.85); border: 1px solid var(--ho-glass-border-subtle); border-left: 4px solid var(--ho-mint-400);
-      border-radius: 16px; padding: 1.6rem; height: 100%; display: flex; flex-direction: column; justify-content: center;
-    }
-    .ho-expl-box h4 { font-family: 'Fraunces', serif; font-size: 1.15rem; color: var(--ho-teal-900); margin-bottom: 0.6rem; }
-    .ho-expl-box p { font-size: 0.92rem; color: var(--ho-text-muted); line-height: 1.65; font-weight: 500; }
-
-    /* Section 6 & 7: Longitudinal & Synthesis */
-    .ho-comparison-panel { grid-column: span 6; }
-    .ho-comp-card {
-      background: linear-gradient(135deg, #fff, rgba(223, 241, 236, 0.65)); border: 1.5px solid var(--ho-mint-400);
-      border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column; gap: 0.9rem; margin-bottom: 0.8rem;
-    }
-    .ho-comp-card:last-child { margin-bottom: 0; }
-    .ho-comp-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
-    .ho-comp-header strong { font-family: 'Fraunces', serif; font-size: 1.15rem; color: var(--ho-teal-900); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;}
-    .ho-comp-badge { background: rgba(46, 204, 113, 0.15); color: #27ae60; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 999px; white-space: nowrap;}
-    .ho-comp-metrics { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.75); padding: 0.9rem 1.2rem; border-radius: 12px; }
-    .ho-cm-col { min-width: 0; }
-    .ho-cm-col span { display: block; font-size: 0.7rem; color: var(--ho-text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 0.2rem; }
-    .ho-cm-col strong { font-family: 'JetBrains Mono', monospace; font-size: 1.15rem; color: var(--ho-teal-900); word-break: break-all; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;}
-    .ho-arrow-icon { color: var(--ho-text-muted); font-weight: 800; font-size: 1.1rem; padding: 0 0.5rem;}
-
-    .ho-ai-summary-panel { grid-column: span 6; }
-    .ho-ai-text-box {
-      background: var(--ho-teal-900); color: #fff; border-radius: 16px; padding: 1.8rem;
-      box-shadow: 0 10px 25px rgba(11, 94, 85, 0.15); height: 100%; display: flex; align-items: center;
-    }
-    .ho-ai-text-box p { font-size: 0.96rem; line-height: 1.65; color: #dcebe8; font-weight: 500; }
-
-    /* Section 8: Doctor Questions */
-    .ho-doctor-panel { grid-column: span 12; }
-    .ho-qa-feed { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; }
-    .ho-qa-item {
-      display: flex; gap: 0.9rem; align-items: flex-start; padding: 1.1rem 1.3rem;
-      background: rgba(255,255,255,0.8); border: 1px solid var(--ho-glass-border-subtle); border-radius: 14px;
-    }
-    .ho-qa-num {
-      width: 26px; height: 26px; border-radius: 50%; background: var(--ho-teal-900); color: #fff;
-      display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; flex-shrink: 0;
-    }
-    .ho-qa-item p { font-size: 0.9rem; color: var(--ho-teal-900); font-weight: 600; line-height: 1.5; }
-
-    /* Section 9: Report Vault */
-    .ho-vault-panel { grid-column: span 12; }
-    .ho-vault-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-    .ho-vault-card {
-      background: rgba(255,255,255,0.78); border: 1px solid var(--ho-glass-border-subtle); border-radius: var(--ho-radius-md);
-      padding: 1.1rem 1.3rem; display: flex; flex-direction: column; justify-content: space-between; gap: 0.8rem; transition: all 0.2s;
-    }
-    .ho-vault-card.active { border-color: var(--ho-teal-700); background: #eef8f5; box-shadow: 0 6px 18px rgba(13, 122, 110, 0.08); }
-    .ho-vault-card:hover:not(.active) { background: #fff; border-color: var(--ho-teal-600); transform: translateY(-2px); }
-    .ho-vc-title { font-weight: 800; font-size: 0.95rem; color: var(--ho-teal-900); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; word-break: break-all;}
-
-    /* Section 10: Safety Notice */
-    .ho-disclaimer-panel {
-      grid-column: span 12; background: rgba(239, 111, 91, 0.06); border: 1.5px dashed rgba(239, 111, 91, 0.4);
-      border-radius: 16px; padding: 1.2rem; text-align: center;
-    }
-    .ho-disclaimer-panel p {
-      font-size: 0.85rem; color: #a13d2d; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    /* ---------- 12-COLUMN BENTO MOSAIC GRID ---------- */
+    .ho-mosaic-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1.5rem;
+      padding: 0.5rem 3rem 3rem;
+      max-width: 1600px;
+      width: 100%;
+      margin: 0 auto;
+      flex: 1 0 auto;
     }
 
-    /* Empty state */
-    .ho-empty-box { text-align: center; padding: 2rem 1.5rem; color: var(--ho-text-muted); }
-    .ho-empty-box p { font-size: 0.88rem; font-weight: 600; }
+    /* Base Glass Panel + Cursor Spotlight */
+    .ho-panel {
+      --mx: 50%;
+      --my: 50%;
+      background: var(--ho-glass-clear);
+      backdrop-filter: blur(40px) saturate(200%);
+      -webkit-backdrop-filter: blur(40px) saturate(200%);
+      border: 1px solid var(--ho-glass-border);
+      border-radius: var(--ho-radius-xl);
+      padding: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--ho-shadow-glass);
+      position: relative;
+      overflow: hidden;
+      transition: 0.4s var(--ho-ease);
+      animation: hoSlideUp 0.7s var(--ho-ease) both;
+      min-width: 0;
+    }
+    .ho-mosaic-grid > .ho-panel:nth-child(1) { animation-delay: 0.05s; }
+    .ho-mosaic-grid > .ho-panel:nth-child(2) { animation-delay: 0.12s; }
+    .ho-mosaic-grid > .ho-panel:nth-child(3) { animation-delay: 0.18s; }
+    .ho-mosaic-grid > .ho-panel:nth-child(4) { animation-delay: 0.24s; }
+    .ho-mosaic-grid > .ho-panel:nth-child(5) { animation-delay: 0.30s; }
+    .ho-mosaic-grid > .ho-panel:nth-child(6) { animation-delay: 0.36s; }
+    .ho-mosaic-grid > .ho-panel:nth-child(7) { animation-delay: 0.42s; }
+    @keyframes hoSlideUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
 
-    /* Mobile Responsive Stack */
+    .ho-panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      background: radial-gradient(380px circle at var(--mx) var(--my), rgba(66, 184, 157, 0.16), transparent 60%);
+    }
+    @media (hover: hover) {
+      .ho-panel:hover::after { opacity: 1; }
+      .ho-panel:hover { transform: translateY(-4px); box-shadow: var(--ho-shadow-elevated); border-color: rgba(16, 148, 133, 0.4); background: rgba(255, 255, 255, 0.72); }
+    }
+
+    .ho-panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      z-index: 2;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .ho-panel-head h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--ho-teal-900);
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .ho-panel-head h3 .ic-box {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      background: rgba(13, 122, 110, 0.1);
+      color: var(--ho-teal-700);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .ho-panel-head h3 .ic-box svg { width: 16px; height: 16px; }
+
+    .ho-tag {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.28rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(13, 122, 110, 0.09);
+      color: var(--ho-teal-700);
+      white-space: nowrap;
+    }
+    .ho-tag.warn { background: var(--ho-coral-soft); color: #c0392b; }
+    .ho-tag.good { background: var(--ho-mint-soft); color: var(--ho-teal-900); }
+    .ho-tag.blue { background: var(--ho-blue-soft); color: #1d4ed8; }
+
+    /* ==================================================================
+       1. STUDIO HERO (SPAN 8) — BIOSTATISTICAL RINGS + WAVEFORM SCANNER
+    ================================================================== */
+    .ho-hero {
+      grid-column: span 8;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.75rem;
+      padding: 2.2rem 2.4rem;
+      background:
+        radial-gradient(90% 120% at 100% 0%, rgba(66, 184, 157, 0.18), transparent 60%),
+        radial-gradient(80% 100% at 0% 100%, rgba(224, 122, 104, 0.12), transparent 60%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(236, 248, 245, 0.92));
+      border: 1.5px solid var(--ho-glass-border);
+    }
+    .ho-hero-text { flex: 1; z-index: 2; min-width: 0; }
+    .ho-hero-eyebrow {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--ho-teal-700);
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.55rem;
+      flex-wrap: wrap;
+    }
+    .ho-hero-text h2 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(1.65rem, 2.3vw, 2.15rem);
+      font-weight: 700;
+      line-height: 1.12;
+      margin-bottom: 0.55rem;
+      color: var(--ho-teal-950);
+      word-break: break-word;
+    }
+    .ho-hero-text h2 em {
+      font-style: normal;
+      background: linear-gradient(100deg, var(--ho-teal-600), var(--ho-coral));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .ho-hero-text > p {
+      font-size: 0.9rem;
+      color: var(--ho-text-muted);
+      line-height: 1.55;
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+
+    /* Animated Biometric Scan Strip */
+    .ho-scan-strip {
+      position: relative;
+      width: 100%;
+      max-width: 460px;
+      height: 42px;
+      margin-bottom: 1.1rem;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(13, 122, 110, 0.05);
+      border: 1px solid rgba(13, 122, 110, 0.1);
+      display: flex;
+      align-items: center;
+    }
+    .ho-scan-strip svg { width: 100%; height: 100%; display: block; }
+    .ho-scan-strip .base { fill: none; stroke: rgba(13, 122, 110, 0.14); stroke-width: 1.5; }
+    .ho-scan-strip .live {
+      fill: none;
+      stroke: var(--ho-teal-600);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 70 230;
+      filter: drop-shadow(0 0 4px rgba(16, 148, 133, 0.55));
+      animation: hoScanWave 2.6s linear infinite;
+    }
+    @keyframes hoScanWave { from { stroke-dashoffset: 300; } to { stroke-dashoffset: 0; } }
+    .ho-scan-badge {
+      position: absolute;
+      top: 50%;
+      right: 0.65rem;
+      transform: translateY(-50%);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--ho-teal-800);
+      background: rgba(255, 255, 255, 0.88);
+      padding: 0.18rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(13, 122, 110, 0.12);
+    }
+
+    /* 4 Interactive Hero KPI Tiles */
+    .ho-hc-metrics { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .ho-hc-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--ho-glass-border-subtle);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: 0.25s var(--ho-ease);
+      min-width: 112px;
+      text-align: left;
+      font-family: inherit;
+    }
+    .ho-hc-stat:hover { background: #ffffff; transform: translateY(-3px); box-shadow: 0 10px 22px rgba(13, 122, 110, 0.1); border-color: var(--ho-teal-600); }
+    .ho-hc-stat:active { transform: scale(0.97); }
+    .ho-hc-stat span.lbl { font-size: 0.65rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: var(--ho-text-muted); }
+    .ho-hc-stat strong { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 800; color: var(--ho-teal-900); letter-spacing: -0.8px; }
+    .ho-hc-stat strong small { font-size: 0.74rem; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--ho-text-muted); font-weight: 600; margin-left: 2px; }
+
+    /* Multi-Ring Biostatistical Breakdown Gauge */
+    .ho-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.85rem; flex-shrink: 0; z-index: 2; }
+    .ho-ring-container { width: 186px; height: 186px; position: relative; display: flex; align-items: center; justify-content: center; }
+    .ho-svg-rings { transform: rotate(-90deg); width: 100%; height: 100%; filter: drop-shadow(0 6px 14px rgba(11, 94, 85, 0.12)); overflow: visible; }
+    .ho-ring-orbit { fill: none; stroke: rgba(13, 122, 110, 0.22); stroke-width: 1.5; stroke-dasharray: 3 6; transform-origin: 80px 80px; animation: hoSpin 28s linear infinite; }
+    @keyframes hoSpin { to { transform: rotate(360deg); } }
+    .ho-ring-bg { fill: none; stroke: rgba(13, 122, 110, 0.1); stroke-width: 11; }
+    .ho-ring-fill { fill: none; stroke-linecap: round; stroke-width: 11; transition: stroke-dashoffset 1.6s var(--ho-ease); }
+    .ho-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    .ho-ring-center strong { font-family: 'JetBrains Mono', monospace; font-size: 1.75rem; font-weight: 800; color: var(--ho-teal-900); line-height: 1; }
+    .ho-ring-center span { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ho-text-muted); margin-top: 0.25rem; }
+    .ho-ring-legend { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
+    .ho-ring-legend span { display: flex; align-items: center; gap: 0.35rem; font-size: 0.68rem; font-weight: 700; color: var(--ho-text-muted); }
+    .ho-ring-legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+    /* ==================================================================
+       2. AI CLINICAL ANALYST CARD (SPAN 4) — LIVING AI ORB + NARRATIVE
+    ================================================================== */
+    .ho-ai-card-deep {
+      grid-column: span 4;
+      background:
+        radial-gradient(360px 220px at 100% 0%, rgba(66, 184, 157, 0.28), transparent 65%),
+        linear-gradient(145deg, var(--ho-teal-950), #09423a 65%, var(--ho-teal-800));
+      color: #ffffff;
+      border: 1px solid rgba(66, 184, 157, 0.35);
+      box-shadow: 0 22px 48px rgba(6, 48, 43, 0.3);
+      justify-content: space-between;
+    }
+    .ho-ai-card-deep:hover {
+      background:
+        radial-gradient(360px 220px at 100% 0%, rgba(66, 184, 157, 0.34), transparent 65%),
+        linear-gradient(145deg, var(--ho-teal-950), #09423a 65%, var(--ho-teal-800));
+      border-color: var(--ho-mint-400);
+    }
+    .ho-ai-top-bar { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 1rem; z-index: 2; }
+    .ho-ai-orb-badge { display: flex; align-items: center; gap: 0.65rem; }
+    .ho-ai-mini-orb { width: 32px; height: 32px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ho-ai-mini-orb .r1 { position: absolute; inset: 0; border: 1.5px dashed var(--ho-mint-400); border-radius: 50%; animation: hoSpin 10s linear infinite; }
+    .ho-ai-mini-orb .r2 { position: absolute; inset: -3px; border: 1.5px dashed var(--ho-coral); border-radius: 50%; animation: hoSpin 7s linear infinite reverse; }
+    .ho-ai-mini-orb .core { width: 8px; height: 8px; border-radius: 50%; background: var(--ho-mint-200); box-shadow: 0 0 10px var(--ho-mint-400); }
+
+    .ho-ai-card-deep h3 { font-family: 'Fraunces', serif; font-size: 1.3rem; font-weight: 700; color: #ffffff; margin-bottom: 0.6rem; z-index: 2; }
+    .ho-ai-text {
+      font-size: 0.9rem;
+      line-height: 1.62;
+      color: rgba(233, 251, 246, 0.9);
+      font-weight: 500;
+      z-index: 2;
+      max-height: 175px;
+      overflow-y: auto;
+      padding-right: 0.35rem;
+    }
+    .ho-ai-card-foot {
+      margin-top: 1.15rem;
+      padding-top: 0.95rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.14);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.6rem;
+      z-index: 2;
+    }
+    .ho-ai-btn {
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      padding: 0.55rem 1rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .ho-ai-btn:hover { background: #ffffff; color: var(--ho-teal-950); }
+
+    /* ==================================================================
+       3. KEY FINDINGS & DEVIATIONS BENTO MATRIX (SPAN 8)
+    ================================================================== */
+    .ho-findings-panel { grid-column: span 8; }
+    .ho-matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      z-index: 2;
+    }
+    .ho-matrix-card {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--ho-glass-border-subtle);
+      border-radius: 18px;
+      padding: 1.15rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.75rem;
+      transition: 0.3s var(--ho-ease);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      text-align: left;
+      font-family: inherit;
+    }
+    .ho-matrix-card::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: var(--accent, var(--ho-mint-400));
+    }
+    .ho-matrix-card:hover {
+      background: #ffffff;
+      border-color: var(--ho-teal-600);
+      box-shadow: 0 12px 28px rgba(13, 122, 110, 0.1);
+      transform: translateY(-3px);
+    }
+    .ho-matrix-card:active { transform: scale(0.98); }
+
+    .ho-mc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.6rem; }
+    .ho-mc-label { font-size: 0.92rem; font-weight: 800; color: var(--ho-teal-950); line-height: 1.3; word-break: break-word; }
+    .ho-mc-cat { font-size: 0.66rem; font-weight: 700; color: var(--ho-text-subtle); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-top: 2px; }
+
+    .ho-mc-val-row { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+    .ho-mc-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: var(--ho-teal-900);
+      letter-spacing: -0.8px;
+    }
+    .ho-mc-val small { font-size: 0.76rem; color: var(--ho-text-muted); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; margin-left: 3px; }
+    .ho-mc-ref { font-size: 0.72rem; font-weight: 700; color: var(--ho-text-muted); }
+
+    /* Animated Reference Range Spectrum Track */
+    .ho-spectrum-wrap { display: flex; flex-direction: column; gap: 0.3rem; }
+    .ho-spectrum-bar {
+      width: 100%;
+      height: 7px;
+      background: rgba(13, 122, 110, 0.1);
+      border-radius: 999px;
+      position: relative;
+      overflow: visible;
+    }
+    .ho-spectrum-safe {
+      position: absolute;
+      top: 0; bottom: 0;
+      background: rgba(66, 184, 157, 0.35);
+      border-radius: 999px;
+    }
+    .ho-spectrum-pin {
+      position: absolute;
+      top: 50%;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      transition: left 1.2s var(--ho-ease);
+    }
+
+    /* ==================================================================
+       4. REPORT VAULT ARCHIVE (SPAN 4)
+    ================================================================== */
+    .ho-vault-panel { grid-column: span 4; }
+    .ho-vault-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      max-height: 360px;
+      overflow-y: auto;
+      padding-right: 0.35rem;
+      z-index: 2;
+    }
+    .ho-vault-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.8rem;
+      padding: 0.9rem 1rem;
+      background: rgba(255, 255, 255, 0.74);
+      border: 1px solid var(--ho-glass-border-subtle);
+      border-radius: 16px;
+      text-decoration: none;
+      color: inherit;
+      transition: 0.25s var(--ho-ease);
+    }
+    .ho-vault-item:hover { background: #ffffff; border-color: var(--ho-teal-600); transform: translateX(4px); }
+    .ho-vault-item.active {
+      background: #ffffff;
+      border-color: var(--ho-teal-700);
+      box-shadow: inset 4px 0 0 var(--ho-teal-600), 0 6px 18px rgba(13, 122, 110, 0.08);
+    }
+    .ho-vi-left { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+    .ho-vi-icon {
+      width: 38px; height: 38px;
+      border-radius: 11px;
+      background: rgba(13, 122, 110, 0.08);
+      color: var(--ho-teal-700);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .ho-vi-icon svg { width: 18px; height: 18px; }
+    .ho-vi-info { min-width: 0; }
+    .ho-vi-info strong { display: block; font-size: 0.86rem; color: var(--ho-teal-950); font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ho-vi-info span { font-size: 0.7rem; color: var(--ho-text-muted); font-weight: 600; }
+    .ho-vi-count { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; font-weight: 800; color: var(--ho-teal-700); white-space: nowrap; }
+
+    /* ==================================================================
+       5. EXTRACTED MEASUREMENTS LEDGER (SPAN 8) + DOCTOR PREP (SPAN 4)
+    ================================================================== */
+    .ho-ledger-panel { grid-column: span 8; }
+    .ho-docprep-panel { grid-column: span 4; }
+
+    .ho-filter-strip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      z-index: 2;
+    }
+    .ho-search-box { position: relative; flex: 1; min-width: 200px; }
+    .ho-search-input {
+      width: 100%;
+      height: 42px;
+      padding: 0 1rem 0 2.35rem;
+      border: 1px solid var(--ho-glass-border-subtle);
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 0.86rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.85);
+      color: var(--ho-text-main);
+      outline: none;
+      transition: 0.2s;
+    }
+    .ho-search-input:focus { border-color: var(--ho-teal-600); background: #ffffff; box-shadow: 0 0 0 3px rgba(13, 122, 110, 0.1); }
+    .ho-search-icon { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--ho-text-subtle); }
+
+    .ho-filter-tabs { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .ho-ftab {
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--ho-glass-border-subtle);
+      padding: 0.42rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      font-family: inherit;
+      color: var(--ho-text-muted);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .ho-ftab:hover { background: #ffffff; color: var(--ho-teal-900); }
+    .ho-ftab.active { background: var(--ho-teal-900); color: #ffffff; border-color: var(--ho-teal-900); box-shadow: 0 4px 12px rgba(11, 94, 85, 0.2); }
+
+    .ho-table-responsive-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      max-height: 430px;
+      overflow-y: auto;
+      border-radius: 16px;
+      border: 1px solid var(--ho-glass-border-subtle);
+      background: rgba(255, 255, 255, 0.76);
+      z-index: 2;
+    }
+    .ho-ledger-table { width: 100%; border-collapse: collapse; min-width: 620px; table-layout: fixed; }
+    .ho-ledger-table th {
+      text-align: left;
+      padding: 0.85rem 1.05rem;
+      font-size: 0.7rem;
+      color: var(--ho-text-muted);
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      border-bottom: 1.5px solid var(--ho-glass-border-subtle);
+      position: sticky;
+      top: 0;
+      background: #f8fcfb;
+      z-index: 2;
+    }
+    .ho-ledger-table td {
+      padding: 0.85rem 1.05rem;
+      border-bottom: 1px solid rgba(13, 122, 110, 0.07);
+      font-size: 0.86rem;
+      color: var(--ho-teal-950);
+      font-weight: 600;
+      vertical-align: middle;
+      word-break: break-word;
+    }
+    .ho-param-row { cursor: pointer; transition: background 0.18s; }
+    .ho-param-row:hover td { background: #ffffff; }
+    .ho-ledger-table th:nth-child(1), .ho-ledger-table td:nth-child(1) { width: 34%; }
+    .ho-ledger-table th:nth-child(2), .ho-ledger-table td:nth-child(2) { width: 22%; }
+    .ho-ledger-table th:nth-child(3), .ho-ledger-table td:nth-child(3) { width: 26%; }
+    .ho-ledger-table th:nth-child(4), .ho-ledger-table td:nth-child(4) { width: 18%; text-align: right; }
+
+    /* Mobile Fallback Metric Cards */
+    .ho-mobile-metric-cards { display: none; flex-direction: column; gap: 0.7rem; max-height: 440px; overflow-y: auto; z-index: 2; }
+    .ho-m-metric-card {
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid var(--ho-glass-border-subtle);
+      border-radius: 16px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+
+    /* Status Pills */
+    .ho-pill-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+    .ho-pill-status.good { background: var(--ho-mint-soft); color: var(--ho-teal-900); border: 1px solid rgba(16, 148, 133, 0.25); }
+    .ho-pill-status.warn { background: var(--ho-coral-soft); color: #c0392b; border: 1px solid rgba(224, 122, 104, 0.35); }
+    .ho-pill-status.neutral { background: rgba(94, 115, 111, 0.1); color: var(--ho-text-muted); border: 1px solid rgba(94, 115, 111, 0.2); }
+
+    /* Doctor Consultation Prep Cards */
+    .ho-doctor-prep-list { display: flex; flex-direction: column; gap: 0.75rem; z-index: 2; }
+    .ho-dq-card {
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid var(--ho-glass-border-subtle);
+      border-radius: 16px;
+      padding: 1rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      transition: 0.25s var(--ho-ease);
+    }
+    .ho-dq-card:hover { background: #ffffff; border-color: var(--ho-teal-600); transform: translateX(3px); }
+    .ho-dq-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--ho-teal-600), var(--ho-teal-900));
+      color: #ffffff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .ho-dq-text { font-size: 0.85rem; color: var(--ho-teal-950); font-weight: 600; line-height: 1.48; flex: 1; }
+    .ho-dq-copy-btn {
+      background: rgba(13, 122, 110, 0.06);
+      border: none;
+      color: var(--ho-teal-700);
+      cursor: pointer;
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      transition: 0.2s;
+      flex-shrink: 0;
+    }
+    .ho-dq-copy-btn:hover { background: var(--ho-teal-900); color: #ffffff; }
+
+    /* ==================================================================
+       6. LONGITUDINAL TRAJECTORY MODELING STUDIO (SPAN 12)
+    ================================================================== */
+    .ho-trajectory-panel { grid-column: span 12; }
+    .ho-trajectory-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      z-index: 2;
+    }
+    .ho-traj-card {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid var(--ho-glass-border-subtle);
+      border-radius: 18px;
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.85rem;
+      transition: 0.3s var(--ho-ease);
+    }
+    .ho-traj-card:hover { background: #ffffff; border-color: var(--ho-teal-600); transform: translateY(-3px); box-shadow: 0 12px 26px rgba(13, 122, 110, 0.09); }
+    .ho-tc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.6rem; }
+    .ho-tc-head strong { font-family: 'Fraunces', serif; font-size: 1.05rem; color: var(--ho-teal-950); }
+    .ho-rail-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.6rem;
+      background: var(--ho-bg-airy);
+      padding: 0.75rem 0.95rem;
+      border-radius: 13px;
+      border: 1px solid rgba(13, 122, 110, 0.08);
+    }
+    .ho-rail-point { display: flex; flex-direction: column; }
+    .ho-rail-point.right { text-align: right; }
+    .ho-rail-lbl { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; color: var(--ho-text-subtle); letter-spacing: 0.05em; }
+    .ho-rail-val { font-family: 'JetBrains Mono', monospace; font-size: 1.08rem; font-weight: 800; color: var(--ho-teal-950); }
+    .ho-rail-date { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; color: var(--ho-text-muted); font-weight: 600; }
+    .ho-delta-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: var(--ho-teal-900);
+      background: #ffffff;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(13, 122, 110, 0.15);
+    }
+
+    /* ==================================================================
+       7. INTERACTIVE PARAMETER DEEP-DIVE POP-UP MODAL
+    ================================================================== */
+    .ho-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 48, 43, 0.48);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3500;
+      padding: 1.25rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .ho-modal-overlay.active { opacity: 1; visibility: visible; }
+    .ho-modal-panel {
+      width: 100%;
+      max-width: 520px;
+      max-height: 92vh;
+      max-height: 92dvh;
+      overflow-y: auto;
+      background: #ffffff;
+      border-radius: var(--ho-radius-xl);
+      padding: 2rem;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+      transform: translateY(36px) scale(0.95);
+      transition: transform 0.42s var(--ho-ease);
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      position: relative;
+    }
+    .ho-modal-overlay.active .ho-modal-panel { transform: none; }
+    .ho-modal-handle { display: none; width: 44px; height: 4px; border-radius: 999px; background: #d5e4e1; margin: -0.5rem auto -0.3rem; flex-shrink: 0; }
+    .ho-modal-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+    .ho-modal-title { font-size: 1.35rem; font-family: 'Fraunces', serif; font-weight: 800; color: var(--ho-teal-900); line-height: 1.2; margin-top: 0.35rem; }
+    .ho-modal-close {
+      background: rgba(13, 122, 110, 0.08);
+      border: none;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      font-size: 1.05rem;
+      color: var(--ho-teal-900);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: 0.2s;
+      flex-shrink: 0;
+    }
+    .ho-modal-close:hover { background: var(--ho-coral-soft); color: #c0392b; transform: rotate(90deg); }
+
+    .ho-modal-value-large {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--ho-teal-950);
+      display: flex;
+      align-items: baseline;
+      gap: 0.45rem;
+      line-height: 1;
+      letter-spacing: -1.5px;
+      flex-wrap: wrap;
+    }
+    .ho-modal-value-large small { font-size: 1rem; font-weight: 600; color: var(--ho-text-muted); font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0; }
+
+    .ho-detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem 1rem;
+      background: var(--ho-bg-airy);
+      border-radius: 12px;
+      gap: 1rem;
+    }
+    .ho-dr-label { font-size: 0.82rem; font-weight: 700; color: var(--ho-text-muted); }
+    .ho-dr-val { font-family: 'JetBrains Mono', monospace; font-size: 0.88rem; font-weight: 800; color: var(--ho-teal-900); text-align: right; }
+
+    .ho-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      transform: translate(-50%, 30px);
+      background: var(--ho-teal-950);
+      color: #ffffff;
+      padding: 0.8rem 1.35rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 4000;
+      transition: 0.4s var(--ho-ease);
+    }
+    .ho-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    /* ==================================================================
+       RESPONSIVE DESIGN (DESKTOP, TABLET, MOBILE)
+    ================================================================== */
+    @media (max-width: 1360px) {
+      .ho-trajectory-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 1180px) {
+      .ho-hero { flex-direction: column; align-items: flex-start; }
+      .ho-ring-wrap { align-self: center; }
+    }
     @media (max-width: 1024px) {
-      .ho-app-layout { flex-direction: column !important; }
-      .ho-main-content { height: auto !important; margin-top: 5.5rem; padding: 0 !important; }
-      .ho-mosaic-grid { display: flex !important; flex-direction: column !important; padding: 1rem 1.2rem 2.5rem !important; gap: 1.2rem !important; }
-      .ho-panel { width: 100% !important; padding: 1.4rem !important; }
-      .ho-topbar { flex-direction: column; align-items: flex-start; padding: 1.4rem 1.2rem 0.8rem; gap: 1rem; }
-      .ho-sum-layout { flex-direction: column; align-items: flex-start; }
-      .ho-strip-info { flex-direction: column; align-items: flex-start; }
+      .ho-mosaic-grid { grid-template-columns: repeat(6, 1fr); padding: 0.5rem 1.6rem 3rem; }
+      .ho-hero, .ho-ai-card-deep, .ho-findings-panel, .ho-vault-panel, .ho-ledger-panel, .ho-docprep-panel, .ho-trajectory-panel { grid-column: span 6; }
+      .ho-topbar { padding: 1.5rem 1.6rem 1rem; }
+      body .ho-main-content { margin-top: 5.4rem; padding: 0 !important; height: calc(100vh - 5.4rem); height: calc(100dvh - 5.4rem); }
+      .ho-hero { flex-direction: row; align-items: center; }
+    }
+
+    @media (max-width: 768px) {
+      .ho-topbar { flex-direction: column; align-items: stretch; padding: 1rem 1.1rem 0.8rem; gap: 0.8rem; position: relative; mask-image: none; -webkit-mask-image: none; backdrop-filter: none; }
+      .ho-topbar-text h1 { font-size: 1.65rem; }
+      .ho-topbar-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+      .ho-btn-ghost { justify-content: center; padding: 0.8rem; font-size: 0.84rem; min-height: 46px; }
+
+      .ho-mosaic-grid { display: flex; flex-direction: column; padding: 0.4rem 1rem calc(env(safe-area-inset-bottom, 0px) + 1.5rem); gap: 1rem; }
+      .ho-panel { padding: 1.25rem; border-radius: 24px; }
+
+      /* Mobile Dark Vitals Hero */
+      .ho-hero {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1.4rem 1.2rem;
+        gap: 1.2rem;
+        color: #ffffff;
+        background:
+          radial-gradient(120% 80% at 100% 0%, rgba(66, 184, 157, 0.38), transparent 60%),
+          radial-gradient(90% 70% at 0% 100%, rgba(224, 122, 104, 0.25), transparent 60%),
+          linear-gradient(160deg, #0b5e55, #06302b);
+      }
+      .ho-hero-eyebrow { color: var(--ho-mint-200); }
+      .ho-hero-text h2 { font-size: 1.55rem; color: #ffffff; }
+      .ho-hero-text h2 em { background: linear-gradient(100deg, #9be8d3, #ffd2c8); -webkit-background-clip: text; background-clip: text; }
+      .ho-hero-text > p { color: rgba(226, 245, 240, 0.82); font-size: 0.84rem; }
+      .ho-scan-strip { max-width: 100%; background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.14); }
+      .ho-scan-strip .live { stroke: #9be8d3; }
+      .ho-scan-badge { background: rgba(6, 48, 43, 0.78); color: #9be8d3; }
+
+      .ho-hc-metrics { flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -1.2rem; padding: 0 1.2rem 0.3rem; scrollbar-width: none; gap: 0.65rem; }
+      .ho-hc-metrics::-webkit-scrollbar { display: none; }
+      .ho-hc-stat { flex: 0 0 auto; scroll-snap-align: start; background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.18); min-width: 128px; }
+      .ho-hc-stat span.lbl { color: rgba(226, 245, 240, 0.75); }
+      .ho-hc-stat strong { color: #ffffff !important; }
+      .ho-hc-stat strong small { color: rgba(226, 245, 240, 0.75); }
+
+      .ho-ring-wrap { flex-direction: row; align-items: center; justify-content: space-between; gap: 1rem; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 20px; padding: 0.9rem 1rem; }
+      .ho-ring-container { width: 124px; height: 124px; }
+      .ho-ring-bg { stroke: rgba(255, 255, 255, 0.14); }
+      .ho-ring-center strong { color: #ffffff; font-size: 1.3rem; }
+      .ho-ring-center span { color: rgba(226, 245, 240, 0.75); }
+      .ho-ring-legend { flex-direction: column; align-items: flex-start; gap: 0.45rem; }
+      .ho-ring-legend span { color: #e9fbf6; }
+
+      .ho-matrix-grid, .ho-trajectory-grid { grid-template-columns: 1fr; }
+      .ho-search-input { font-size: 16px; height: 44px; }
+      .ho-table-responsive-wrapper { display: none; }
+      .ho-mobile-metric-cards { display: flex; }
+
+      /* Mobile Bottom Sheet Modal */
+      .ho-modal-overlay { align-items: flex-end; padding: 0; }
+      .ho-modal-panel { max-width: 100%; border-radius: 28px 28px 0 0; padding: 1.4rem 1.25rem calc(env(safe-area-inset-bottom, 0px) + 1.5rem); transform: translateY(100%); max-height: 90dvh; }
+      .ho-modal-handle { display: block; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
     }
   </style>
 </head>
 <body>
 
-<div class="ho-ambient-canvas">
+<div class="ho-scroll-progress" id="scrollProgress"></div>
+
+<!-- Ambient Glow Orbs -->
+<div class="ho-ambient-canvas" aria-hidden="true">
   <div class="ho-glow-orb ho-orb-1"></div>
   <div class="ho-glow-orb ho-orb-2"></div>
+  <div class="ho-glow-orb ho-orb-3"></div>
 </div>
 
 <div class="ho-app-layout">
   <%- include('../partials/sidebar') %>
 
-  <main class="ho-main-content">
+  <main class="ho-main-content ho-custom-scroll" id="mainScroll">
+
+    <!-- ===== TOPBAR ===== -->
     <header class="ho-topbar">
       <div class="ho-topbar-text">
-        <h1><div class="ho-ai-core-mini"></div> <b style="color: var(--ho-coral);">AI</b> Medical Analyst</h1>
-        <p>Translating complex medical reports into simple, understandable health information.</p>
+        <div class="ho-eyebrow-pill">
+          <span class="ho-pulse-dot"></span>
+          Informational Analysis &bull; Decision Support Studio
+        </div>
+        <h1>AI Medical <b>Analyst Studio</b></h1>
       </div>
+
       <div class="ho-topbar-actions">
-        <% if (analysisView && analysisView.selectedReport) { %>
-          <a href="/ocr?reportId=<%= analysisView.selectedReport.id %>" class="ho-btn-ghost">View Original Report</a>
+        <% if (selRep && selRep.id) { %>
+          <a href="/ocr?reportId=<%= selRep.id %>" class="ho-btn-ghost" title="Inspect source medical record">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Original Report
+          </a>
         <% } %>
-        <a href="/ocr" class="ho-btn-primary">+ Upload Report</a>
+        <a href="/ocr" class="ho-btn-ghost">+ Upload Report</a>
+        <button type="button" class="ho-btn-ghost ho-btn-solid" id="topAskAiBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+          Ask HealthOrbit AI
+        </button>
       </div>
     </header>
 
     <div class="ho-mosaic-grid">
 
-      <!-- SECTION 1: CLINICAL REPORT BREAKDOWN -->
-      <section class="ho-panel ho-summary-banner">
-        <div class="ho-sum-layout">
-          <div class="ho-sum-text">
-            <span class="ho-report-meta-tag">Clinical Report Breakdown</span>
-            <h2>What does my medical report mean?</h2>
+      <% if (!selRep) { %>
+        <!-- EMPTY WORKSPACE -->
+        <section class="ho-panel" style="grid-column: span 12; text-align: center; align-items: center; padding: 3.5rem 1.5rem;">
+          <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(13,122,110,0.1); color: var(--ho-teal-700); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          </div>
+          <h2 style="font-family:'Fraunces',serif; font-size:1.75rem; color:var(--ho-teal-900); margin-bottom:0.4rem;">No Medical Report Selected</h2>
+          <p style="font-size:0.94rem; color:var(--ho-text-muted); max-width:48ch; line-height:1.6; margin-bottom:1.5rem;">
+            Upload a clinical laboratory panel or select a record from your vault to launch biostatistical evaluation, range spectrum mapping, and longitudinal trajectory modeling.
+          </p>
+          <a href="/ocr" class="ho-btn-ghost ho-btn-solid">+ Upload Medical Report</a>
+        </section>
+
+      <% } else { %>
+
+        <!-- ===== 1. STUDIO HERO (SPAN 8) ===== -->
+        <section class="ho-panel ho-hero">
+          <div class="ho-hero-text">
+            <div class="ho-hero-eyebrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span><%= selRep.status || 'Processed' %></span>
+              <span>&bull;</span>
+              <span>Observed: <%= selRep.reportDate ? new Date(selRep.reportDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Clinical Date' %></span>
+            </div>
+
+            <h2><%= selRep.title || selRep.fileName || 'Clinical Examination' %> <em>Decoded.</em></h2>
+
             <p>
-              <% if (analysisView && analysisView.synthesisSummary) { %>
-                <%= analysisView.synthesisSummary %>
-              <% } else { %>
-                Upload or select a processed medical report to inspect structured health measurements and longitudinal comparisons.
-              <% } %>
+              <%= (aView && aView.synthesisSummary) ? aView.synthesisSummary : ('Structured extraction completed for ' + (selRep.fileName || 'your medical report') + '.') %>
             </p>
-          </div>
-          <div class="ho-badge" style="background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.3);">
-            Status: <%= (analysisView && analysisView.selectedReport) ? analysisView.selectedReport.status : 'Standby' %>
-          </div>
-        </div>
-      </section>
 
-      <!-- SECTION 2: REPORT IDENTITY STRIP -->
-      <% if (analysisView && analysisView.selectedReport) { %>
-        <div class="ho-report-strip">
-          <div class="ho-strip-info">
-            <span class="ho-strip-title"><%= analysisView.selectedReport.title %></span>
-            <span class="ho-strip-pill"><%= analysisView.selectedReport.fileName %></span>
-            <span class="ho-strip-pill"><%= new Date(analysisView.selectedReport.uploadedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
-            <span class="ho-strip-pill"><%= analysisView.selectedReport.parameterCount %> Parameters Extracted</span>
+            <!-- Live Biometric Scan Strip -->
+            <div class="ho-scan-strip" aria-hidden="true">
+              <svg viewBox="0 0 300 42" preserveAspectRatio="none">
+                <path class="base" d="M0 21 H45 L52 21 L58 7 L66 35 L74 21 H125 L132 21 L138 10 L146 32 L154 21 H205 L212 21 L218 8 L226 34 L234 21 H300"/>
+                <path class="live" pathLength="300" d="M0 21 H45 L52 21 L58 7 L66 35 L74 21 H125 L132 21 L138 10 L146 32 L154 21 H205 L212 21 L218 8 L226 34 L234 21 H300"/>
+              </svg>
+              <div class="ho-scan-badge"><%= selRep.fileName || 'Verified Record' %></div>
+            </div>
+
+            <!-- 4 Interactive KPI Stat Tiles -->
+            <div class="ho-hc-metrics">
+              <button type="button" class="ho-hc-stat" onclick="jumpToLedger('all')">
+                <span class="lbl">Extracted</span>
+                <strong><span class="js-count"><%= totalParamsCount %></span><small>metrics</small></strong>
+              </button>
+              <button type="button" class="ho-hc-stat" onclick="jumpToLedger('warn')">
+                <span class="lbl">Outside Range</span>
+                <strong style="color: var(--ho-coral);"><span class="js-count"><%= outsideRangeCount %></span><small>flagged</small></strong>
+              </button>
+              <button type="button" class="ho-hc-stat" onclick="jumpToLedger('good')">
+                <span class="lbl">Within Range</span>
+                <strong style="color: var(--ho-teal-600);"><span class="js-count"><%= withinRangeCount %></span><small>normal</small></strong>
+              </button>
+              <button type="button" class="ho-hc-stat" onclick="document.getElementById('trajectorySection').scrollIntoView({behavior:'smooth'})">
+                <span class="lbl">Prior Matches</span>
+                <strong style="color: var(--ho-blue);"><span class="js-count"><%= comparedCount %></span><small>linked</small></strong>
+              </button>
+            </div>
           </div>
+
+          <!-- Animated Multi-Ring Parameter Distribution Gauge -->
+          <div class="ho-ring-wrap">
+            <div class="ho-ring-container">
+              <svg class="ho-svg-rings" viewBox="0 0 160 160" aria-label="Parameter evaluation breakdown gauge">
+                <circle class="ho-ring-orbit" cx="80" cy="80" r="75"></circle>
+                <circle class="ho-ring-bg" cx="80" cy="80" r="64"></circle>
+                <circle class="ho-ring-bg" cx="80" cy="80" r="48"></circle>
+                <circle class="ho-ring-bg" cx="80" cy="80" r="32"></circle>
+                <circle class="ho-ring-fill" id="ringWithin" cx="80" cy="80" r="64" stroke="var(--ho-mint-400)" stroke-dasharray="402.1" stroke-dashoffset="402.1"></circle>
+                <circle class="ho-ring-fill" id="ringOutside" cx="80" cy="80" r="48" stroke="var(--ho-coral)" stroke-dasharray="301.6" stroke-dashoffset="301.6"></circle>
+                <circle class="ho-ring-fill" id="ringCompared" cx="80" cy="80" r="32" stroke="var(--ho-blue)" stroke-dasharray="201.1" stroke-dashoffset="201.1"></circle>
+              </svg>
+              <div class="ho-ring-center">
+                <strong id="ringCenterCount"><%= totalParamsCount %></strong>
+                <span>Parameters</span>
+              </div>
+            </div>
+            <div class="ho-ring-legend">
+              <span><i style="background: var(--ho-mint-400)"></i>Normal <b><%= withinRangeCount %></b></span>
+              <span><i style="background: var(--ho-coral)"></i>Flagged <b><%= outsideRangeCount %></b></span>
+              <span><i style="background: var(--ho-blue)"></i>Tracked <b><%= comparedCount %></b></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== 2. AI CLINICAL ANALYST CARD (SPAN 4) ===== -->
+        <section class="ho-panel ho-ai-card-deep">
           <div>
-            <a href="/ocr?reportId=<%= analysisView.selectedReport.id %>" class="ho-btn-ghost" style="padding: 0.45rem 1rem; font-size: 0.78rem;">
-              Inspect Raw Text & Verification
-            </a>
+            <div class="ho-ai-top-bar">
+              <div class="ho-ai-orb-badge">
+                <div class="ho-ai-mini-orb" aria-hidden="true">
+                  <span class="r1"></span><span class="r2"></span><span class="core"></span>
+                </div>
+                <span style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.07em; color:var(--ho-mint-200);">AI Clinical Analyst</span>
+              </div>
+              <button type="button" class="ho-ai-btn" onclick="copyExplanationText()">Copy</button>
+            </div>
+
+            <h3>Plain-Language Assessment</h3>
+            <div class="ho-ai-text ho-custom-scroll" id="plainEnglishText">
+              <%= (aView && aView.plainEnglishExplanation) ? aView.plainEnglishExplanation : 'Document explanations will appear once an OCR report is processed by the intelligence engine.' %>
+            </div>
           </div>
-        </div>
-      <% } %>
 
-      <!-- SECTION 3: EXTRACTED DATA TABLE -->
-      <section class="ho-panel ho-table-panel">
-        <div class="ho-panel-head">
-          <h3><span>📊</span> Extracted Clinical Measurements</h3>
-          <span class="ho-badge"><%= (analysisView && analysisView.extractedParameters) ? analysisView.extractedParameters.length : 0 %> Identified</span>
-        </div>
+          <div class="ho-ai-card-foot">
+            <span style="font-size:0.7rem; color:rgba(255,255,255,0.65); font-weight:600;">Verified lab extraction &bull; Non-diagnostic</span>
+            <button type="button" class="ho-ai-btn" id="cardAskAiBtn">
+              Ask AI &rarr;
+            </button>
+          </div>
+        </section>
 
-        <% if (analysisView && analysisView.extractedParameters && analysisView.extractedParameters.length > 0) { %>
-          <div class="ho-table-wrapper">
-            <table class="ho-ref-table">
-              <thead>
-                <tr>
-                  <th>Test Parameter</th>
-                  <th>Observed Result</th>
-                  <th>Unit</th>
-                  <th>Printed Reference Range</th>
-                  <th>Evaluation</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% analysisView.extractedParameters.forEach(row => { %>
+        <!-- ===== 3. PRIORITY FINDINGS & DEVIATIONS MATRIX (SPAN 8) ===== -->
+        <section class="ho-panel ho-findings-panel">
+          <div class="ho-panel-head">
+            <h3>
+              <span class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
+              Key Findings &amp; Range Spectrum
+            </h3>
+            <span class="ho-tag <%= outsideRangeCount > 0 ? 'warn' : 'good' %>">
+              <%= outsideRangeCount %> Outside Stated Range &bull; Tap a card
+            </span>
+          </div>
+
+          <% if (findings.length > 0) { %>
+            <div class="ho-matrix-grid">
+              <% findings.forEach((f, idx) => {
+                   const mIdx = enrichedParams.findIndex(ep => ep.name === f.name && ep.value === String(f.value));
+                   const pIndex = mIdx > -1 ? mIdx : 0;
+                   const epObj = enrichedParams[pIndex] || null;
+                   const b = epObj ? epObj.bounds : null;
+                   const isWarn = f.statusClass === 'warn';
+              %>
+                <button
+                  type="button"
+                  class="ho-matrix-card"
+                  style="--accent: <%= isWarn ? 'var(--ho-coral)' : 'var(--ho-mint-400)' %>;"
+                  onclick="openParamModal(<%= pIndex %>)">
+
+                  <div class="ho-mc-top">
+                    <div>
+                      <span class="ho-mc-label"><%= f.name %></span>
+                      <span class="ho-mc-cat"><%= f.category || 'Clinical Panel' %></span>
+                    </div>
+                    <span class="ho-pill-status <%= f.statusClass || 'neutral' %>">
+                      <%= f.status || 'Observed' %>
+                    </span>
+                  </div>
+
+                  <div class="ho-mc-val-row">
+                    <div class="ho-mc-val">
+                      <% if (epObj && epObj.numericValue !== null) { %>
+                        <span class="js-count" data-decimals="<%= String(f.value).includes('.') ? 1 : 0 %>"><%= f.value %></span>
+                      <% } else { %>
+                        <span><%= f.value %></span>
+                      <% } %>
+                      <% if (f.unit) { %><small><%= f.unit %></small><% } %>
+                    </div>
+                    <span class="ho-mc-ref">Ref: <%= f.referenceRange || 'N/A' %></span>
+                  </div>
+
+                  <% if (b && b.hasBounds) { %>
+                    <div class="ho-spectrum-wrap" aria-hidden="true">
+                      <div class="ho-spectrum-bar">
+                        <div class="ho-spectrum-safe" style="left:<%= b.zoneLeftPct %>%; width:<%= b.zoneWidthPct %>%;"></div>
+                        <div class="ho-spectrum-pin" style="left:<%= b.markerPct %>%; background:<%= isWarn ? 'var(--ho-coral)' : 'var(--ho-teal-700)' %>;"></div>
+                      </div>
+                    </div>
+                  <% } %>
+                </button>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div style="text-align:center; padding:2rem 1rem; color:var(--ho-text-muted); font-size:0.9rem; font-weight:600;">
+              All laboratory measurements with printed biological reference ranges are within expected limits.
+            </div>
+          <% } %>
+        </section>
+
+        <!-- ===== 4. REPORT VAULT ARCHIVE (SPAN 4) ===== -->
+        <section class="ho-panel ho-vault-panel">
+          <div class="ho-panel-head">
+            <h3>
+              <span class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><polyline points="14 2 14 8 20 8"/></svg></span>
+              Report Vault
+            </h3>
+            <span class="ho-tag"><%= reportsList.length %> Stored</span>
+          </div>
+
+          <div class="ho-vault-list ho-custom-scroll">
+            <% if (reportsList.length > 0) { %>
+              <% reportsList.forEach(rep => {
+                   const isCur = selRep && selRep.id === rep._id.toString();
+              %>
+                <a href="/ai-analysis?reportId=<%= rep._id %>" class="ho-vault-item <%= isCur ? 'active' : '' %>">
+                  <div class="ho-vi-left">
+                    <div class="ho-vi-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                    <div class="ho-vi-info">
+                      <strong><%= rep.originalFileName %></strong>
+                      <span><%= new Date(rep.createdAt).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) %></span>
+                    </div>
+                  </div>
+                  <span class="ho-vi-count">
+                    <%= (rep.extractedData && rep.extractedData.parameters) ? rep.extractedData.parameters.length : 0 %> pts
+                  </span>
+                </a>
+              <% }) %>
+            <% } else { %>
+              <p style="font-size:0.85rem; color:var(--ho-text-muted); text-align:center; padding:1.5rem 0;">No reports archived yet.</p>
+            <% } %>
+          </div>
+        </section>
+
+        <!-- ===== 5. EXTRACTED MEASUREMENTS LEDGER (SPAN 8) ===== -->
+        <section class="ho-panel ho-ledger-panel" id="ledgerSection">
+          <div class="ho-panel-head">
+            <h3>
+              <span class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
+              Extracted Measurements Ledger
+            </h3>
+            <span class="ho-tag"><%= allParams.length %> Verified Parameters</span>
+          </div>
+
+          <div class="ho-filter-strip">
+            <div class="ho-search-box">
+              <svg class="ho-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="paramSearchInput" class="ho-search-input" placeholder="Filter parameters by name or category..." aria-label="Filter parameters">
+            </div>
+            <div class="ho-filter-tabs" role="tablist">
+              <button type="button" class="ho-ftab active" data-filter="all">All (<%= allParams.length %>)</button>
+              <button type="button" class="ho-ftab" data-filter="warn">Outside Range (<%= outsideRangeCount %>)</button>
+              <button type="button" class="ho-ftab" data-filter="good">Within Range (<%= withinRangeCount %>)</button>
+              <button type="button" class="ho-ftab" data-filter="neutral">Text / Other (<%= neutralRangeCount %>)</button>
+            </div>
+          </div>
+
+          <% if (enrichedParams.length > 0) { %>
+            <div class="ho-table-responsive-wrapper ho-custom-scroll">
+              <table class="ho-ledger-table" id="paramsTable" aria-label="Extracted Medical Parameters">
+                <thead>
                   <tr>
-                    <% const cleanName = row.name && row.name.length > 60 ? row.name.substring(0, 60) + '...' : row.name; %>
-                    <td title="<%= row.name %>"><strong><%= cleanName %></strong></td>
-                    <% const cleanVal = row.value && row.value.length > 30 ? row.value.substring(0, 30) + '...' : row.value; %>
-                    <td class="mono-val" title="<%= row.value %>"><%= cleanVal %></td>
-                    <td><%= row.unit || '—' %></td>
-                    <td title="<%= row.referenceRange %>"><%= row.referenceRange && row.referenceRange.length > 40 ? row.referenceRange.substring(0, 40) + '...' : row.referenceRange %></td>
-                    <td><span class="ho-pill <%= row.statusClass %>"><%= row.status %></span></td>
+                    <th scope="col">Test Parameter</th>
+                    <th scope="col">Observed Result</th>
+                    <th scope="col">Printed Reference Range</th>
+                    <th scope="col">Evaluation</th>
                   </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          </div>
-        <% } else { %>
-          <div class="ho-empty-box">
-            <p>No extracted parameters available for the active report.</p>
-          </div>
-        <% } %>
-      </section>
+                </thead>
+                <tbody>
+                  <% enrichedParams.forEach((param) => { %>
+                    <tr
+                      class="ho-param-row"
+                      data-name="<%= (param.name + ' ' + param.category).toLowerCase() %>"
+                      data-status="<%= param.statusClass %>"
+                      onclick="openParamModal(<%= param.idx %>)">
+                      <td>
+                        <strong><%= param.name %></strong>
+                        <span style="font-size:0.7rem; color:var(--ho-text-subtle); display:block; margin-top:2px;"><%= param.category %></span>
+                      </td>
+                      <td>
+                        <span style="font-family:'JetBrains Mono',monospace; font-weight:800; font-size:0.95rem;"><%= param.value %></span>
+                        <span style="font-size:0.75rem; color:var(--ho-text-muted);"><%= param.unit %></span>
+                      </td>
+                      <td>
+                        <span style="font-size:0.8rem; color:var(--ho-text-muted);"><%= param.referenceRange %></span>
+                        <% if (param.bounds && param.bounds.hasBounds) { %>
+                          <div class="ho-spectrum-bar" style="margin-top:5px; max-width:140px;">
+                            <div class="ho-spectrum-safe" style="left:<%= param.bounds.zoneLeftPct %>%; width:<%= param.bounds.zoneWidthPct %>%;"></div>
+                            <div class="ho-spectrum-pin" style="left:<%= param.bounds.markerPct %>%; width:10px; height:10px; background:<%= param.statusClass === 'warn' ? 'var(--ho-coral)' : 'var(--ho-teal-700)' %>;"></div>
+                          </div>
+                        <% } %>
+                      </td>
+                      <td style="text-align: right;">
+                        <span class="ho-pill-status <%= param.statusClass %>"><%= param.status %></span>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
 
-      <!-- SECTION 4: IMPORTANT FINDINGS -->
-      <section class="ho-panel ho-findings-panel">
-        <div class="ho-panel-head">
-          <h3><span>🔍</span> Important Findings</h3>
-          <span class="ho-badge">Priority Review</span>
-        </div>
-
-        <div class="ho-finding-feed">
-          <% if (analysisView && analysisView.importantFindings && analysisView.importantFindings.length > 0) { %>
-            <% analysisView.importantFindings.forEach(finding => { %>
-              <div class="ho-finding-card">
-                <div class="ho-fc-left">
-                  <span class="ho-pill <%= finding.statusClass %>"><%= finding.status %></span>
-                  <div class="ho-fc-meta">
-                    <% const cleanFndName = finding.name && finding.name.length > 80 ? finding.name.substring(0, 80) + '...' : finding.name; %>
-                    <strong title="<%= finding.name %>"><%= cleanFndName %></strong>
-                    <% const cleanRef = finding.referenceRange && finding.referenceRange.length > 40 ? finding.referenceRange.substring(0, 40) + '...' : finding.referenceRange; %>
-                    <span title="<%= finding.referenceRange %>">Ref: <%= cleanRef %></span>
+            <!-- Mobile Responsive Cards -->
+            <div class="ho-mobile-metric-cards ho-custom-scroll" id="paramsMobileDeck">
+              <% enrichedParams.forEach((param) => { %>
+                <div
+                  class="ho-m-metric-card ho-param-card"
+                  data-name="<%= (param.name + ' ' + param.category).toLowerCase() %>"
+                  data-status="<%= param.statusClass %>"
+                  onclick="openParamModal(<%= param.idx %>)">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem;">
+                    <div>
+                      <strong style="color:var(--ho-teal-950); font-size:0.94rem;"><%= param.name %></strong>
+                      <span style="font-size:0.7rem; color:var(--ho-text-subtle); display:block;"><%= param.category %></span>
+                    </div>
+                    <span class="ho-pill-status <%= param.statusClass %>"><%= param.status %></span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:0.25rem;">
+                    <span style="font-size:0.75rem; color:var(--ho-text-muted);">Ref: <%= param.referenceRange %></span>
+                    <span style="font-family:'JetBrains Mono',monospace; font-weight:800; font-size:1.08rem; color:var(--ho-teal-950);">
+                      <%= param.value %> <small style="font-size:0.75rem;"><%= param.unit %></small>
+                    </span>
                   </div>
                 </div>
-                <div class="ho-fc-val" title="<%= finding.value %>">
-                  <% const cleanFndVal = finding.value && finding.value.length > 25 ? finding.value.substring(0, 25) + '...' : finding.value; %>
-                  <%= cleanFndVal %> <small><%= finding.unit %></small>
-                </div>
-              </div>
-            <% }) %>
+              <% }) %>
+            </div>
           <% } else { %>
-            <div class="ho-empty-box">
-              <p>No prioritized clinical findings identified.</p>
-            </div>
+            <p style="font-size:0.86rem; color:var(--ho-text-muted); text-align:center; padding:2rem 0;">No discrete parameters extracted from this document.</p>
           <% } %>
-        </div>
-      </section>
+        </section>
 
-      <!-- SECTION 5: PLAIN ENGLISH EXPLANATION -->
-      <section class="ho-panel ho-explanation-panel">
-        <div class="ho-panel-head">
-          <h3><span>💡</span> Plain English Explanation</h3>
-          <span class="ho-badge">Jargon Free</span>
-        </div>
-
-        <div class="ho-expl-box">
-          <h4>Understanding Your Results</h4>
-          <p>
-            <% if (analysisView && analysisView.plainEnglishExplanation) { %>
-              <%= analysisView.plainEnglishExplanation %>
-            <% } else { %>
-              HealthOrbit analyzes extracted values against the reference ranges printed in your clinical record. Select a report to read an understandable explanation of its contents.
+        <!-- ===== 6. DOCTOR CONSULTATION PREP (SPAN 4) ===== -->
+        <section class="ho-panel ho-docprep-panel">
+          <div class="ho-panel-head">
+            <h3>
+              <span class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+              Doctor Prep
+            </h3>
+            <% if (questions.length > 0) { %>
+              <button type="button" class="ho-ftab" onclick="copyAllQuestions()">Copy All</button>
             <% } %>
-          </p>
-        </div>
-      </section>
-
-      <!-- SECTION 6: CHANGE OVER TIME (LONGITUDINAL) -->
-      <section class="ho-panel ho-comparison-panel">
-        <div class="ho-panel-head">
-          <h3><span>📈</span> Longitudinal Comparison</h3>
-          <span class="ho-badge">Timeline Tracking</span>
-        </div>
-
-        <% if (analysisView && analysisView.longitudinalComparisons && analysisView.longitudinalComparisons.length > 0) { %>
-          <% analysisView.longitudinalComparisons.forEach(item => { %>
-            <div class="ho-comp-card">
-              <div class="ho-comp-header">
-                <strong title="<%= item.metric %>"><%= item.metric %></strong>
-                <span class="ho-comp-badge"><%= item.trajectoryNote || item.changeStr %></span>
-              </div>
-
-              <div class="ho-comp-metrics">
-                <div class="ho-cm-col">
-                  <span>Previous Reading (<%= new Date(item.previousDate).toLocaleDateString() %>)</span>
-                  <strong title="<%= item.previousValue %>"><%= item.previousValue %> <%= item.unit %></strong>
-                </div>
-                <div class="ho-arrow-icon">➔</div>
-                <div class="ho-cm-col" style="text-align: right;">
-                  <span>Current Reading</span>
-                  <strong title="<%= item.currentValue %>"><%= item.currentValue %> <%= item.unit %></strong>
-                </div>
-              </div>
-            </div>
-          <% }) %>
-        <% } else { %>
-          <div class="ho-empty-box">
-            <p>No previous comparable HealthOrbit measurement is available for this report's metrics.</p>
           </div>
-        <% } %>
-      </section>
 
-      <!-- SECTION 7: AI SYNTHESIS SUMMARY -->
-      <section class="ho-panel ho-ai-summary-panel">
-        <div class="ho-panel-head">
-          <h3><span>✨</span> AI Synthesis Summary</h3>
-          <span class="ho-badge">Factual Context</span>
-        </div>
-
-        <div class="ho-ai-text-box">
-          <p>
-            <% if (analysisView && analysisView.synthesisSummary) { %>
-              "<%= analysisView.synthesisSummary %>"
-            <% } else { %>
-              "Select a processed clinical document to view a verified synthesis comparing findings with your historical records."
-            <% } %>
+          <p style="font-size:0.8rem; color:var(--ho-text-muted); margin-bottom:0.9rem; font-weight:600; z-index:2;">
+            Safe, report-specific questions to bring to your next clinical appointment:
           </p>
-        </div>
-      </section>
 
-      <!-- SECTION 8: QUESTIONS TO ASK YOUR DOCTOR -->
-      <section class="ho-panel ho-doctor-panel">
-        <div class="ho-panel-head">
-          <h3><span>🗣️</span> Questions to Ask Your Doctor</h3>
-          <span class="ho-badge">Doctor Discussion Support</span>
-        </div>
-
-        <div class="ho-qa-feed">
-          <% if (analysisView && analysisView.doctorQuestions && analysisView.doctorQuestions.length > 0) { %>
-            <% analysisView.doctorQuestions.forEach((q, idx) => { %>
-              <div class="ho-qa-item">
-                <div class="ho-qa-num"><%= idx + 1 %></div>
-                <p><%= q %></p>
-              </div>
-            <% }) %>
-          <% } else { %>
-            <div class="ho-qa-item">
-              <div class="ho-qa-num">1</div>
-              <p>Are there any specific lifestyle or dietary habits relevant to interpreting these lab results?</p>
+          <% if (questions.length > 0) { %>
+            <div class="ho-doctor-prep-list">
+              <% questions.forEach((q, qIdx) => { %>
+                <div class="ho-dq-card">
+                  <div class="ho-dq-num"><%= qIdx + 1 %></div>
+                  <div class="ho-dq-text"><%= q %></div>
+                  <button type="button" class="ho-dq-copy-btn" title="Copy question" onclick="copyQuestion('<%= q.replace(/'/g, "\\'") %>', this)">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  </button>
+                </div>
+              <% }) %>
             </div>
+          <% } else { %>
+            <p style="font-size:0.84rem; color:var(--ho-text-muted);">No consultation questions generated for this report yet.</p>
           <% } %>
-        </div>
-      </section>
+        </section>
 
-      <!-- SECTION 9: RECENT REPORTS VAULT -->
-      <section class="ho-panel ho-vault-panel">
-        <div class="ho-panel-head">
-          <h3><span>📁</span> Medical Report Archive</h3>
-          <span class="ho-badge"><%= (analysisView && analysisView.recentReports) ? analysisView.recentReports.length : 0 %> Reports Available</span>
-        </div>
+        <!-- ===== 7. LONGITUDINAL TRAJECTORY MODELING (SPAN 12) ===== -->
+        <section class="ho-panel ho-trajectory-panel" id="trajectorySection">
+          <div class="ho-panel-head">
+            <h3>
+              <span class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+              Longitudinal Trajectory Modeling
+            </h3>
+            <span class="ho-tag blue"><%= comparedCount %> Historical Matches</span>
+          </div>
 
-        <% if (analysisView && analysisView.recentReports && analysisView.recentReports.length > 0) { %>
-          <div class="ho-vault-grid">
-            <% analysisView.recentReports.forEach(rep => { 
-              const isSelected = analysisView.selectedReport && analysisView.selectedReport.id === rep._id.toString();
-            %>
-              <div class="ho-vault-card <%= isSelected ? 'active' : '' %>">
-                <div>
-                  <div class="ho-vc-title" title="<%= rep.originalFileName %>"><%= rep.originalFileName %></div>
-                  <div style="font-size: 0.75rem; color: var(--ho-text-muted); margin-top: 0.2rem;">
-                    <%= new Date(rep.createdAt).toLocaleDateString() %> • <%= (rep.extractedData && rep.extractedData.parameters) ? rep.extractedData.parameters.length : 0 %> Parameters
+          <% if (comparisons.length > 0) { %>
+            <div class="ho-trajectory-grid">
+              <% comparisons.forEach(c => { %>
+                <div class="ho-traj-card">
+                  <div class="ho-tc-head">
+                    <div>
+                      <strong><%= c.metric %></strong>
+                      <% if (c.hasComparison && c.previousDate) { %>
+                        <span style="font-size:0.7rem; color:var(--ho-text-muted); display:block; margin-top:2px;">
+                          Compared with <%= new Date(c.previousDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                        </span>
+                      <% } %>
+                    </div>
+                    <span class="ho-tag good"><%= c.trajectoryNote || (c.hasComparison ? c.changeStr : 'Baseline') %></span>
                   </div>
-                </div>
-                <div style="display: flex; gap: 0.5rem; margin-top: 0.4rem;">
-                  <a href="/ai-analysis?reportId=<%= rep._id %>" class="ho-btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.78rem; flex: 1; justify-content: center;">
-                    <%= isSelected ? 'Active Focus' : 'Analyze' %>
-                  </a>
-                  <a href="/ocr?reportId=<%= rep._id %>" class="ho-btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.78rem;">
-                    Original
-                  </a>
-                </div>
-              </div>
-            <% }) %>
-          </div>
-        <% } else { %>
-          <div class="ho-empty-box">
-            <p>Your uploaded reports will be archived here.</p>
-          </div>
-        <% } %>
-      </section>
 
-      <!-- SECTION 10: SAFETY DISCLAIMER -->
-      <div class="ho-disclaimer-panel">
-        <p>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          HealthOrbit provides automated health-information summaries and decision support based on available user data. It does not provide medical diagnosis or replace professional medical advice.
-        </p>
-      </div>
+                  <% if (c.hasComparison) { %>
+                    <div class="ho-rail-display">
+                      <div class="ho-rail-point">
+                        <span class="ho-rail-lbl">Prior Record</span>
+                        <span class="ho-rail-val"><%= c.previousValue %> <small style="font-size:0.7rem;"><%= c.unit %></small></span>
+                        <span class="ho-rail-date"><%= new Date(c.previousDate).toLocaleDateString('en-GB', { day:'2-digit', month:'short' }) %></span>
+                      </div>
+                      <span class="ho-delta-tag"><%= c.changeStr %></span>
+                      <div class="ho-rail-point right">
+                        <span class="ho-rail-lbl">Active Report</span>
+                        <span class="ho-rail-val"><%= c.currentValue %> <small style="font-size:0.7rem;"><%= c.unit %></small></span>
+                        <span class="ho-rail-date"><%= selRep.reportDate ? new Date(selRep.reportDate).toLocaleDateString('en-GB', { day:'2-digit', month:'short' }) : 'Current' %></span>
+                      </div>
+                    </div>
+                  <% } else { %>
+                    <div style="font-size:0.8rem; color:var(--ho-text-muted); font-style:italic;">
+                      First recorded observation in your HealthOrbit vault—establishes your baseline.
+                    </div>
+                  <% } %>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <p style="font-size:0.88rem; color:var(--ho-text-muted); text-align:center; padding:1.5rem 0;">
+              Longitudinal comparisons will populate automatically as additional reports with matching laboratory parameters are uploaded over time.
+            </p>
+          <% } %>
+        </section>
+
+      <% } %>
 
     </div>
 
@@ -547,5 +1517,305 @@
   </main>
 </div>
 
+<!-- ==========================================================================
+     INTERACTIVE PARAMETER DEEP-DIVE POP-UP MODAL
+========================================================================== -->
+<div class="ho-modal-overlay" id="paramModal" onclick="closeParamModal(event)" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
+  <div class="ho-modal-panel ho-custom-scroll" id="paramModalPanel" onclick="event.stopPropagation()">
+    <div class="ho-modal-handle"></div>
+
+    <div class="ho-modal-header">
+      <div>
+        <span class="ho-pill-status good" id="pmBadge">Observed</span>
+        <h3 class="ho-modal-title" id="pmTitle">Parameter</h3>
+        <span style="font-size:0.78rem; color:var(--ho-text-muted); font-weight:600;" id="pmCategory">Clinical Panel</span>
+      </div>
+      <button type="button" class="ho-modal-close" onclick="closeParamModal()" aria-label="Close">✕</button>
+    </div>
+
+    <div>
+      <div class="ho-modal-value-large">
+        <span id="pmValue">--</span><small id="pmUnit"></small>
+      </div>
+    </div>
+
+    <!-- Animated Spectrum Meter inside Modal -->
+    <div id="pmSpectrumWrap" style="display:none; background:var(--ho-bg-airy); padding:1rem 1.1rem; border-radius:16px;">
+      <div style="display:flex; justify-content:space-between; font-size:0.72rem; font-weight:800; color:var(--ho-teal-900); margin-bottom:0.5rem;">
+        <span>Reference Range Position</span>
+        <span id="pmRefInline"></span>
+      </div>
+      <div class="ho-spectrum-bar" style="height:9px;">
+        <div class="ho-spectrum-safe" id="pmSafeZone"></div>
+        <div class="ho-spectrum-pin" id="pmPin" style="width:15px; height:15px;"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:0.68rem; color:var(--ho-text-subtle); margin-top:0.45rem;">
+        <span id="pmLowLbl"></span>
+        <span>Stated Normal Window</span>
+        <span id="pmHighLbl"></span>
+      </div>
+    </div>
+
+    <!-- Details List -->
+    <div style="display:flex; flex-direction:column; gap:0.6rem;">
+      <div class="ho-detail-row">
+        <span class="ho-dr-label">Printed Reference Range</span>
+        <span class="ho-dr-val" id="pmRefRow">--</span>
+      </div>
+      <div class="ho-detail-row" id="pmPriorRow" style="display:none;">
+        <span class="ho-dr-label">Prior Recorded Reading</span>
+        <span class="ho-dr-val" id="pmPriorVal">--</span>
+      </div>
+      <div class="ho-detail-row">
+        <span class="ho-dr-label">Source Document</span>
+        <span class="ho-dr-val"><%= selRep ? (selRep.fileName || selRep.title) : 'Medical Report' %></span>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem;">
+      <a href="/trends" id="pmTrendsBtn" class="ho-btn-ghost" style="justify-content:center;">Open Trends &rarr;</a>
+      <button type="button" id="pmAskAiBtn" class="ho-btn-ghost ho-btn-solid" style="justify-content:center;">Ask AI Assistant</button>
+    </div>
+  </div>
+</div>
+
+<div class="ho-toast" id="hoToast">Copied to clipboard</div>
+
+<script>
+  const enrichedParamsData = <%- JSON.stringify(enrichedParams || []).replace(/</g, '\\u003c') %>;
+  const allQuestionsData = <%- JSON.stringify(questions || []).replace(/</g, '\\u003c') %>;
+  const reportTitleData = <%- JSON.stringify(selRep ? (selRep.title || selRep.fileName) : 'Medical Report').replace(/</g, '\\u003c') %>;
+
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+
+  function toast(msg) {
+    const t = $('#hoToast');
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._h);
+    t._h = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  /* ---- 1. Count-Up Numbers & Multi-Ring Gauge Animation ---- */
+  function countUp(el) {
+    const raw = el.textContent.trim();
+    const target = parseFloat(raw.replace(/,/g, ''));
+    if (isNaN(target)) return;
+    const dec = parseInt(el.dataset.decimals || '0', 10);
+    const dur = 1200, start = performance.now();
+    function tick(now) {
+      const p = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - p, 4);
+      const v = target * e;
+      el.textContent = dec ? v.toFixed(dec) : Math.round(v).toLocaleString();
+      if (p < 1) requestAnimationFrame(tick); else el.textContent = raw;
+    }
+    requestAnimationFrame(tick);
+  }
+  $$('.js-count').forEach(countUp);
+
+  (function animateRings() {
+    const total = Math.max(1, <%= totalParamsCount || 1 %>);
+    const within = <%= withinRangeCount || 0 %>;
+    const outside = <%= outsideRangeCount || 0 %>;
+    const compared = <%= comparedCount || 0 %>;
+
+    const pWithin = Math.min(1, within / total);
+    const pOutside = Math.min(1, outside / total);
+    const pCompared = Math.min(1, compared / total);
+
+    setTimeout(() => {
+      const rW = $('#ringWithin'), rO = $('#ringOutside'), rC = $('#ringCompared');
+      if (rW) rW.style.strokeDashoffset = (402.1 * (1 - pWithin)).toFixed(1);
+      if (rO) rO.style.strokeDashoffset = (301.6 * (1 - pOutside)).toFixed(1);
+      if (rC) rC.style.strokeDashoffset = (201.1 * (1 - pCompared)).toFixed(1);
+    }, 300);
+  })();
+
+  /* ---- 2. Ledger Search, Filter Tabs & Hero Jump ---- */
+  let activeFilter = 'all';
+  let searchQuery = '';
+
+  function applyLedgerFilters() {
+    const evaluate = (name, status) => {
+      const okSearch = !searchQuery || name.includes(searchQuery);
+      const okTab = activeFilter === 'all' || status === activeFilter;
+      return okSearch && okTab;
+    };
+    $$('.ho-param-row').forEach(row => {
+      row.style.display = evaluate(row.dataset.name || '', row.dataset.status || 'neutral') ? '' : 'none';
+    });
+    $$('.ho-param-card').forEach(card => {
+      card.style.display = evaluate(card.dataset.name || '', card.dataset.status || 'neutral') ? 'flex' : 'none';
+    });
+  }
+
+  window.jumpToLedger = function (filterKey) {
+    const sec = $('#ledgerSection');
+    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const tab = $(`.ho-ftab[data-filter="${filterKey}"]`);
+    if (tab) tab.click();
+  };
+
+  const searchInput = $('#paramSearchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', e => {
+      searchQuery = e.target.value.trim().toLowerCase();
+      applyLedgerFilters();
+    });
+  }
+
+  $$('.ho-ftab[data-filter]').forEach(tab => { tab.addEventListener('click', () => { $$
+('.ho-ftab[data-filter]').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeFilter = tab.dataset.filter || 'all';
+      applyLedgerFilters();
+    });
+  });
+
+  /* ---- 3. Interactive Parameter Deep-Dive Pop-Up Modal ---- */
+  const paramModal = $('#paramModal');
+  let selectedParam = null;
+
+  window.openParamModal = function (idx) {
+    const p = enrichedParamsData[idx];
+    if (!p || !paramModal) return;
+    selectedParam = p;
+
+    const badge = $('#pmBadge');
+    badge.className = 'ho-pill-status ' + (p.statusClass || 'neutral');
+    badge.textContent = p.status || 'Observed';
+
+    $('#pmTitle').textContent = p.name;
+    $('#pmCategory').textContent = p.category || 'Clinical Panel';
+    $('#pmValue').textContent = p.value;
+    $('#pmUnit').textContent = p.unit || '';
+    $('#pmRefRow').textContent = p.referenceRange || 'Not provided in report';
+
+    const specWrap = $('#pmSpectrumWrap');
+    if (p.bounds && p.bounds.hasBounds) {
+      specWrap.style.display = 'block';
+      $('#pmRefInline').textContent = p.referenceRange;
+      $('#pmSafeZone').style.left = p.bounds.zoneLeftPct + '%';
+      $('#pmSafeZone').style.width = p.bounds.zoneWidthPct + '%';
+      const pin = $('#pmPin');
+      pin.style.left = p.bounds.markerPct + '%';
+      pin.style.background = p.statusClass === 'warn' ? 'var(--ho-coral)' : 'var(--ho-teal-700)';
+      $('#pmLowLbl').textContent = 'Low: ' + p.bounds.low;
+      $('#pmHighLbl').textContent = 'High: ' + p.bounds.high;
+    } else {
+      specWrap.style.display = 'none';
+    }
+
+    const priorRow = $('#pmPriorRow');
+    if (p.comparison && p.comparison.hasComparison) {
+      priorRow.style.display = 'flex';
+      $('#pmPriorVal').textContent = `${p.comparison.previousValue} ${p.unit || ''} (${p.comparison.changeStr})`;
+    } else {
+      priorRow.style.display = 'none';
+    }
+
+    const trendsBtn = $('#pmTrendsBtn');
+    if (trendsBtn) {
+      const slug = String(p.name || '').toLowerCase().replace(/[^a-z0-9]/g, '_');
+      trendsBtn.href = '/trends?metric=' + encodeURIComponent(slug);
+    }
+
+    $('#paramModalPanel').style.transform = '';
+    paramModal.classList.add('active');
+  };
+
+  window.closeParamModal = function (e) {
+    if (!e || e.target === paramModal) {
+      paramModal.classList.remove('active');
+      $('#paramModalPanel').style.transform = '';
+    }
+  };
+
+  /* Handoff to Floating AI Widget (#hoAiWidget) */
+  function askAiWithPrompt(promptText) {
+    const widgetRoot = document.getElementById('hoAiWidget');
+    const aiInput = document.getElementById('hoAiInput');
+    const aiSend = document.getElementById('hoAiSendBtn');
+    if (widgetRoot && aiInput) {
+      widgetRoot.classList.add('open');
+      aiInput.value = promptText;
+      if (aiSend) aiSend.disabled = false;
+      aiInput.focus();
+    } else {
+      window.location.href = '/ai-assistant';
+    }
+  }
+
+  $('#pmAskAiBtn')?.addEventListener('click', () => {
+    if (!selectedParam) return;
+    closeParamModal();
+    askAiWithPrompt(`In my ${reportTitleData}, my ${selectedParam.name} result is ${selectedParam.value} ${selectedParam.unit || ''} (Reference range: ${selectedParam.referenceRange}). Can you explain what this test measures in plain English?`);
+  });
+
+  $('#topAskAiBtn')?.addEventListener('click', () => {
+    askAiWithPrompt(`Can you summarize the key findings and longitudinal changes in my ${reportTitleData}?`);
+  });
+
+  $('#cardAskAiBtn')?.addEventListener('click', () => {
+    askAiWithPrompt(`Can you explain my ${reportTitleData} findings and suggest what I should discuss with my doctor?`);
+  });
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeParamModal(); });
+
+  /* Mobile Swipe-Down to Dismiss Bottom Sheet */
+  (function initSwipe() {
+    const panel = $('#paramModalPanel');
+    if (!panel) return;
+    let startY = 0, dy = 0, dragging = false;
+    panel.addEventListener('touchstart', e => {
+      if (panel.scrollTop > 0) return;
+      startY = e.touches[0].clientY;
+      dragging = true; dy = 0;
+      panel.style.transition = 'none';
+    }, { passive: true });
+    panel.addEventListener('touchmove', e => {
+      if (!dragging) return;
+      dy = Math.max(0, e.touches[0].clientY - startY);
+      panel.style.transform = 'translateY(' + dy + 'px)';
+    }, { passive: true });
+    panel.addEventListener('touchend', () => {
+      if (!dragging) return;
+      dragging = false; panel.style.transition = '';
+      if (dy > 110) closeParamModal(); else panel.style.transform = '';
+    });
+  })();
+
+  /* ---- 4. Clipboard, Scroll Progress & Cursor Glow ---- */
+  window.copyQuestion = function (text) {
+    if (!navigator.clipboard) return;
+    navigator.clipboard.writeText(text).then(() => toast('✔ Question copied to clipboard'));
+  };
+
+  window.copyAllQuestions = function () {
+    if (!navigator.clipboard || !allQuestionsData.length) return;
+    const joined = allQuestionsData.map((q, i) => `${i + 1}. ${q}`).join('\n');
+    navigator.clipboard.writeText(joined).then(() => toast('✔ All consultation questions copied'));
+  };
+
+  window.copyExplanationText = function () {
+    const el = $('#plainEnglishText');
+    if (!el || !navigator.clipboard) return;
+    navigator.clipboard.writeText(el.textContent.trim()).then(() => toast('✔ Clinical summary copied'));
+  };
+
+  const mainScroll = $('#mainScroll');
+  if (mainScroll) {
+    mainScroll.addEventListener('scroll', () => {
+      const max = mainScroll.scrollHeight - mainScroll.clientHeight;
+      $('#scrollProgress').style.width = (max > 0 ? (mainScroll.scrollTop / max) * 100 : 0) + '\%'; }, { passive: true }); }    $$('.ho-panel').forEach(p => {
+    p.addEventListener('pointermove', e => {
+      const r = p.getBoundingClientRect();
+      p.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      p.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+</script>
 </body>
 </html>

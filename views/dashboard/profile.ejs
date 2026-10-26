@@ -2,267 +2,522 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>HealthOrbit - Profile & Privacy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#edf6f4">
+<title>HealthOrbit — Profile & Privacy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/sidebar.css">
 <link rel="icon" href="/images/Logo.png">
 <style>
-/* EXACT ORIGINAL CSS PRESERVED */
+/* ==================================================================
+   HEALTHORBIT — PROFILE & PRIVACY STUDIO
+   Bento Glass Mosaic, Mobile-First Polish, and Layout Bug Fixes
+================================================================== */
 :root {
   --ho-bg-airy: #edf6f4;
+  --ho-teal-950: #06302b;
   --ho-teal-900: #0b5e55;
+  --ho-teal-800: #0c6b61;
   --ho-teal-700: #0d7a6e;
   --ho-teal-600: #109485;
   --ho-mint-400: #42b89d;
+  --ho-mint-soft: #dff1ec;
   --ho-coral: #e07a68;
   --ho-coral-soft: #fbe4de;
-  --ho-text-main: #0f1c1a;
-  --ho-text-muted: #4e6b63;
+  --ho-amber: #f59e0b;
+  --ho-blue: #3b82f6;
+  --ho-blue-soft: #dbeafe;
   --ho-danger: #d94b4b;
   --ho-warning: #f39c12;
-  --ho-blue: #3498db;
-  --ho-glass-clear: rgba(255, 255, 255, 0.55);
-  --ho-glass-solid: rgba(255, 255, 255, 0.85);
+  --ho-text-main: #0f1c1a;
+  --ho-text-muted: #4e6b63;
+  --ho-text-subtle: #78948d;
+
+  --ho-glass-clear: rgba(255, 255, 255, 0.58);
+  --ho-glass-solid: rgba(255, 255, 255, 0.9);
   --ho-glass-border: rgba(255, 255, 255, 0.95);
-  --ho-glass-border-subtle: rgba(255, 255, 255, 0.5);
-  --ho-radius-xl: 32px;
+  --ho-glass-border-subtle: rgba(13, 122, 110, 0.14);
+
+  --ho-radius-xl: 28px;
   --ho-radius-lg: 20px;
-  --ho-radius-md: 12px;
-  --ho-shadow-glass: 0 30px 60px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
+  --ho-radius-md: 14px;
+  --ho-shadow-glass: 0 20px 50px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
+  --ho-shadow-elevated: 0 26px 56px rgba(13, 122, 110, 0.16);
+  --ho-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: var(--ho-bg-airy); color: var(--ho-text-main); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
-.ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
-.ho-orb-1 { width: 550px; height: 550px; background: #76d7c4; top: -100px; left: -100px; }
-.ho-orb-2 { width: 600px; height: 600px; background: #fadbd8; bottom: -150px; right: -100px; animation-delay: -5s; }
-.ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 35%; left: 35%; opacity: 0.3; animation-delay: -10s; }
-@keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 60px) scale(1.15); } }
-.ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
-.ho-main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; scrollbar-width: none; }
-.ho-main-content::-webkit-scrollbar { display: none; }
-.ho-topbar { display: flex; justify-content: space-between; align-items: center; padding: 2.2rem 3rem 1.2rem; flex-shrink: 0; background: transparent; z-index: 20; }
-.ho-topbar h1 { font-weight: 800; font-size: 1.8rem; color: var(--ho-teal-900); margin-bottom: 0.3rem; letter-spacing: -0.5px; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
-.ho-topbar p { font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 500; display: flex; align-items: center; gap: 0.5rem;}
-.ho-topbar-actions { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
-.ho-completion-bar { display: flex; flex-direction: column; gap: 0.3rem; width: 150px;}
-.ho-cb-top { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; color: var(--ho-teal-900); text-transform: uppercase;}
-.ho-cb-track { width: 100%; height: 6px; background: rgba(13, 122, 110, 0.15); border-radius: 999px; overflow: hidden; }
-.ho-cb-fill { height: 100%; background: var(--ho-teal-600); border-radius: 999px; transition: width 0.4s ease; }
-.ho-btn-primary { background: linear-gradient(135deg, var(--ho-teal-700), var(--ho-teal-900)); color: #fff; border: none; border-radius: 999px; padding: 0.75rem 1.5rem; font-weight: 700; font-size: 0.88rem; cursor: pointer; box-shadow: 0 10px 25px rgba(13, 122, 110, 0.25); transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; white-space: nowrap; text-decoration: none; }
-.ho-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(13, 122, 110, 0.35); }
-.ho-btn-primary:active { transform: scale(0.96); }
-.ho-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-.ho-btn-ghost { padding: 0.75rem 1.5rem; background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border); border-radius: 999px; color: var(--ho-teal-900); font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; white-space: nowrap; text-decoration: none; }
-.ho-btn-ghost:hover { background: #fff; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.1); border-color: var(--ho-teal-600);}
-.ho-btn-ghost:active { transform: scale(0.96); }
-.ho-btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
-.ho-btn-danger { padding: 0.75rem 1.5rem; background: var(--ho-coral-soft); border: 1px solid rgba(217, 75, 75, 0.3); border-radius: 999px; color: var(--ho-danger); font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; }
-.ho-btn-danger:hover { background: var(--ho-danger); color: #fff; box-shadow: 0 8px 25px rgba(217, 75, 75, 0.25); border-color: var(--ho-danger);}
-.ho-btn-tiny { font-size: 0.75rem; padding: 0.5rem 1rem; }
-.ho-workspace-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; padding: 0.5rem 3rem 2.5rem; flex: 1 0 auto; min-height: 0; }
-.ho-panel { background: var(--ho-glass-clear); backdrop-filter: blur(50px) saturate(200%); -webkit-backdrop-filter: blur(50px) saturate(200%); border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl); padding: 1.8rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass); height: auto; min-height: 0; opacity: 0; animation: hoSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.ho-panel:hover { box-shadow: 0 25px 60px rgba(13, 122, 110, 0.1); border-color: #fff; background: rgba(255, 255, 255, 0.7); }
-@keyframes hoSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-.ho-delay-1 { animation-delay: 0.1s; } .ho-delay-2 { animation-delay: 0.2s; } .ho-delay-3 { animation-delay: 0.3s; }
-.ho-panel-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; flex-shrink: 0; flex-wrap: wrap; gap: 0.8rem;}
-.ho-panel-header h2 { font-weight: 800; font-size: 1.15rem; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem; margin:0;}
-.ho-badge { background: #fff; border: 1px solid var(--ho-glass-border); padding: 0.3rem 0.8rem; border-radius: 999px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ho-teal-700); box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
-.ho-badge.coming-soon { color: var(--ho-warning); }
-.ho-personal-panel { grid-column: span 4; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: center;}
+html { -webkit-tap-highlight-color: transparent; }
 
-/* SCROLLBAR UTILITY */
-.ho-scrollable { max-height: 400px; overflow-y: auto; padding-right: 0.5rem; -webkit-overflow-scrolling: touch; }
-.ho-scrollable::-webkit-scrollbar { width: 6px; }
-.ho-scrollable::-webkit-scrollbar-track { background: transparent; }
-.ho-scrollable::-webkit-scrollbar-thumb { background: rgba(13, 122, 110, 0.2); border-radius: 999px; }
-.ho-scrollable::-webkit-scrollbar-thumb:hover { background: rgba(13, 122, 110, 0.4); }
-
-/* PROFILE IMAGE */
-.ho-hero-avatar-wrap { position: relative; display: inline-block; margin-bottom: 1rem; }
-.ho-hero-avatar { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, var(--ho-teal-600), var(--ho-teal-900)); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 800; border: 4px solid #fff; box-shadow: 0 10px 25px rgba(13, 122, 110, 0.2); overflow: hidden; margin-bottom: 0;}
-.ho-camera-btn { position: absolute; bottom: 0; right: -4px; width: 32px; height: 32px; background: #fff; border: 1px solid var(--ho-glass-border-subtle); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ho-teal-900); box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s; }
-.ho-camera-btn:hover { background: var(--ho-bg-airy); transform: scale(1.05); }
-
-.ho-hero-name { font-size: 1.4rem; font-weight: 800; color: var(--ho-teal-900); letter-spacing: -0.5px; margin-bottom: 0.3rem; }
-.ho-hero-meta { font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 500; margin-bottom: 1.5rem; }
-.ho-contact-grid { display: flex; flex-direction: column; width: 100%; gap: 0.8rem; text-align: left; margin-bottom: 1.5rem;}
-.ho-contact-item { background: rgba(255,255,255,0.7); border: 1px solid var(--ho-glass-border-subtle); padding: 0.8rem 1rem; border-radius: 12px; display: flex; align-items: center; gap: 0.8rem;}
-.ho-contact-item .icon { color: var(--ho-teal-700); font-size: 1.1rem; width: 24px; text-align: center;}
-.ho-contact-item div { display: flex; flex-direction: column; gap: 0.2rem;}
-.ho-contact-item span { font-size: 0.7rem; color: var(--ho-text-muted); text-transform: uppercase; font-weight: 700;}
-.ho-contact-item strong { font-size: 0.9rem; color: var(--ho-teal-900); font-weight: 600;}
-.ho-health-panel { grid-column: span 8; }
-.ho-health-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem;}
-.ho-info-box { background: rgba(255,255,255,0.75); border: 1px solid var(--ho-glass-border); padding: 1.2rem; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: 0.2s;}
-.ho-info-box:hover { background: #fff; border-color: var(--ho-teal-600); transform: translateY(-2px);}
-.ho-info-box.emergency { background: rgba(251, 228, 222, 0.4); border-color: rgba(239, 111, 91, 0.3); }
-.ho-info-box.emergency:hover { border-color: var(--ho-coral); background: #fff;}
-.ho-ib-label { font-size: 0.75rem; font-weight: 800; color: var(--ho-text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.4rem;}
-.ho-ib-val { font-size: 1.05rem; font-weight: 700; color: var(--ho-teal-900); line-height: 1.4;}
-.emergency .ho-ib-val { color: var(--ho-danger); }
-.ho-ib-empty { color: var(--ho-text-muted); font-style: italic; font-weight: 500; font-size: 0.95rem;}
-.ho-security-panel { grid-column: span 6; }
-.ho-sec-list { display: flex; flex-direction: column; gap: 0.8rem; }
-.ho-sec-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 1.2rem; border-radius: 14px; border: 1px solid var(--ho-glass-border-subtle); transition: 0.2s;}
-.ho-sec-item:hover { transform: translateX(3px); border-color: var(--ho-teal-600);}
-.ho-sec-info strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.2rem;}
-.ho-sec-info span { font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; gap: 0.4rem;}
-.ho-verified { color: #27ae60; font-weight: 800; font-size: 0.75rem; background: rgba(46, 204, 113, 0.15); padding: 2px 8px; border-radius: 6px;}
-.ho-unverified { color: var(--ho-warning); font-weight: 800; font-size: 0.75rem; background: rgba(243, 156, 18, 0.15); padding: 2px 8px; border-radius: 6px;}
-.ho-sessions-panel { grid-column: span 6; }
-.ho-sess-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--ho-bg-airy); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 1px solid var(--ho-glass-border-subtle);}
-.ho-current-badge { background: var(--ho-teal-900); color: #fff; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-left: 0.5rem; vertical-align: middle;}
-.ho-family-panel { grid-column: span 12; background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(237, 246, 244, 0.95)); border-color: var(--ho-mint-400);}
-.ho-family-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 0.5rem;}
-
-/* ==========================================================
-   FAMILY MEMBER CARD — REDESIGNED (the only section changed)
-   Header (avatar + name + status) -> access meter ->
-   permission chips -> actions.
-========================================================== */
-.ho-fam-card {
-  position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 1.1rem;
-  background: #fff; border: 1px solid rgba(13, 122, 110, 0.14); border-radius: 22px; padding: 1.5rem 1.4rem 1.3rem;
-  box-shadow: 0 6px 24px rgba(13, 122, 110, 0.06);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  background-color: var(--ho-bg-airy);
+  color: var(--ho-text-main);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
 }
-.ho-fam-card:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(13, 122, 110, 0.14); border-color: var(--ho-teal-600); }
-.ho-fam-accent { position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, var(--ho-teal-700), var(--ho-mint-400), var(--ho-coral)); opacity: 0.9; }
 
-.ho-fam-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
-.ho-fam-id { display: flex; align-items: center; gap: 0.9rem; min-width: 0; }
-.ho-fam-card .ho-hero-avatar-wrap { margin-bottom: 0; flex-shrink: 0; }
-.ho-fam-card .ho-hero-avatar { width: 54px; height: 54px; font-size: 1.25rem; border-width: 3px; box-shadow: 0 6px 16px rgba(13, 122, 110, 0.22); }
-.ho-fam-name { min-width: 0; }
-.ho-fam-name strong { display: block; font-size: 1.05rem; color: var(--ho-teal-900); font-weight: 800; letter-spacing: -0.2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ho-fam-rel { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.3rem; font-size: 0.72rem; font-weight: 700; color: var(--ho-teal-700); background: rgba(13, 122, 110, 0.08); padding: 3px 10px; border-radius: 999px; }
+/* ---------- Custom Visible Scrollbars (.ho-custom-scroll) ---------- */
+.ho-custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(13, 122, 110, 0.34) rgba(13, 122, 110, 0.05);
+}
+.ho-custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.ho-custom-scroll::-webkit-scrollbar-track { background: rgba(13, 122, 110, 0.05); border-radius: 999px; }
+.ho-custom-scroll::-webkit-scrollbar-thumb { background: rgba(13, 122, 110, 0.34); border-radius: 999px; }
+.ho-custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--ho-teal-600); }
 
-/* DYNAMIC STATUSES */
-.ho-fam-status { font-size: 0.68rem; font-weight: 800; padding: 4px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 0.35rem; flex-shrink: 0; }
-.ho-fam-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-.ho-fam-status.active { background: rgba(46, 204, 113, 0.15); color: #27ae60; }
-.ho-fam-status.active::before { animation: hoFamPulse 2s ease-in-out infinite; }
-.ho-fam-status.pending { background: rgba(243, 156, 18, 0.15); color: var(--ho-warning); }
-.ho-fam-status.rejected, .ho-fam-status.revoked { background: rgba(217, 75, 75, 0.15); color: var(--ho-danger); }
-@keyframes hoFamPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.5); } }
+/* ---------- Ambient Orbs with Web-Only Floating Motion ---------- */
+.ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.6; }
+.ho-orb-1 { width: 580px; height: 580px; background: #76d7c4; top: -120px; left: -100px; }
+.ho-orb-2 { width: 620px; height: 620px; background: #fadbd8; bottom: -160px; right: -100px; }
+.ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 36%; left: 42%; opacity: 0.28; }
 
-/* Access meter */
-.ho-fam-meter { background: var(--ho-bg-airy); border-radius: 14px; padding: 0.85rem 1rem; }
-.ho-fam-meter-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem; }
-.ho-fam-meter-top span { font-size: 0.7rem; font-weight: 800; color: var(--ho-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-.ho-fam-meter-top strong { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--ho-teal-900); font-weight: 800; }
-.ho-fam-meter-track { height: 6px; border-radius: 999px; background: rgba(13, 122, 110, 0.14); overflow: hidden; }
-.ho-fam-meter-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--ho-mint-400), var(--ho-teal-600)); transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+@media (min-width: 1025px) {
+  .ho-glow-orb { animation: hoFloatOrb 22s ease-in-out infinite alternate; }
+  .ho-orb-2 { animation-delay: -6s; }
+  .ho-orb-3 { animation-delay: -11s; }
+  @keyframes hoFloatOrb {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    50% { transform: translate(45px, 60px) scale(1.08) rotate(4deg); }
+    100% { transform: translate(-30px, 40px) scale(0.96) rotate(-3deg); }
+  }
+}
 
-/* Permission chips */
-.ho-fam-perms { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-.ho-perm-chip { display: flex; align-items: center; gap: 0.5rem; min-width: 0; padding: 0.55rem 0.7rem; border-radius: 12px; font-size: 0.76rem; font-weight: 700; color: var(--ho-teal-900); background: rgba(66, 184, 157, 0.1); border: 1px solid rgba(66, 184, 157, 0.28); transition: 0.2s; }
-.ho-perm-chip:hover { background: rgba(66, 184, 157, 0.18); }
-.ho-perm-chip .pc-icon { font-size: 0.95rem; flex-shrink: 0; }
-.ho-perm-chip .pc-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ho-perm-chip .pc-state { font-size: 0.7rem; font-weight: 800; color: #27ae60; flex-shrink: 0; }
-.ho-perm-chip.off { color: var(--ho-text-muted); background: rgba(78, 107, 99, 0.05); border: 1px dashed rgba(78, 107, 99, 0.25); }
-.ho-perm-chip.off:hover { background: rgba(78, 107, 99, 0.08); }
-.ho-perm-chip.off .pc-icon { filter: grayscale(1); opacity: 0.55; }
-.ho-perm-chip.off .pc-label { text-decoration: line-through; opacity: 0.7; }
-.ho-perm-chip.off .pc-state { color: var(--ho-danger); }
+/* ---------- Layout Shell ---------- */
+.ho-app-layout { display: flex; width: 100vw; height: 100vh; height: 100dvh; position: relative; z-index: 10; }
+.ho-main-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
 
-.ho-fam-actions { display: flex; flex-direction: column; gap: 0.7rem; margin-top: auto; }
-.ho-fam-action-row { display: flex; gap: 0.7rem; }
-.ho-fam-action-row form { flex: 1; display: flex; }
-.ho-fam-action-row button { flex: 1; justify-content: center; padding: 0.65rem; font-size: 0.8rem; width: 100%; }
+/* ---------- Sticky Topbar ---------- */
+.ho-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem 3rem 1.2rem;
+  flex-shrink: 0;
+  background: transparent;
+  z-index: 20;
+  position: sticky;
+  top: 0;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  mask-image: linear-gradient(to bottom, black 82%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, black 82%, transparent);
+}
+@media (min-width: 1025px) {
+  .ho-topbar { animation: hoDrop 0.65s var(--ho-ease) both; }
+  @keyframes hoDrop { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: none; } }
+}
 
-/* INVITATION CARDS */
-.ho-inv-card { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px dashed var(--ho-mint-400); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 0.8rem; gap: 1rem; flex-wrap: wrap;}
-.ho-inv-info strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800;}
-.ho-inv-info span { font-size: 0.8rem; color: var(--ho-text-muted); font-weight: 500;}
-.ho-inv-actions { display: flex; gap: 0.5rem; }
+.ho-topbar h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 800;
+  font-size: 2.2rem;
+  color: var(--ho-teal-900);
+  letter-spacing: -0.9px;
+  line-height: 1.1;
+  margin-bottom: 0.35rem;
+}
+.ho-topbar h1 b { color: var(--ho-coral); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; }
+.ho-topbar p { font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 500; }
 
-.ho-empty-state { color: var(--ho-text-muted); font-weight: 500; font-size: 0.9rem; text-align: center; padding: 1.5rem; }
+.ho-topbar-actions { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+.ho-completion-bar { display: flex; flex-direction: column; gap: 0.3rem; width: 150px; }
+.ho-cb-top { display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 800; color: var(--ho-teal-900); text-transform: uppercase; }
+.ho-cb-track { width: 100%; height: 6px; background: rgba(13, 122, 110, 0.12); border-radius: 999px; overflow: hidden; }
+.ho-cb-fill { height: 100%; background: var(--ho-teal-600); border-radius: 999px; transition: width 0.6s var(--ho-ease); }
+
+/* Buttons */
+.ho-btn-primary {
+  background: linear-gradient(135deg, var(--ho-teal-600), var(--ho-teal-900));
+  color: #fff; border: none; border-radius: 999px; padding: 0.78rem 1.45rem;
+  font-weight: 700; font-size: 0.86rem; cursor: pointer;
+  box-shadow: 0 10px 24px rgba(11, 94, 85, 0.22); transition: 0.25s var(--ho-ease);
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
+  white-space: nowrap; text-decoration: none; font-family: inherit;
+}
+.ho-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(11, 94, 85, 0.32); }
+.ho-btn-primary:active { transform: scale(0.96); }
+
+.ho-btn-ghost {
+  padding: 0.78rem 1.35rem;
+  background: var(--ho-glass-solid);
+  border: 1.5px solid var(--ho-glass-border);
+  border-radius: 999px;
+  color: var(--ho-teal-900);
+  font-weight: 700;
+  font-size: 0.86rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: 0.25s var(--ho-ease);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.ho-btn-ghost:hover { background: #ffffff; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.12); transform: translateY(-2px); border-color: var(--ho-teal-600); }
+.ho-btn-ghost:active { transform: scale(0.96); }
+.ho-btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.ho-btn-danger {
+  padding: 0.78rem 1.45rem;
+  background: var(--ho-coral-soft);
+  border: 1px solid rgba(217, 75, 75, 0.3);
+  border-radius: 999px;
+  color: var(--ho-danger);
+  font-weight: 700;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: 0.25s var(--ho-ease);
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
+  font-family: inherit;
+  text-decoration: none;
+}
+.ho-btn-danger:hover { background: var(--ho-danger); color: #fff; box-shadow: 0 8px 25px rgba(217, 75, 75, 0.25); }
+.ho-btn-tiny { font-size: 0.74rem; padding: 0.45rem 0.95rem; }
+
+/* ---------- 12-COLUMN BENTO MOSAIC GRID ---------- */
+.ho-workspace-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.5rem;
+  padding: 0.5rem 3rem 3rem;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+  flex: 1 0 auto;
+}
+
+.ho-panel {
+  --mx: 50%;
+  --my: 50%;
+  background: var(--ho-glass-clear);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid var(--ho-glass-border);
+  border-radius: var(--ho-radius-xl);
+  padding: 1.8rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--ho-shadow-glass);
+  position: relative;
+  overflow: hidden;
+  transition: 0.4s var(--ho-ease);
+  animation: hoSlideUp 0.7s var(--ho-ease) both;
+  min-width: 0;
+}
+.ho-workspace-grid > .ho-panel:nth-child(1) { animation-delay: 0.05s; }
+.ho-workspace-grid > .ho-panel:nth-child(2) { animation-delay: 0.12s; }
+.ho-workspace-grid > .ho-panel:nth-child(3) { animation-delay: 0.18s; }
+.ho-workspace-grid > .ho-panel:nth-child(4) { animation-delay: 0.24s; }
+.ho-workspace-grid > .ho-panel:nth-child(5) { animation-delay: 0.30s; }
+.ho-workspace-grid > .ho-panel:nth-child(6) { animation-delay: 0.36s; }
+.ho-workspace-grid > .ho-panel:nth-child(7) { animation-delay: 0.42s; }
+@keyframes hoSlideUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+
+.ho-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: radial-gradient(380px circle at var(--mx) var(--my), rgba(66, 184, 157, 0.16), transparent 60%);
+}
+@media (hover: hover) {
+  .ho-panel:hover::after { opacity: 1; }
+  .ho-panel:hover { transform: translateY(-4px); box-shadow: var(--ho-shadow-elevated); border-color: rgba(16, 148, 133, 0.4); background: rgba(255, 255, 255, 0.72); }
+}
+
+.ho-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+  z-index: 2;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+.ho-panel-header h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ho-teal-900);
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.ho-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(13, 122, 110, 0.09);
+  color: var(--ho-teal-700);
+  white-space: nowrap;
+}
+.ho-badge.coming-soon { color: var(--ho-warning); background: rgba(243, 156, 18, 0.12); }
+
+/* Grid allocations */
+.ho-personal-panel { grid-column: span 4; align-items: center; text-align: center; justify-content: center; }
+.ho-health-panel { grid-column: span 8; }
+.ho-security-panel { grid-column: span 6; }
+.ho-sessions-panel { grid-column: span 6; }
+.ho-family-panel { grid-column: span 12; background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(223, 241, 236, 0.65)); }
 .ho-sources-panel { grid-column: span 6; }
 .ho-privacy-panel { grid-column: span 6; }
-.ho-action-list { display: flex; flex-direction: column; gap: 0.8rem; }
-.ho-action-row { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 1.2rem; border-radius: 12px; border: 1px solid var(--ho-glass-border-subtle); transition: 0.2s;}
-.ho-action-row:hover { transform: translateX(3px); border-color: var(--ho-teal-600); }
-.ho-action-text strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 800; margin-bottom: 0.2rem;}
-.ho-action-text span { font-size: 0.8rem; color: var(--ho-text-muted); font-weight: 500;}
-.ho-activity-panel { grid-column: span 12; }
-.ho-account-actions { grid-column: span 12; background: transparent; border: none; box-shadow: none; flex-direction: row; justify-content: center; gap: 1.5rem; }
-.ho-modal { position: fixed; inset: 0; background: rgba(11, 94, 85, 0.45); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 1.2rem; opacity: 0; transition: opacity 0.3s ease; }
+.ho-account-actions { grid-column: span 12; background: transparent; border: none; box-shadow: none; flex-direction: row; justify-content: center; gap: 1.2rem; padding: 0.5rem 0; }
+
+/* Scrollable Utility */
+.ho-scrollable { max-height: 440px; overflow-y: auto; padding-right: 0.35rem; z-index: 2; }
+
+/* Profile Avatar */
+.ho-hero-avatar-wrap { position: relative; display: inline-block; margin-bottom: 0.9rem; }
+.ho-hero-avatar {
+  width: 96px; height: 96px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--ho-teal-600), var(--ho-teal-900));
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 2.2rem; font-weight: 800; border: 4px solid #fff;
+  box-shadow: 0 10px 25px rgba(11, 94, 85, 0.22); overflow: hidden;
+}
+.ho-camera-btn {
+  position: absolute; bottom: 0; right: -2px; width: 34px; height: 34px;
+  background: #fff; border: 1.5px solid var(--ho-glass-border); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  color: var(--ho-teal-900); box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: 0.2s;
+}
+.ho-camera-btn:hover { background: var(--ho-bg-airy); transform: scale(1.08); }
+
+.ho-hero-name { font-size: 1.35rem; font-weight: 800; color: var(--ho-teal-950); letter-spacing: -0.5px; margin-bottom: 0.25rem; }
+.ho-hero-meta { font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 600; margin-bottom: 1.35rem; }
+
+.ho-contact-grid { display: flex; flex-direction: column; width: 100%; gap: 0.7rem; text-align: left; margin-bottom: 1.35rem; z-index: 2; }
+.ho-contact-item {
+  background: rgba(255, 255, 255, 0.82); border: 1px solid var(--ho-glass-border-subtle);
+  padding: 0.75rem 1rem; border-radius: 14px; display: flex; align-items: center; gap: 0.75rem;
+}
+.ho-contact-item .icon { font-size: 1.1rem; width: 24px; text-align: center; }
+.ho-contact-item div { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.ho-contact-item span { font-size: 0.68rem; color: var(--ho-text-muted); text-transform: uppercase; font-weight: 800; }
+.ho-contact-item strong { font-size: 0.88rem; color: var(--ho-teal-950); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Health Grid */
+.ho-health-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.95rem; margin-bottom: 1.25rem; z-index: 2; }
+.ho-info-box {
+  background: rgba(255, 255, 255, 0.82); border: 1px solid var(--ho-glass-border-subtle);
+  padding: 1.1rem 1.15rem; border-radius: 16px; transition: 0.25s var(--ho-ease);
+}
+.ho-info-box:hover { background: #ffffff; border-color: var(--ho-teal-600); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(13, 122, 110, 0.08); }
+.ho-info-box.emergency { background: rgba(251, 228, 222, 0.55); border-color: rgba(224, 122, 104, 0.35); }
+.ho-info-box.emergency:hover { border-color: var(--ho-coral); background: #ffffff; }
+
+.ho-ib-label { font-size: 0.72rem; font-weight: 800; color: var(--ho-text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.35rem; }
+.ho-ib-val { font-size: 1rem; font-weight: 700; color: var(--ho-teal-950); line-height: 1.35; }
+.emergency .ho-ib-val { color: var(--ho-danger); }
+.ho-ib-empty { color: var(--ho-text-subtle); font-style: italic; font-weight: 500; font-size: 0.9rem; }
+
+/* Security List & Actions */
+.ho-sec-list, .ho-action-list { display: flex; flex-direction: column; gap: 0.75rem; z-index: 2; }
+.ho-sec-item, .ho-action-row {
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(255, 255, 255, 0.84); padding: 1.05rem 1.2rem;
+  border-radius: 16px; border: 1px solid var(--ho-glass-border-subtle); transition: 0.22s var(--ho-ease);
+}
+.ho-sec-item:hover, .ho-action-row:hover { background: #ffffff; transform: translateX(3px); border-color: var(--ho-teal-600); box-shadow: 0 6px 18px rgba(13, 122, 110, 0.07); }
+
+.ho-sec-info strong, .ho-action-text strong { display: block; font-size: 0.92rem; color: var(--ho-teal-950); font-weight: 800; margin-bottom: 0.15rem; }
+.ho-sec-info span, .ho-action-text span { font-size: 0.78rem; color: var(--ho-text-muted); font-weight: 600; display: flex; align-items: center; gap: 0.4rem; }
+
+.ho-verified { color: #16a34a; font-weight: 800; font-size: 0.72rem; background: rgba(22, 163, 74, 0.12); padding: 2px 8px; border-radius: 6px; }
+.ho-unverified { color: var(--ho-warning); font-weight: 800; font-size: 0.72rem; background: rgba(243, 156, 18, 0.14); padding: 2px 8px; border-radius: 6px; }
+
+.ho-sess-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--ho-bg-airy); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border: 1px solid var(--ho-glass-border-subtle); }
+.ho-current-badge { background: var(--ho-teal-900); color: #fff; font-size: 0.64rem; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: 0.4rem; vertical-align: middle; }
+
+/* ==========================================================
+   FAMILY MEMBER CARD (Bento Glass Polish)
+========================================================== */
+.ho-family-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.15rem; z-index: 2; }
+.ho-fam-card {
+  position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 1.05rem;
+  background: rgba(255, 255, 255, 0.88); border: 1px solid var(--ho-glass-border-subtle); border-radius: 20px; padding: 1.35rem 1.25rem 1.2rem;
+  box-shadow: 0 8px 24px rgba(13, 122, 110, 0.06);
+  transition: transform 0.3s var(--ho-ease), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.ho-fam-card:hover { transform: translateY(-3px); box-shadow: 0 16px 36px rgba(13, 122, 110, 0.12); border-color: var(--ho-teal-600); background: #ffffff; }
+.ho-fam-accent { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--ho-teal-700), var(--ho-mint-400), var(--ho-coral)); opacity: 0.9; }
+
+.ho-fam-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
+.ho-fam-id { display: flex; align-items: center; gap: 0.85rem; min-width: 0; }
+.ho-fam-card .ho-hero-avatar-wrap { margin-bottom: 0; flex-shrink: 0; }
+.ho-fam-card .ho-hero-avatar { width: 50px; height: 50px; font-size: 1.15rem; border-width: 2.5px; box-shadow: 0 4px 12px rgba(13, 122, 110, 0.18); }
+.ho-fam-name { min-width: 0; }
+.ho-fam-name strong { display: block; font-size: 1.02rem; color: var(--ho-teal-950); font-weight: 800; letter-spacing: -0.2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ho-fam-rel { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.25rem; font-size: 0.7rem; font-weight: 800; color: var(--ho-teal-700); background: rgba(13, 122, 110, 0.08); padding: 2px 9px; border-radius: 999px; }
+
+.ho-fam-status { font-size: 0.66rem; font-weight: 800; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 0.35rem; flex-shrink: 0; }
+.ho-fam-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.ho-fam-status.active { background: rgba(22, 163, 74, 0.12); color: #16a34a; }
+.ho-fam-status.active::before { animation: hoFamPulse 2s ease-in-out infinite; }
+.ho-fam-status.pending { background: rgba(243, 156, 18, 0.14); color: var(--ho-warning); }
+.ho-fam-status.rejected, .ho-fam-status.revoked { background: rgba(217, 75, 75, 0.14); color: var(--ho-danger); }
+@keyframes hoFamPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.4); } }
+
+/* Access meter */
+.ho-fam-meter { background: rgba(13, 122, 110, 0.04); border-radius: 12px; padding: 0.75rem 0.9rem; border: 1px solid rgba(13, 122, 110, 0.08); }
+.ho-fam-meter-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.4rem; }
+.ho-fam-meter-top span { font-size: 0.68rem; font-weight: 800; color: var(--ho-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.ho-fam-meter-top strong { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: var(--ho-teal-950); font-weight: 800; }
+.ho-fam-meter-track { height: 5px; border-radius: 999px; background: rgba(13, 122, 110, 0.12); overflow: hidden; }
+.ho-fam-meter-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--ho-mint-400), var(--ho-teal-600)); transition: width 0.6s var(--ho-ease); }
+
+/* Permission chips */
+.ho-fam-perms { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; }
+.ho-perm-chip { display: flex; align-items: center; gap: 0.45rem; min-width: 0; padding: 0.5rem 0.65rem; border-radius: 11px; font-size: 0.74rem; font-weight: 700; color: var(--ho-teal-950); background: rgba(66, 184, 157, 0.09); border: 1px solid rgba(66, 184, 157, 0.24); transition: 0.2s; }
+.ho-perm-chip:hover { background: rgba(66, 184, 157, 0.16); }
+.ho-perm-chip .pc-icon { font-size: 0.9rem; flex-shrink: 0; }
+.ho-perm-chip .pc-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ho-perm-chip .pc-state { font-size: 0.68rem; font-weight: 800; color: #16a34a; flex-shrink: 0; }
+.ho-perm-chip.off { color: var(--ho-text-muted); background: rgba(78, 107, 99, 0.04); border: 1px dashed rgba(78, 107, 99, 0.22); }
+.ho-perm-chip.off .pc-icon { filter: grayscale(1); opacity: 0.5; }
+.ho-perm-chip.off .pc-label { text-decoration: line-through; opacity: 0.65; }
+.ho-perm-chip.off .pc-state { color: var(--ho-danger); }
+
+.ho-fam-actions { display: flex; flex-direction: column; gap: 0.6rem; margin-top: auto; }
+.ho-fam-action-row { display: flex; gap: 0.6rem; }
+.ho-fam-action-row form { flex: 1; display: flex; }
+.ho-fam-action-row button { flex: 1; justify-content: center; padding: 0.6rem; font-size: 0.78rem; width: 100%; }
+
+/* Invitations */
+.ho-inv-card { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.9); border: 1.5px dashed var(--ho-mint-400); border-radius: 14px; padding: 0.9rem 1.1rem; margin-bottom: 0.75rem; gap: 1rem; flex-wrap: wrap; z-index: 2; }
+.ho-inv-info strong { display: block; font-size: 0.92rem; color: var(--ho-teal-950); font-weight: 800; }
+.ho-inv-info span { font-size: 0.78rem; color: var(--ho-text-muted); font-weight: 600; }
+.ho-inv-actions { display: flex; gap: 0.5rem; }
+
+.ho-empty-state { color: var(--ho-text-muted); font-weight: 600; font-size: 0.88rem; text-align: center; padding: 1.5rem; z-index: 2; }
+
+/* Modals & Toasts */
+.ho-modal {
+  position: fixed; inset: 0; background: rgba(6, 48, 43, 0.48); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  display: none; align-items: center; justify-content: center; z-index: 3500; padding: 1.25rem; opacity: 0; transition: opacity 0.3s ease;
+}
 .ho-modal.active { display: flex; opacity: 1; }
-.ho-modal-box { background: #ffffff; border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl); padding: 2.5rem; width: 100%; max-width: 600px; box-shadow: 0 35px 70px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);}
-.ho-modal.active .ho-modal-box { transform: translateY(0); }
-.ho-modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.8rem; }
-.ho-modal-head h3 { font-size: 1.4rem; font-weight: 800; color: var(--ho-teal-900); }
-.ho-modal-close { background: none; border: none; font-size: 2.2rem; color: var(--ho-text-muted); cursor: pointer; transition: 0.2s; line-height: 1;}
-.ho-modal-close:hover { color: var(--ho-danger); }
-.ho-form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.2rem; }
-.ho-form-group label { font-size: 0.8rem; font-weight: 800; color: var(--ho-teal-900); text-transform: uppercase;}
+.ho-modal-box {
+  background: #ffffff; border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl); padding: 2.2rem;
+  width: 100%; max-width: 540px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.22); max-height: 90vh; overflow-y: auto;
+  transform: translateY(28px) scale(0.96); transition: transform 0.38s var(--ho-ease);
+}
+.ho-modal.active .ho-modal-box { transform: translateY(0) scale(1); }
+.ho-modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.ho-modal-head h3 { font-size: 1.35rem; font-family: 'Fraunces', serif; font-weight: 800; color: var(--ho-teal-900); }
+.ho-modal-close { background: rgba(13, 122, 110, 0.08); border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.05rem; color: var(--ho-teal-900); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+.ho-modal-close:hover { background: var(--ho-coral-soft); color: #c0392b; transform: rotate(90deg); }
+
+.ho-form-group { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1.05rem; }
+.ho-form-group label { font-size: 0.74rem; font-weight: 800; color: var(--ho-teal-900); text-transform: uppercase; letter-spacing: 0.05em; }
 .ho-form-group small { font-size: 0.72rem; color: var(--ho-text-muted); font-weight: 500; text-transform: none; }
-.ho-input { width: 100%; padding: 0.9rem 1.2rem; border: 1px solid #cbd5e1; border-radius: var(--ho-radius-md); font-family: inherit; font-size: 0.95rem; color: var(--ho-text-main); outline: none; transition: 0.2s; background: #f8fcfb;}
-.ho-input:focus { border-color: var(--ho-teal-600); box-shadow: 0 0 0 4px rgba(16, 148, 133, 0.1); background: #fff;}
-.ho-perm-row { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid var(--ho-glass-border-subtle);}
+.ho-input {
+  width: 100%; padding: 0.85rem 1rem; border: 1px solid rgba(13, 122, 110, 0.22); border-radius: 14px;
+  font-family: inherit; font-size: 16px; /* Prevents iOS auto-zoom */ color: var(--ho-text-main); font-weight: 500;
+  outline: none; background: #f8fcfb; transition: 0.2s;
+}
+.ho-input:focus { border-color: var(--ho-teal-600); background: #ffffff; box-shadow: 0 0 0 3px rgba(16, 148, 133, 0.12); }
+
+.ho-perm-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid rgba(13, 122, 110, 0.1); }
 .ho-perm-row:last-child { border-bottom: none; }
-.ho-perm-info strong { display: block; font-size: 0.9rem; color: var(--ho-teal-900); font-weight: 700;}
-.ho-perm-info span { font-size: 0.75rem; color: var(--ho-text-muted);}
-.ho-toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0;}
+.ho-perm-info strong { display: block; font-size: 0.9rem; color: var(--ho-teal-950); font-weight: 800; }
+.ho-perm-info span { font-size: 0.74rem; color: var(--ho-text-muted); font-weight: 500; }
+
+.ho-toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
 .ho-toggle input { opacity: 0; width: 0; height: 0; }
-.ho-toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(13, 122, 110, 0.15); transition: .3s; border-radius: 24px; }
-.ho-toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+.ho-toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(13, 122, 110, 0.2); transition: 0.3s; border-radius: 24px; }
+.ho-toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 .ho-toggle input:checked + .ho-toggle-slider { background-color: var(--ho-teal-600); }
 .ho-toggle input:checked + .ho-toggle-slider:before { transform: translateX(20px); }
-.ho-toast { position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%) translateY(-20px); background: var(--ho-teal-900); color: #fff; padding: 0.9rem 1.6rem; border-radius: 999px; font-weight: 700; font-size: 0.9rem; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 4000; opacity: 0; transition: all 0.35s cubic-bezier(0.16,1,0.3,1); pointer-events: none; }
-.ho-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+.ho-toast {
+  position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 30px); background: var(--ho-teal-950);
+  color: #ffffff; padding: 0.8rem 1.35rem; border-radius: 999px; font-size: 0.85rem; font-weight: 700;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25); opacity: 0; pointer-events: none; z-index: 4000;
+  transition: 0.4s var(--ho-ease);
+}
+.ho-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ==========================================================
+   RESPONSIVE LAYOUT BREAKPOINTS (BUG FIXES APPLIED)
+========================================================== */
 @media (max-width: 1200px) {
   .ho-personal-panel, .ho-health-panel, .ho-security-panel, .ho-sessions-panel, .ho-sources-panel, .ho-privacy-panel { grid-column: span 12; }
-  .ho-health-grid { grid-template-columns: repeat(2, 1fr); }
 }
-@media screen and (max-width: 768px) {
-  body, html { height: auto !important; min-height: 100vh !important; overflow-x: hidden !important; background: #edf6f4 !important; }
-  .ho-main-content { height: auto !important; min-height: 100vh !important; padding-top: 5.6rem !important; overflow-y: visible !important; }
-  .ho-topbar { flex-direction: column; align-items: flex-start; padding: 0 1.25rem 0.5rem !important; gap: 0.8rem; position: static !important; background: transparent !important; border: none !important; }
-  .ho-topbar-actions { width: 100%; display: flex; flex-direction: column; gap: 0.6rem; align-items: stretch;}
+
+@media (max-width: 1024px) {
+  .ho-workspace-grid { grid-template-columns: repeat(6, 1fr); padding: 0.5rem 1.6rem 3rem; }
+  .ho-personal-panel, .ho-health-panel, .ho-security-panel, .ho-sessions-panel, .ho-sources-panel, .ho-privacy-panel, .ho-family-panel { grid-column: span 6; }
+  .ho-topbar { padding: 1.5rem 1.6rem 1rem; }
+  body .ho-main-content { margin-top: 5.4rem; padding: 0 !important; height: calc(100vh - 5.4rem); height: calc(100dvh - 5.4rem); }
+}
+
+@media (max-width: 768px) {
+  .ho-topbar { flex-direction: column; align-items: stretch; padding: 1rem 1.1rem 0.8rem; gap: 0.8rem; position: relative; mask-image: none; -webkit-mask-image: none; backdrop-filter: none; }
+  .ho-topbar h1 { font-size: 1.65rem; }
+  .ho-topbar-actions { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
   .ho-completion-bar { width: 100%; }
-  .ho-topbar h1 { font-size: 1.6rem; }
-  .ho-workspace-grid { grid-template-columns: 1fr !important; padding: 0.5rem 1.25rem 2.5rem !important; gap: 1.2rem !important; display: flex !important; flex-direction: column !important; flex: 1 0 auto !important; }
-  .ho-panel { height: auto !important; min-height: 0 !important; padding: 1.5rem !important; border-radius: 24px !important; flex: none !important; }
+  .ho-btn-ghost, .ho-btn-primary { justify-content: center; width: 100%; }
+
+  .ho-workspace-grid { display: flex; flex-direction: column; padding: 0.4rem 1rem calc(env(safe-area-inset-bottom, 0px) + 1.5rem); gap: 1rem; }
+  .ho-panel { padding: 1.25rem; border-radius: 24px; }
   .ho-health-grid { grid-template-columns: 1fr; }
   .ho-family-grid { grid-template-columns: 1fr; }
-  .ho-account-actions { flex-direction: column; }
-  .ho-account-actions button, .ho-account-actions a { width: 100%; justify-content: center;}
-  .ho-sec-item, .ho-action-row { flex-direction: column; align-items: flex-start; gap: 1rem; }
-  .ho-sec-item button, .ho-action-row button { width: 100%; justify-content: center; }
-  .ho-inv-card { flex-direction: column; align-items: flex-start; }
-  /* family card on phones */
-  .ho-fam-card { padding: 1.3rem 1.1rem 1.1rem; }
-  .ho-fam-action-row { flex-direction: column; }
-  .ho-fam-action-row form { width: 100%; }
+  .ho-account-actions { flex-direction: column; gap: 0.7rem; }
+  .ho-account-actions a, .ho-account-actions button { width: 100%; justify-content: center; }
+
+  /* Mobile Bottom Sheet Modals */
+  .ho-modal { align-items: flex-end; padding: 0; }
+  .ho-modal-box { max-width: 100%; border-radius: 28px 28px 0 0; padding: 1.4rem 1.25rem calc(env(safe-area-inset-bottom, 0px) + 1.5rem); transform: translateY(100%); max-height: 90dvh; }
+  .ho-modal-handle { display: block; width: 44px; height: 4px; border-radius: 999px; background: #d5e4e1; margin: -0.5rem auto 0.8rem; }
 }
+
 @media (max-width: 380px) {
   .ho-fam-perms { grid-template-columns: 1fr; }
 }
-@media (max-width: 1024px) {
-    body .ho-main-content { margin-top: 5.5rem; padding: 0 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 </style>
 </head>
 <body>
 
 <% 
-// Backend Variable mapping safely
-const u = user || {};
-const displayName = u.fullName || locals.userName || 'User';
-const initials = displayName.substring(0, 2).toUpperCase();
-const privacy = u.privacySettings || {};
-const aiPrefs = privacy.aiAccess || { profile:true, medicalReports:true, healthMeasurements:true, medicines:true, familyMetadata:false };
-const emergCard = privacy.emergencyCardEnabled || false;
+  const u = user || {};
+  const displayName = u.fullName || locals.userName || 'User';
+  const initials = displayName.substring(0, 2).toUpperCase();
+  const privacy = u.privacySettings || {};
+  const aiPrefs = privacy.aiAccess || { profile:true, medicalReports:true, healthMeasurements:true, medicines:true, familyMetadata:false };
+  const emergCard = privacy.emergencyCardEnabled || false;
 %>
 
-<div class="ho-ambient-canvas">
+<div class="ho-ambient-canvas" aria-hidden="true">
   <div class="ho-glow-orb ho-orb-1"></div>
   <div class="ho-glow-orb ho-orb-2"></div>
   <div class="ho-glow-orb ho-orb-3"></div>
@@ -271,11 +526,11 @@ const emergCard = privacy.emergencyCardEnabled || false;
 <div class="ho-app-layout">
   <%- include('../partials/sidebar') %>
   
-  <main class="ho-main-content">
+  <main class="ho-main-content ho-custom-scroll" id="mainScroll">
     <header class="ho-topbar">
       <div>
-        <h1>Profile<b style="color: #e07a68;">&</b>Privacy</h1>
-        <p>Manage your personal information, security and authorized health-data sharing.</p>
+        <h1>Profile<b>&amp;</b>Privacy</h1>
+        <p>Manage your personal information, security, and authorized health-data sharing.</p>
       </div>
       <div class="ho-topbar-actions">
         <div class="ho-completion-bar">
@@ -293,7 +548,7 @@ const emergCard = privacy.emergencyCardEnabled || false;
     <div class="ho-workspace-grid">
       
       <!-- 1. PERSONAL PROFILE -->
-      <section class="ho-panel ho-personal-panel ho-delay-1">
+      <section class="ho-panel ho-personal-panel">
         <div class="ho-hero-avatar-wrap">
           <div class="ho-hero-avatar">
             <% if (u.profileImage) { %>
@@ -306,14 +561,14 @@ const emergCard = privacy.emergencyCardEnabled || false;
         </div>
         <div class="ho-hero-name"><%= displayName %></div>
         <div class="ho-hero-meta">
-          <%= u.gender ? u.gender : 'Gender not set' %><% if (u.age) { %> • <%= u.age %> Years Old<% } %>
+          <%= u.gender ? u.gender : 'Gender not set' %><% if (u.age) { %> &bull; <%= u.age %> Years Old<% } %>
         </div>
         <div class="ho-contact-grid">
           <div class="ho-contact-item">
             <span class="icon">📧</span>
             <div>
               <span>Email Address</span>
-              <strong><%= u.email || locals.userEmail || '—' %></strong>
+              <strong><%= u.email || locals.userEmail || '&mdash;' %></strong>
             </div>
           </div>
           <div class="ho-contact-item">
@@ -324,16 +579,14 @@ const emergCard = privacy.emergencyCardEnabled || false;
             </div>
           </div>
         </div>
-        <button type="button" class="ho-btn-ghost" style="width: 100%;" onclick="openModal('editProfileModal')">Edit Profile</button>
+        <button type="button" class="ho-btn-ghost" style="width: 100%; justify-content:center;" onclick="openModal('editProfileModal')">Edit Profile</button>
       </section>
 
       <!-- 2. HEALTH PROFILE & EMERGENCY -->
-      <section class="ho-panel ho-health-panel ho-delay-1">
+      <section class="ho-panel ho-health-panel">
         <div class="ho-panel-header">
           <h2>Health Information</h2>
-          <div style="display: flex; gap: 0.5rem;">
-            <button type="button" class="ho-btn-ghost ho-btn-tiny" onclick="openModal('editHealthModal')">Edit Health</button>
-          </div>
+          <button type="button" class="ho-btn-ghost ho-btn-tiny" onclick="openModal('editHealthModal')">Edit Health</button>
         </div>
         <div class="ho-health-grid">
           <div class="ho-info-box">
@@ -353,18 +606,19 @@ const emergCard = privacy.emergencyCardEnabled || false;
             <span class="ho-ib-val"><% if (u.currentMedicines && u.currentMedicines.length) { %><%= u.currentMedicines.join(', ') %><% } else { %><span class="ho-ib-empty">None recorded</span><% } %></span>
           </div>
         </div>
-        <div class="ho-panel-header" style="margin-top: 1rem;">
+
+        <div class="ho-panel-header" style="margin-top: 0.5rem;">
           <h2>Emergency Information</h2>
-          <button type="button" class="ho-btn-ghost ho-btn-tiny" style="border-color: var(--ho-coral-soft); color: var(--ho-danger);" onclick="openModal('editEmergencyModal')">Manage Emergency Info</button>
+          <button type="button" class="ho-btn-ghost ho-btn-tiny" style="border-color: rgba(224,122,104,0.3); color: var(--ho-danger);" onclick="openModal('editEmergencyModal')">Manage Emergency</button>
         </div>
         <div class="ho-health-grid" style="margin-bottom: 0;">
           <div class="ho-info-box emergency" style="grid-column: 1 / -1;">
             <span class="ho-ib-label" style="color: var(--ho-danger);">Emergency Contact</span>
             <span class="ho-ib-val">
               <% if (u.emergencyContact && u.emergencyContact.name) { %>
-                <%= u.emergencyContact.name %><% if (u.emergencyContact.relationship) { %> (<%= u.emergencyContact.relationship %>)<% } %><% if (u.emergencyContact.phone) { %> • <%= u.emergencyContact.phone %><% } %>
+                <%= u.emergencyContact.name %><% if (u.emergencyContact.relationship) { %> (<%= u.emergencyContact.relationship %>)<% } %><% if (u.emergencyContact.phone) { %> &bull; <%= u.emergencyContact.phone %><% } %>
               <% } else if (u.emergencyContactName) { %>
-                <%= u.emergencyContactName %><% if (u.emergencyContactRelation) { %> (<%= u.emergencyContactRelation %>)<% } %><% if (u.emergencyContactPhone) { %> • <%= u.emergencyContactPhone %><% } %>
+                <%= u.emergencyContactName %><% if (u.emergencyContactRelation) { %> (<%= u.emergencyContactRelation %>)<% } %><% if (u.emergencyContactPhone) { %> &bull; <%= u.emergencyContactPhone %><% } %>
               <% } else { %>
                 <span class="ho-ib-empty">No emergency contact added</span>
               <% } %>
@@ -374,7 +628,7 @@ const emergCard = privacy.emergencyCardEnabled || false;
       </section>
 
       <!-- 3. ACCOUNT SECURITY -->
-      <section class="ho-panel ho-security-panel ho-delay-2">
+      <section class="ho-panel ho-security-panel">
         <div class="ho-panel-header">
           <h2>Account Security</h2>
         </div>
@@ -382,7 +636,7 @@ const emergCard = privacy.emergencyCardEnabled || false;
           <div class="ho-sec-item">
             <div class="ho-sec-info">
               <strong>Email Address</strong>
-              <span><div class="ho-verified">✓ Sign-in Email</div></span>
+              <span><div class="ho-verified">&checkmark; Sign-in Email</div></span>
             </div>
             <button type="button" class="ho-btn-ghost ho-btn-tiny" disabled title="Email change isn't available yet">Change Email</button>
           </div>
@@ -396,15 +650,15 @@ const emergCard = privacy.emergencyCardEnabled || false;
           <div class="ho-sec-item">
             <div class="ho-sec-info">
               <strong>Password</strong>
-              <span> </span>
+              <span>Secure password management</span>
             </div>
             <% if (locals.hasPassword) { %>
               <button type="button" class="ho-btn-ghost ho-btn-tiny" onclick="openModal('passwordModal')">Change Password</button>
             <% } else { %>
-              <span style="font-size: 0.75rem; font-weight: 700; color: var(--ho-text-muted);">Google OAuth Managed</span>
+              <span style="font-size: 0.74rem; font-weight: 700; color: var(--ho-text-muted);">Google OAuth Managed</span>
             <% } %>
           </div>
-          <div class="ho-sec-item" style="background: rgba(13, 122, 110, 0.05); border-color: rgba(13, 122, 110, 0.2);">
+          <div class="ho-sec-item" style="background: rgba(13, 122, 110, 0.04); border-color: rgba(13, 122, 110, 0.18);">
             <div class="ho-sec-info">
               <strong>Two-Factor Authentication</strong>
               <span>Extra security for your health data <span class="ho-badge coming-soon">Planned</span></span>
@@ -415,43 +669,43 @@ const emergCard = privacy.emergencyCardEnabled || false;
       </section>
 
       <!-- 4. CURRENT SESSION -->
-      <section class="ho-panel ho-sessions-panel ho-delay-2">
+      <section class="ho-panel ho-sessions-panel">
         <div class="ho-panel-header">
-          <h2>Session</h2>
+          <h2>Active Session</h2>
         </div>
-        <div class="ho-sec-list">
+        <div class="ho-sec-list" style="margin-bottom: 1rem;">
           <div class="ho-sec-item">
-            <div style="display: flex; gap: 1rem; align-items: center;">
+            <div style="display: flex; gap: 0.85rem; align-items: center; min-width:0;">
               <div class="ho-sess-icon">💻</div>
-              <div class="ho-sec-info">
-                <strong>This Device <span class="ho-current-badge">Current Session</span></strong>
-                <span>Signed in as <%= u.email || locals.userEmail %></span>
+              <div class="ho-sec-info" style="min-width:0;">
+                <strong style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">This Device <span class="ho-current-badge">Active</span></strong>
+                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= u.email || locals.userEmail %></span>
               </div>
             </div>
           </div>
         </div>
-        <p style="font-size: 0.78rem; color: var(--ho-text-muted); font-weight: 500; margin-top: 0.8rem;">
-          Multi-device session management is planned but not yet implemented — only your active session is shown here.
+        <p style="font-size: 0.78rem; color: var(--ho-text-muted); font-weight: 500; margin-bottom: 1rem; line-height: 1.4;">
+          Multi-device session management is planned; only your active session is shown here.
         </p>
-        <a href="/logout" class="ho-btn-ghost" style="margin-top: auto; width: 100%; text-align: center;">Log Out</a>
+        <a href="/logout" class="ho-btn-ghost" style="width: 100%; justify-content:center; margin-top:auto;">Log Out</a>
       </section>
 
       <!-- 5. FAMILY & AUTHORIZED ACCESS -->
-      <section class="ho-panel ho-family-panel ho-delay-3">
-        <div class="ho-panel-header" style="border-bottom: 1px solid rgba(13, 122, 110, 0.15); padding-bottom: 1.2rem;">
+      <section class="ho-panel ho-family-panel">
+        <div class="ho-panel-header" style="border-bottom: 1px solid rgba(13, 122, 110, 0.14); padding-bottom: 1.1rem; margin-bottom: 1.1rem;">
           <div>
-            <h2>Family & Authorized Access</h2>
-            <p style="font-size: 0.85rem; color: var(--ho-teal-900); font-weight: 500; margin-top: 0.3rem;">Choose who can access selected parts of your HealthOrbit information.</p>
+            <h2>Family &amp; Authorized Access</h2>
+            <p style="font-size: 0.85rem; color: var(--ho-teal-900); font-weight: 500; margin-top: 0.25rem;">Choose who can access selected parts of your HealthOrbit records.</p>
           </div>
           <button type="button" class="ho-btn-primary" onclick="openModal('addFamilyModal')">+ Add Family Member</button>
         </div>
 
-        <div class="ho-scrollable">
+        <div class="ho-scrollable ho-custom-scroll">
           
           <!-- INCOMING INVITATIONS -->
           <% if (locals.incomingInvitations && locals.incomingInvitations.length > 0) { %>
-            <div style="margin-bottom: 1.5rem; margin-top: 0.5rem;">
-              <h4 style="font-size: 0.85rem; color: var(--ho-teal-900); text-transform: uppercase; font-weight: 800; margin-bottom: 0.8rem;">Incoming Requests</h4>
+            <div style="margin-bottom: 1.25rem; margin-top: 0.2rem;">
+              <h4 style="font-size: 0.76rem; color: var(--ho-teal-900); text-transform: uppercase; font-weight: 800; margin-bottom: 0.7rem; letter-spacing: 0.05em;">Incoming Requests</h4>
               <% locals.incomingInvitations.forEach(function(inv) { 
                   const sender = inv.ownerUserId || {};
                   const senderName = sender.fullName || inv.senderName || 'HealthOrbit User';
@@ -480,7 +734,6 @@ const emergCard = privacy.emergencyCardEnabled || false;
           <% if (locals.familyMembers && locals.familyMembers.length > 0) { %>
             <div class="ho-family-grid">
               <% locals.familyMembers.forEach(function(member) { 
-                  // Resolve correct user reference safely depending on direction
                   const isOwner = member.ownerUserId && member.ownerUserId._id && (member.ownerUserId._id.toString() === u._id.toString());
                   const person = isOwner ? (member.viewerUserId || {}) : (member.ownerUserId || {});
                   const memberName = person.fullName || member.name || 'Family Member';
@@ -491,10 +744,8 @@ const emergCard = privacy.emergencyCardEnabled || false;
                   if (statusRaw === 'pending') statusClass = 'pending';
                   if (statusRaw === 'rejected' || statusRaw === 'revoked') statusClass = 'rejected';
 
-                  // Target user ID for viewing details
                   const targetId = isOwner ? member.viewerUserId?._id : member.ownerUserId?._id;
 
-                  // Permission metadata (icon + label) for the redesigned chips
                   const permMeta = {
                     emergencyInfo:  { icon: '🚑', label: 'Emergency Info' },
                     medicalReports: { icon: '📄', label: 'Medical Reports' },
@@ -502,8 +753,8 @@ const emergCard = privacy.emergencyCardEnabled || false;
                     medicines:      { icon: '💊', label: 'Medicines' },
                     symptoms:       { icon: '📝', label: 'Symptoms' },
                     insurance:      { icon: '🛡️', label: 'Insurance' },
-                    wearableData:   { icon: '⌚', label: 'Wearable Data' },
-                    healthTimeline: { icon: '🕒', label: 'Health Timeline' }
+                    wearableData:   { icon: '⌚', label: 'Wearables' },
+                    healthTimeline: { icon: '🕒', label: 'Timeline' }
                   };
                   const permKeys = Object.keys(permMeta);
                   const enabledCount = permKeys.filter(function(k) { return member.permissions && member.permissions[k]; }).length;
@@ -512,7 +763,6 @@ const emergCard = privacy.emergencyCardEnabled || false;
                 <div class="ho-fam-card">
                   <div class="ho-fam-accent"></div>
 
-                  <!-- Header: avatar + name + relationship + status -->
                   <div class="ho-fam-top">
                     <div class="ho-fam-id">
                       <div class="ho-hero-avatar-wrap">
@@ -532,7 +782,7 @@ const emergCard = privacy.emergencyCardEnabled || false;
                     <div class="ho-fam-status <%= statusClass %>"><%= member.status || 'Active' %></div> 
                   </div>
 
-                  <!-- Access meter -->
+                  <!-- Access Meter -->
                   <div class="ho-fam-meter">
                     <div class="ho-fam-meter-top">
                       <span>Access Shared</span>
@@ -541,7 +791,7 @@ const emergCard = privacy.emergencyCardEnabled || false;
                     <div class="ho-fam-meter-track"><div class="ho-fam-meter-fill" style="width: <%= accessPct %>%;"></div></div>
                   </div>
 
-                  <!-- Permission chips -->
+                  <!-- Permission Chips -->
                   <div class="ho-fam-perms">
                     <% permKeys.forEach(function(key) { 
                         const isOn = member.permissions && member.permissions[key];
@@ -549,7 +799,7 @@ const emergCard = privacy.emergencyCardEnabled || false;
                       <div class="ho-perm-chip <%= isOn ? '' : 'off' %>" title="<%= permMeta[key].label %>: <%= isOn ? 'Allowed' : 'Not shared' %>">
                         <span class="pc-icon"><%= permMeta[key].icon %></span>
                         <span class="pc-label"><%= permMeta[key].label %></span>
-                        <span class="pc-state"><%= isOn ? '✓' : '✗' %></span>
+                        <span class="pc-state"><%= isOn ? '&checkmark;' : '&times;' %></span>
                       </div>
                     <% }); %>
                   </div>
@@ -557,11 +807,11 @@ const emergCard = privacy.emergencyCardEnabled || false;
                   <!-- Actions -->
                   <div class="ho-fam-actions">
                     <% if (statusRaw === 'active' && targetId) { %>
-                      <button type="button" class="ho-btn-primary ho-btn-tiny" style="width: 100%;" onclick="viewFamilyHealth('<%= targetId %>', '<%= memberName.replace(/'/g, "\\'") %>')">View Health Details</button>
+                      <button type="button" class="ho-btn-primary ho-btn-tiny" style="width: 100%; justify-content:center;" onclick="viewFamilyHealth('<%= targetId %>', '<%= memberName.replace(/'/g, "\\'") %>')">View Health Details</button>
                     <% } %>
                     <div class="ho-fam-action-row">
                       <button type="button" class="ho-btn-ghost" onclick="openManageAccess('<%= member._id %>', '<%= memberName.replace(/'/g, "\\'") %>', '<%= member.relationship %>', <%= JSON.stringify(member.permissions || {}) %>)">Manage Access</button>
-                      <form method="POST" action="/family/<%= member._id %>/remove" onsubmit="return confirm('Remove <%= memberName.replace(/'/g, "\\'") %>\'s access?');" onclick="event.stopPropagation();">
+                      <form method="POST" action="/family/<%= member._id %>/remove" onsubmit="return confirm('Remove <%= memberName.replace(/'/g, "\\'") %>\'s access?');" onclick="event.stopPropagation();" style="display:flex; flex:1;">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button type="submit" class="ho-btn-danger">Remove</button>
                       </form>
@@ -571,7 +821,7 @@ const emergCard = privacy.emergencyCardEnabled || false;
               <% }); %>
             </div>
           <% } else if (!locals.incomingInvitations || locals.incomingInvitations.length === 0) { %>
-            <div class="ho-empty-state">No family members added yet. Use "Add Family Member" to authorize someone to view selected information.</div>
+            <div class="ho-empty-state">No family members added yet. Use &ldquo;+ Add Family Member&rdquo; above to authorize someone to view selected records.</div>
           <% } %>
         </div>
       </section>
@@ -582,37 +832,40 @@ const emergCard = privacy.emergencyCardEnabled || false;
           <h2>Connected Health Sources</h2>
         </div>
         <div class="ho-action-list">
-          <p style="font-size: 0.9rem; color: var(--ho-text-muted); font-weight: 500; text-align:center; padding: 0.5rem 0;">
-            No wearable or health-platform sources connected. <span class="ho-badge coming-soon">Planned</span>
-          </p>
-          <button type="button" class="ho-btn-ghost" disabled title="Wearable integration (Apple Health, Health Connect, etc.) is a planned feature">Connect Health Data</button>
+          <div class="ho-action-row" style="background: rgba(255,255,255,0.65);">
+            <div class="ho-action-text">
+              <strong>Health Connect / Wearable Sync</strong>
+              <span>No health platforms connected currently <span class="ho-badge coming-soon">Planned</span></span>
+            </div>
+            <button type="button" class="ho-btn-ghost ho-btn-tiny" disabled title="Wearable integration (Apple Health, Health Connect) is planned">Connect</button>
+          </div>
         </div>
       </section>
 
-      <!-- 7. PRIVACY & DATA (ACTIVATED) -->
+      <!-- 7. PRIVACY & DATA -->
       <section class="ho-panel ho-privacy-panel">
         <div class="ho-panel-header">
-          <h2>Privacy & Data</h2>
+          <h2>Privacy &amp; Data</h2>
         </div>
         <div class="ho-action-list">
           <div class="ho-action-row">
             <div class="ho-action-text">
               <strong>Download My Data</strong>
-              <span>Download a readable PDF copy of your HealthOrbit data.</span>
+              <span>Export a readable PDF summary of your HealthOrbit records.</span>
             </div>
             <a href="/account/export" class="ho-btn-ghost ho-btn-tiny">Download PDF</a>
           </div>
           <div class="ho-action-row">
             <div class="ho-action-text">
-              <strong>Health Data Permissions & AI</strong>
-              <span>Manage what HealthOrbit AI can access.</span>
+              <strong>Health Data Permissions &amp; AI</strong>
+              <span>Configure what data HealthOrbit AI is allowed to process.</span>
             </div>
             <button type="button" class="ho-btn-ghost ho-btn-tiny" onclick="openModal('privacyModal')">Permissions</button>
           </div>
           <div class="ho-action-row">
             <div class="ho-action-text">
               <strong>AI Conversation Memory</strong>
-              <span>Clear your recent session chat context.</span>
+              <span>Clear active session chat threads instantly.</span>
             </div>
             <form method="POST" action="/api/chat/reset" style="margin:0;">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -620,7 +873,6 @@ const emergCard = privacy.emergencyCardEnabled || false;
             </form>
           </div>
         </div>
-        <p style="font-size: 0.75rem; color: var(--ho-text-muted); margin-top: 1rem; font-weight: 500; line-height: 1.5; text-align: center;">Your health information is accessible only according to your account permissions and authorized sharing settings.</p>
       </section>
 
       <!-- 8. ACCOUNT ACTIONS -->
@@ -638,15 +890,16 @@ const emergCard = privacy.emergencyCardEnabled || false;
      MODALS
 =========================================== -->
 
-<!-- FAMILY HEALTH DETAILS MODAL (Populated via GET /family/member/:id/health) -->
+<!-- FAMILY HEALTH DETAILS MODAL -->
 <div class="ho-modal" id="familyHealthModal" onclick="closeModal('familyHealthModal', event)">
-  <div class="ho-modal-box" onclick="event.stopPropagation()">
+  <div class="ho-modal-box ho-custom-scroll" onclick="event.stopPropagation()">
+    <div class="ho-modal-handle desktop-only" style="display:none;"></div>
     <div class="ho-modal-head">
       <h3 id="fhTitle">Family Health Profile</h3>
       <button type="button" class="ho-modal-close" onclick="closeModal('familyHealthModal')">&times;</button>
     </div>
-    <div id="fhBody" style="max-height: 65vh; overflow-y: auto;">
-      <p style="color: var(--ho-text-muted); text-align: center;">Loading authorized medical information...</p>
+    <div id="fhBody" style="max-height: 60vh; overflow-y: auto;" class="ho-custom-scroll">
+      <p style="color: var(--ho-text-muted); text-align: center;">Loading authorized medical records...</p>
     </div>
     <div style="margin-top: 1.5rem; text-align: right;">
       <button type="button" class="ho-btn-ghost" onclick="closeModal('familyHealthModal')">Close</button>
@@ -656,7 +909,8 @@ const emergCard = privacy.emergencyCardEnabled || false;
 
 <!-- PROFILE IMAGE MODAL -->
 <div class="ho-modal" id="profileImageModal" onclick="closeModal('profileImageModal', event)">
-  <div class="ho-modal-box" onclick="event.stopPropagation()">
+  <div class="ho-modal-box ho-custom-scroll" onclick="event.stopPropagation()">
+    <div class="ho-modal-handle desktop-only" style="display:none;"></div>
     <div class="ho-modal-head">
       <h3>Update Profile Photo</h3>
       <button type="button" class="ho-modal-close" onclick="closeModal('profileImageModal')">&times;</button>
@@ -669,8 +923,8 @@ const emergCard = privacy.emergencyCardEnabled || false;
         <small>Supported formats: JPG, PNG, WEBP.</small>
       </div>
       <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-        <button type="button" class="ho-btn-ghost" style="flex: 1;" onclick="closeModal('profileImageModal')">Cancel</button>
-        <button type="submit" class="ho-btn-primary" style="flex: 1;">Upload Photo</button>
+        <button type="button" class="ho-btn-ghost" style="flex: 1; justify-content:center;" onclick="closeModal('profileImageModal')">Cancel</button>
+        <button type="submit" class="ho-btn-primary" style="flex: 1; justify-content:center;">Upload Photo</button>
       </div>
     </form>
   </div>
@@ -678,7 +932,8 @@ const emergCard = privacy.emergencyCardEnabled || false;
 
 <!-- EDIT PROFILE MODAL -->
 <div class="ho-modal" id="editProfileModal" onclick="closeModal('editProfileModal', event)">
-  <div class="ho-modal-box" onclick="event.stopPropagation()">
+  <div class="ho-modal-box ho-custom-scroll" onclick="event.stopPropagation()">
+    <div class="ho-modal-handle desktop-only" style="display:none;"></div>
     <div class="ho-modal-head">
       <h3>Edit Profile</h3>
       <button type="button" class="ho-modal-close" onclick="closeModal('editProfileModal')">&times;</button>
@@ -689,12 +944,12 @@ const emergCard = privacy.emergencyCardEnabled || false;
         <label>Full Name</label>
         <input type="text" name="fullName" class="ho-input" value="<%= u.fullName || '' %>" required>
       </div>
-      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        <div class="ho-form-group" style="flex: 1; min-width: 150px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div class="ho-form-group">
           <label>Age</label>
           <input type="number" name="age" min="0" max="130" class="ho-input" value="<%= u.age || '' %>">
         </div>
-        <div class="ho-form-group" style="flex: 1; min-width: 150px;">
+        <div class="ho-form-group">
           <label>Gender</label>
           <select name="gender" class="ho-input">
             <option value="" <%= !u.gender ? 'selected' : '' %>>Prefer not to say</option>
@@ -708,9 +963,9 @@ const emergCard = privacy.emergencyCardEnabled || false;
         <label>Phone Number</label>
         <input type="tel" name="phone" class="ho-input" value="<%= u.phone || '' %>" placeholder="+91 98765 43210">
       </div>
-      <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
-        <button type="button" class="ho-btn-ghost" style="flex: 1;" onclick="closeModal('editProfileModal')">Cancel</button>
-        <button type="submit" class="ho-btn-primary" style="flex: 1;">Save Changes</button>
+      <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+        <button type="button" class="ho-btn-ghost" style="flex: 1; justify-content:center;" onclick="closeModal('editProfileModal')">Cancel</button>
+        <button type="submit" class="ho-btn-primary" style="flex: 1; justify-content:center;">Save Changes</button>
       </div>
     </form>
   </div>
@@ -718,7 +973,8 @@ const emergCard = privacy.emergencyCardEnabled || false;
 
 <!-- EDIT HEALTH INFO MODAL -->
 <div class="ho-modal" id="editHealthModal" onclick="closeModal('editHealthModal', event)">
-  <div class="ho-modal-box" onclick="event.stopPropagation()">
+  <div class="ho-modal-box ho-custom-scroll" onclick="event.stopPropagation()">
+    <div class="ho-modal-handle desktop-only" style="display:none;"></div>
     <div class="ho-modal-head">
       <h3>Edit Health Information</h3>
       <button type="button" class="ho-modal-close" onclick="closeModal('editHealthModal')">&times;</button>
@@ -749,9 +1005,9 @@ const emergCard = privacy.emergencyCardEnabled || false;
         <small>Separate multiple entries with commas</small>
         <input type="text" name="currentMedicines" class="ho-input" value="<%= (u.currentMedicines || []).join(', ') %>" placeholder="e.g. Vitamin D3, Levothyroxine">
       </div>
-      <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
-        <button type="button" class="ho-btn-ghost" style="flex: 1;" onclick="closeModal('editHealthModal')">Cancel</button>
-        <button type="submit" class="ho-btn-primary" style="flex: 1;">Save Changes</button>
+      <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+        <button type="button" class="ho-btn-ghost" style="flex: 1; justify-content:center;" onclick="closeModal('editHealthModal')">Cancel</button>
+        <button type="submit" class="ho-btn-primary" style="flex: 1; justify-content:center;">Save Changes</button>
       </div>
     </form>
   </div>
@@ -759,7 +1015,8 @@ const emergCard = privacy.emergencyCardEnabled || false;
 
 <!-- EDIT EMERGENCY INFO MODAL -->
 <div class="ho-modal" id="editEmergencyModal" onclick="closeModal('editEmergencyModal', event)">
-  <div class="ho-modal-box" onclick="event.stopPropagation()">
+  <div class="ho-modal-box ho-custom-scroll" onclick="event.stopPropagation()">
+    <div class="ho-modal-handle desktop-only" style="display:none;"></div>
     <div class="ho-modal-head">
       <h3>Manage Emergency Info</h3>
       <button type="button" class="ho-modal-close" onclick="closeModal('editEmergencyModal')">&times;</button>
@@ -768,21 +1025,21 @@ const emergCard = privacy.emergencyCardEnabled || false;
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="ho-form-group">
         <label>Contact Name</label>
-        <input type="text" name="emergencyName" class="ho-input" value="<%= u.emergencyContact ? u.emergencyContact.name : (u.emergencyContactName || '') %>" placeholder="e.g. Mother">
+        <input type="text" name="emergencyName" class="ho-input" value="<%= u.emergencyContact ? u.emergencyContact.name : (u.emergencyContactName || '') %>" placeholder="e.g. Jane Doe">
       </div>
-      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        <div class="ho-form-group" style="flex: 1; min-width: 150px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div class="ho-form-group">
           <label>Relationship</label>
-          <input type="text" name="emergencyRelation" class="ho-input" value="<%= u.emergencyContact ? u.emergencyContact.relationship : (u.emergencyContactRelation || '') %>" placeholder="e.g. Parent">
+          <input type="text" name="emergencyRelation" class="ho-input" value="<%= u.emergencyContact ? u.emergencyContact.relationship : (u.emergencyContactRelation || '') %>" placeholder="e.g. Spouse">
         </div>
-        <div class="ho-form-group" style="flex: 1; min-width: 150px;">
+        <div class="ho-form-group">
           <label>Phone Number</label>
           <input type="tel" name="emergencyPhone" class="ho-input" value="<%= u.emergencyContact ? u.emergencyContact.phone : (u.emergencyContactPhone || '') %>" placeholder="+91 98765 43210">
         </div>
       </div>
-      <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
-        <button type="button" class="ho-btn-ghost" style="flex: 1;" onclick="closeModal('editEmergencyModal')">Cancel</button>
-        <button type="submit" class="ho-btn-primary" style="flex: 1;">Save Changes</button>
+      <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+        <button type="button" class="ho-btn-ghost" style="flex: 1; justify-content:center;" onclick="closeModal('editEmergencyModal')">Cancel</button>
+        <button type="submit" class="ho-btn-primary" style="flex: 1; justify-content:center;">Save Changes</button>
       </div>
     </form>
   </div>
@@ -790,39 +1047,40 @@ const emergCard = privacy.emergencyCardEnabled || false;
 
 <!-- ADD FAMILY MEMBER MODAL -->
 <div class="ho-modal" id="addFamilyModal" onclick="closeModal('addFamilyModal', event)">
-  <div class="ho-modal-box" onclick="event.stopPropagation()">
+  <div class="ho-modal-box ho-custom-scroll" onclick="event.stopPropagation()">
+    <div class="ho-modal-handle desktop-only" style="display:none;"></div>
     <div class="ho-modal-head">
       <h3>Add Family Member</h3>
       <button type="button" class="ho-modal-close" onclick="closeModal('addFamilyModal')">&times;</button>
     </div>
     <form method="POST" action="/family/invite">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <div style="display: flex; gap: 1rem; margin-bottom: 1.2rem; flex-wrap: wrap;">
-        <div class="ho-form-group" style="flex: 1; min-width: 150px; margin-bottom: 0;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.1rem;">
+        <div class="ho-form-group" style="margin-bottom: 0;">
           <label>Relationship</label>
           <select name="relationship" class="ho-input">
             <option>Parent</option><option>Sibling</option><option>Spouse</option><option>Child</option><option>Other</option>
           </select>
         </div>
-        <div class="ho-form-group" style="flex: 1; min-width: 150px; margin-bottom: 0;">
-          <label>Registered HealthOrbit Email</label>
+        <div class="ho-form-group" style="margin-bottom: 0;">
+          <label>HealthOrbit Email</label>
           <input type="email" name="email" class="ho-input" placeholder="user@example.com" required>
         </div>
       </div>
-      <p style="font-size: 0.85rem; font-weight: 800; color: var(--ho-teal-900); margin-bottom: 1rem; border-bottom: 1px solid var(--ho-glass-border-subtle); padding-bottom: 0.5rem;">Select information this person can access</p>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1.5rem;">
-        <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--ho-teal-900);"><input type="checkbox" name="permissions[emergencyInfo]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Emergency Information</label>
-        <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--ho-teal-900);"><input type="checkbox" name="permissions[medicalReports]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Medical Reports</label>
-        <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--ho-teal-900);"><input type="checkbox" name="permissions[healthSummary]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Health Summary</label>
-        <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--ho-teal-900);"><input type="checkbox" name="permissions[medicines]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Medicines</label>
-        <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--ho-teal-900);"><input type="checkbox" name="permissions[symptoms]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Symptoms</label>
-        <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--ho-teal-900);"><input type="checkbox" name="permissions[insurance]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Insurance</label>
-        <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--ho-teal-900);"><input type="checkbox" name="permissions[wearableData]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Wearable Data</label>
-        <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--ho-teal-900);"><input type="checkbox" name="permissions[healthTimeline]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Health Timeline</label>
+      <p style="font-size: 0.76rem; font-weight: 800; color: var(--ho-teal-900); margin-bottom: 0.8rem; border-bottom: 1px solid rgba(13,122,110,0.12); padding-bottom: 0.4rem; text-transform:uppercase; letter-spacing:0.05em;">Select Information to Share</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; margin-bottom: 1.35rem;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; cursor: pointer; color: var(--ho-teal-950);"><input type="checkbox" name="permissions[emergencyInfo]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Emergency Info</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; cursor: pointer; color: var(--ho-teal-950);"><input type="checkbox" name="permissions[medicalReports]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Medical Reports</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; cursor: pointer; color: var(--ho-teal-950);"><input type="checkbox" name="permissions[healthSummary]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Health Summary</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; cursor: pointer; color: var(--ho-teal-950);"><input type="checkbox" name="permissions[medicines]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Medicines</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; cursor: pointer; color: var(--ho-teal-950);"><input type="checkbox" name="permissions[symptoms]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Symptoms</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; cursor: pointer; color: var(--ho-teal-950);"><input type="checkbox" name="permissions[insurance]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Insurance</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; cursor: pointer; color: var(--ho-teal-950);"><input type="checkbox" name="permissions[wearableData]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Wearable Data</label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 700; cursor: pointer; color: var(--ho-teal-950);"><input type="checkbox" name="permissions[healthTimeline]" value="true" style="width: 16px; height: 16px; accent-color: var(--ho-teal-600);"> Timeline</label>
       </div>
       <div style="display: flex; gap: 1rem;">
-        <button type="button" class="ho-btn-ghost" style="flex: 1;" onclick="closeModal('addFamilyModal')">Cancel</button>
-        <button type="submit" class="ho-btn-primary" style="flex: 1;">Send Authorization</button>
+        <button type="button" class="ho-btn-ghost" style="flex: 1; justify-content:center;" onclick="closeModal('addFamilyModal')">Cancel</button>
+        <button type="submit" class="ho-btn-primary" style="flex: 1; justify-content:center;">Send Authorization</button>
       </div>
     </form>
   </div>
@@ -830,19 +1088,20 @@ const emergCard = privacy.emergencyCardEnabled || false;
 
 <!-- MANAGE ACCESS MODAL -->
 <div class="ho-modal" id="manageAccessModal" onclick="closeModal('manageAccessModal', event)">
-  <div class="ho-modal-box" onclick="event.stopPropagation()">
+  <div class="ho-modal-box ho-custom-scroll" onclick="event.stopPropagation()">
+    <div class="ho-modal-handle desktop-only" style="display:none;"></div>
     <div class="ho-modal-head">
       <h3>Manage Access</h3>
       <button type="button" class="ho-modal-close" onclick="closeModal('manageAccessModal')">&times;</button>
     </div>
-    <div style="margin-bottom: 1.5rem; background: var(--ho-bg-airy); padding: 1rem; border-radius: 12px;">
-      <strong id="maName" style="display: block; font-size: 1.1rem; color: var(--ho-teal-900);"></strong>
-      <span id="maRelationship" style="font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 500;"></span>
+    <div style="margin-bottom: 1.25rem; background: rgba(13,122,110,0.05); padding: 0.9rem 1rem; border-radius: 14px; border:1px solid rgba(13,122,110,0.12);">
+      <strong id="maName" style="display: block; font-size: 1.05rem; color: var(--ho-teal-950);"></strong>
+      <span id="maRelationship" style="font-size: 0.78rem; color: var(--ho-text-muted); font-weight: 600;"></span>
     </div>
-    <p style="font-size: 0.85rem; font-weight: 800; color: var(--ho-teal-900); margin-bottom: 1rem; border-bottom: 1px solid var(--ho-glass-border-subtle); padding-bottom: 0.5rem;">Access Permissions</p>
+    <p style="font-size: 0.76rem; font-weight: 800; color: var(--ho-teal-900); margin-bottom: 0.8rem; border-bottom: 1px solid rgba(13,122,110,0.12); padding-bottom: 0.4rem; text-transform:uppercase; letter-spacing:0.05em;">Access Permissions</p>
     <form id="manageAccessForm" method="POST" action="/family/permissions">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2rem;">
+      <div style="display: flex; flex-direction: column; gap: 0.2rem; margin-bottom: 1.5rem;" class="ho-custom-scroll">
         <div class="ho-perm-row">
           <div class="ho-perm-info"><strong>Emergency Information</strong><span>Critical contacts, blood group, allergies</span></div>
           <label class="ho-toggle"><input type="checkbox" name="permissions[emergencyInfo]" id="perm-emergencyInfo"><span class="ho-toggle-slider"></span></label>
@@ -876,18 +1135,18 @@ const emergCard = privacy.emergencyCardEnabled || false;
           <label class="ho-toggle"><input type="checkbox" name="permissions[healthTimeline]" id="perm-healthTimeline"><span class="ho-toggle-slider"></span></label>
         </div>
       </div>
-      <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
-        <button type="button" class="ho-btn-ghost" style="flex: 1; min-width: 100px;" onclick="closeModal('manageAccessModal')">Cancel</button>
-        <button type="submit" class="ho-btn-primary" style="flex: 1; min-width: 140px;">Save Permissions</button>
+      <div style="display: flex; gap: 1rem;">
+        <button type="button" class="ho-btn-ghost" style="flex: 1; justify-content:center;" onclick="closeModal('manageAccessModal')">Cancel</button>
+        <button type="submit" class="ho-btn-primary" style="flex: 1; justify-content:center;">Save Permissions</button>
       </div>
     </form>
   </div>
 </div>
 
-
 <!-- CHANGE PASSWORD MODAL -->
 <div class="ho-modal" id="passwordModal" onclick="closeModal('passwordModal', event)">
-  <div class="ho-modal-box" onclick="event.stopPropagation()">
+  <div class="ho-modal-box ho-custom-scroll" onclick="event.stopPropagation()">
+    <div class="ho-modal-handle desktop-only" style="display:none;"></div>
     <div class="ho-modal-head">
       <h3>Change Password</h3>
       <button type="button" class="ho-modal-close" onclick="closeModal('passwordModal')">&times;</button>
@@ -906,9 +1165,9 @@ const emergCard = privacy.emergencyCardEnabled || false;
         <label>Confirm New Password</label>
         <input type="password" name="confirmPassword" class="ho-input" required minlength="8">
       </div>
-      <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-        <button type="button" class="ho-btn-ghost" style="flex: 1;" onclick="closeModal('passwordModal')">Cancel</button>
-        <button type="submit" class="ho-btn-primary" style="flex: 1;">Update Password</button>
+      <div style="display: flex; gap: 1rem; margin-top: 1.2rem;">
+        <button type="button" class="ho-btn-ghost" style="flex: 1; justify-content:center;" onclick="closeModal('passwordModal')">Cancel</button>
+        <button type="submit" class="ho-btn-primary" style="flex: 1; justify-content:center;">Update Password</button>
       </div>
     </form>
   </div>
@@ -916,15 +1175,16 @@ const emergCard = privacy.emergencyCardEnabled || false;
 
 <!-- PRIVACY & AI MODAL -->
 <div class="ho-modal" id="privacyModal" onclick="closeModal('privacyModal', event)">
-  <div class="ho-modal-box" onclick="event.stopPropagation()">
+  <div class="ho-modal-box ho-custom-scroll" onclick="event.stopPropagation()">
+    <div class="ho-modal-handle desktop-only" style="display:none;"></div>
     <div class="ho-modal-head">
-      <h3>Privacy & AI Settings</h3>
+      <h3>Privacy &amp; AI Settings</h3>
       <button type="button" class="ho-modal-close" onclick="closeModal('privacyModal')">&times;</button>
     </div>
-    <p style="font-size: 0.85rem; font-weight: 500; color: var(--ho-text-muted); margin-bottom: 1.5rem;">Choose what data HealthOrbit AI is allowed to process to answer your questions.</p>
+    <p style="font-size: 0.82rem; font-weight: 500; color: var(--ho-text-muted); margin-bottom: 1.25rem;">Choose what data HealthOrbit AI is allowed to process when answering your questions.</p>
     <form method="POST" action="/profile/privacy">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2rem;">
+      <div style="display: flex; flex-direction: column; gap: 0.2rem; margin-bottom: 1.5rem;" class="ho-custom-scroll">
         <div class="ho-perm-row">
           <div class="ho-perm-info"><strong>Public Emergency Card</strong><span>Allow first responders to view basic info (Planned)</span></div>
           <label class="ho-toggle"><input type="checkbox" name="emergencyCardEnabled" <%= emergCard ? 'checked' : '' %>><span class="ho-toggle-slider"></span></label>
@@ -938,7 +1198,7 @@ const emergCard = privacy.emergencyCardEnabled || false;
           <label class="ho-toggle"><input type="checkbox" name="medicalReports" <%= aiPrefs.medicalReports ? 'checked' : '' %>><span class="ho-toggle-slider"></span></label>
         </div>
         <div class="ho-perm-row">
-          <div class="ho-perm-info"><strong>AI Access: Health Measurements</strong><span>Allow AI to calculate trends from your vitals</span></div>
+          <div class="ho-perm-info"><strong>AI Access: Health Measurements</strong><span>Allow AI to calculate trends from vitals</span></div>
           <label class="ho-toggle"><input type="checkbox" name="healthMeasurements" <%= aiPrefs.healthMeasurements ? 'checked' : '' %>><span class="ho-toggle-slider"></span></label>
         </div>
         <div class="ho-perm-row">
@@ -950,9 +1210,9 @@ const emergCard = privacy.emergencyCardEnabled || false;
           <label class="ho-toggle"><input type="checkbox" name="familyMetadata" <%= aiPrefs.familyMetadata ? 'checked' : '' %>><span class="ho-toggle-slider"></span></label>
         </div>
       </div>
-      <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
-        <button type="button" class="ho-btn-ghost" style="flex: 1;" onclick="closeModal('privacyModal')">Cancel</button>
-        <button type="submit" class="ho-btn-primary" style="flex: 1;">Save Privacy Rules</button>
+      <div style="display: flex; gap: 1rem;">
+        <button type="button" class="ho-btn-ghost" style="flex: 1; justify-content:center;" onclick="closeModal('privacyModal')">Cancel</button>
+        <button type="submit" class="ho-btn-primary" style="flex: 1; justify-content:center;">Save Privacy Rules</button>
       </div>
     </form>
   </div>
@@ -960,20 +1220,23 @@ const emergCard = privacy.emergencyCardEnabled || false;
 
 <!-- DELETE ACCOUNT CONFIRMATION MODAL -->
 <div class="ho-modal" id="deleteAccountModal" onclick="closeModal('deleteAccountModal', event)">
-  <div class="ho-modal-box" style="max-width: 450px; text-align: center;" onclick="event.stopPropagation()">
-    <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
-    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ho-teal-900); margin-bottom: 0.5rem;">Delete Account?</h3>
-    <p style="font-size: 0.95rem; color: var(--ho-text-muted); line-height: 1.5; margin-bottom: 1rem; font-weight: 500;">Are you sure you want to delete your HealthOrbit account?</p>
-    <p style="font-size: 0.85rem; color: var(--ho-danger); font-weight: 700; background: var(--ho-coral-soft); padding: 0.8rem; border-radius: 10px; margin-bottom: 2rem;">Warning: This permanently deletes your reports, measurements, family access records, and account. This cannot be undone.</p>
+  <div class="ho-modal-box ho-custom-scroll" style="max-width: 440px; text-align: center;" onclick="event.stopPropagation()">
+    <div class="ho-modal-handle desktop-only" style="display:none;"></div>
+    <div style="font-size: 2.8rem; margin-bottom: 0.75rem;">⚠️</div>
+    <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--ho-teal-900); margin-bottom: 0.4rem; font-family: 'Fraunces', serif;">Delete Account?</h3>
+    <p style="font-size: 0.9rem; color: var(--ho-text-muted); line-height: 1.45; margin-bottom: 0.8rem; font-weight: 500;">Are you sure you want to delete your HealthOrbit account?</p>
+    <p style="font-size: 0.78rem; color: var(--ho-danger); font-weight: 700; background: var(--ho-coral-soft); padding: 0.75rem; border-radius: 10px; margin-bottom: 1.5rem; line-height: 1.4;">Warning: This permanently deletes your reports, measurements, family access records, and account data. This cannot be undone.</p>
     <form method="POST" action="/account/delete">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div style="display: flex; gap: 1rem;">
-        <button type="button" class="ho-btn-ghost" style="flex: 1;" onclick="closeModal('deleteAccountModal')">Cancel</button>
-        <button type="submit" class="ho-btn-danger" style="flex: 1;">Delete Account</button>
+        <button type="button" class="ho-btn-ghost" style="flex: 1; justify-content:center;" onclick="closeModal('deleteAccountModal')">Cancel</button>
+        <button type="submit" class="ho-btn-danger" style="flex: 1; justify-content:center;">Delete Account</button>
       </div>
     </form>
   </div>
 </div>
+
+<div class="ho-toast" id="serverToast">Action completed</div>
 
 <script>
   function openModal(id) {
@@ -1020,8 +1283,8 @@ const emergCard = privacy.emergencyCardEnabled || false;
       let html = '';
 
       if (perms.healthSummary && d.summary) {
-        html += '<div style="background: var(--ho-bg-airy); padding: 1rem; border-radius: 12px; margin-bottom: 1rem;">' +
-                '<strong style="color: var(--ho-teal-900); display: block; margin-bottom: 0.5rem;">Clinical Summary</strong>' +
+        html += '<div style="background: rgba(13,122,110,0.05); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; border:1px solid rgba(13,122,110,0.12);">' +
+                '<strong style="color: var(--ho-teal-900); display: block; margin-bottom: 0.5rem; font-family:\'Fraunces\',serif;">Clinical Summary</strong>' +
                 '<span style="font-size:0.85rem; color:var(--ho-text-main); display:block;">Blood Group: <b>' + (d.summary.bloodGroup || 'Not set') + '</b></span>' +
                 '<span style="font-size:0.85rem; color:var(--ho-text-main); display:block;">Allergies: ' + (d.summary.allergies && d.summary.allergies.length ? d.summary.allergies.join(', ') : 'None') + '</span>' +
                 '<span style="font-size:0.85rem; color:var(--ho-text-main); display:block;">Conditions: ' + (d.summary.medicalConditions && d.summary.medicalConditions.length ? d.summary.medicalConditions.join(', ') : 'None') + '</span>' +
@@ -1030,9 +1293,9 @@ const emergCard = privacy.emergencyCardEnabled || false;
 
       if (perms.emergencyInfo && d.emergency && d.emergency.emergencyContact) {
         const ec = d.emergency.emergencyContact;
-        html += '<div style="background: rgba(251, 228, 222, 0.4); padding: 1rem; border-radius: 12px; margin-bottom: 1rem;">' +
+        html += '<div style="background: rgba(251, 228, 222, 0.5); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; border:1px solid rgba(224,122,104,0.25);">' +
                 '<strong style="color: var(--ho-danger); display: block; margin-bottom: 0.3rem;">Emergency Contact</strong>' +
-                '<span style="font-size:0.85rem; color:var(--ho-text-main);">' + (ec.name || 'Contact') + ' (' + (ec.relationship || 'Relative') + ') — ' + (ec.phone || '') + '</span>' +
+                '<span style="font-size:0.85rem; color:var(--ho-text-main);">' + (ec.name || 'Contact') + ' (' + (ec.relationship || 'Relative') + ') &mdash; ' + (ec.phone || '') + '</span>' +
                 '</div>';
       }
 
@@ -1042,8 +1305,8 @@ const emergCard = privacy.emergencyCardEnabled || false;
           html += '<p style="font-size:0.85rem; color:var(--ho-text-muted);">No active prescriptions.</p>';
         } else {
           d.medicines.forEach(function(m) {
-            html += '<div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:0.6rem; margin-bottom:0.4rem; font-size:0.85rem;">' +
-                    '<b>' + m.name + '</b> — ' + (m.dosage || '') + ' (' + (Array.isArray(m.times) ? m.times.join(', ') : m.times || '') + ')</div>';
+            html += '<div style="background:#fff; border:1px solid rgba(13,122,110,0.15); border-radius:10px; padding:0.65rem 0.8rem; margin-bottom:0.4rem; font-size:0.85rem;">' +
+                    '<b>' + m.name + '</b> &mdash; ' + (m.dosage || '') + ' (' + (Array.isArray(m.times) ? m.times.join(', ') : m.times || '') + ')</div>';
           });
         }
         html += '</div>';
@@ -1055,8 +1318,8 @@ const emergCard = privacy.emergencyCardEnabled || false;
           html += '<p style="font-size:0.85rem; color:var(--ho-text-muted);">No reports uploaded.</p>';
         } else {
           d.medicalReports.forEach(function(r) {
-            html += '<div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:0.6rem; margin-bottom:0.4rem; font-size:0.85rem;">' +
-                    '📄 <b>' + r.originalFileName + '</b> — ' + new Date(r.createdAt).toLocaleDateString() + '</div>';
+            html += '<div style="background:#fff; border:1px solid rgba(13,122,110,0.15); border-radius:10px; padding:0.65rem 0.8rem; margin-bottom:0.4rem; font-size:0.85rem;">' +
+                    '📄 <b>' + r.originalFileName + '</b> &mdash; ' + new Date(r.createdAt).toLocaleDateString() + '</div>';
           });
         }
         html += '</div>';
@@ -1074,10 +1337,15 @@ const emergCard = privacy.emergencyCardEnabled || false;
 
   (function() {
     const toast = document.getElementById('serverToast');
-    if (toast) setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => toast.remove(), 400); 
-    }, 4000);
+    if (toast) {
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 100);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400); 
+      }, 4000);
+    }
   })();
 </script>
 </body>

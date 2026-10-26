@@ -1,132 +1,147 @@
 const User = require('../models/User');
-const EmergencyAlert = require('../models/EmergencyAlert');
 const EmergencyRequest = require('../models/EmergencyRequest');
 
-const getEmergencyWorkspace = async (req, res) => {
+const getEmergencyCard = async (req, res) => {
     try {
-        const activeUserId = req.userContextId || req.session.userId || req.user._id;
-        const user = await User.findById(activeUserId).lean();
-        const activeAlert = await EmergencyAlert.findOne({ userId: activeUserId, status: 'active' }).sort({ createdAt: -1 });
+        const activeUserId = req.userContextId || req.session?.userId || (req.user && req.user._id);
+        if (!activeUserId) return res.redirect('/auth');
         
-        const communityRequests = await EmergencyRequest.find({ 
-            status: 'active', 
-            expiresAt: { $gt: new Date() } 
-        }).populate('userId', 'fullName phone donorProfile').sort({ createdAt: -1 }).limit(20).lean();
+        const user = await User.findById(activeUserId).lean();
 
-        res.render('dashboard/emergency.ejs', { 
-            userName: req.session.userName || user.fullName,
-            userEmail: req.session.userEmail || user.email,
-            user,
-            activeAlert,
-            communityRequests,
-            csrfToken: req.session.csrfToken,
-            successMsg: req.query.success,
-            errorMsg: req.query.error
+        // Fetch active community broadcasts
+        const communityRequests = await EmergencyRequest.find({ status: 'active' })
+            .populate('userId', 'fullName phone donorProfile')
+            .sort({ createdAt: -1 })
+            .limit(20)
+            .lean();
+
+        res.render('dashboard/emergency', {
+            user: user || {},
+            emergencyContact: user?.emergencyContact || {},
+            communityRequests: communityRequests || [],
+            activeAlert: user?.activeSOS || false,
+            isPublicView: false,
+            successMsg: req.query.success || null,
+            errorMsg: req.query.error || null,
+            csrfToken: req.csrfToken ? req.csrfToken() : ''
         });
-    } catch (error) {
-        console.error('[HealthOrbit] Emergency Load Error:', error);
+    } catch (err) {
+        console.error('[HealthOrbit] Emergency view error:', err.message);
         res.redirect('/dashboard');
     }
 };
 
-const triggerSos = async (req, res) => {
+const broadcastRequest = async (req, res) => {
     try {
-        const activeUserId = req.userContextId || req.session.userId || req.user._id;
-        const { latitude, longitude, accuracy } = req.body;
-        const user = await User.findById(activeUserId);
+        const activeUserId = req.userContextId || req.session?.userId || (req.user && req.user._id);
+        if (!activeUserId) return res.redirect('/auth');
 
-        const recentAlert = await EmergencyAlert.findOne({ 
-            userId: activeUserId, 
-            status: 'active',
-            createdAt: { $gt: new Date(Date.now() - 2 * 60 * 1000) }
-        });
-
-        if (!recentAlert) {
-            await EmergencyAlert.create({
-                userId: activeUserId,
-                latitude: latitude || null,
-                longitude: longitude || null,
-                accuracy: accuracy || null,
-                locationCapturedAt: latitude ? new Date() : null,
-                emergencyContactName: user.emergencyContactName || 'None',
-                emergencyContactPhone: user.emergencyContactPhone || '',
-                bloodGroup: user.bloodGroup || 'Unknown'
-            });
-        }
-        res.json({ success: true, message: "Emergency alert saved in HealthOrbit." });
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to create SOS alert' });
-    }
-};
-
-const resolveSos = async (req, res) => {
-    try {
-        const activeUserId = req.userContextId || req.session.userId || req.user._id;
-        await EmergencyAlert.updateMany({ userId: activeUserId, status: 'active' }, { status: 'resolved' });
-        res.redirect('/emergency?success=Emergency+alert+resolved');
-    } catch (error) {
-        res.redirect('/emergency?error=Failed+to+resolve+alert');
-    }
-};
-
-const updateDonorProfile = async (req, res) => {
-    try {
-        const activeUserId = req.userContextId || req.session.userId || req.user._id;
-        const { bloodDonorEnabled, organDonorPreference, contactSharingEnabled } = req.body;
-        
-        await User.findByIdAndUpdate(activeUserId, {
-            donorProfile: {
-                bloodDonorEnabled: bloodDonorEnabled === 'on',
-                organDonorPreference: organDonorPreference,
-                contactSharingEnabled: contactSharingEnabled === 'on'
-            }
-        });
-        res.redirect('/emergency?success=Donor+profile+updated');
-    } catch (error) {
-        res.redirect('/emergency?error=Failed+to+update+donor+profile');
-    }
-};
-
-const createCommunityRequest = async (req, res) => {
-    try {
-        const activeUserId = req.userContextId || req.session.userId || req.user._id;
-        const { requestType, title, description, bloodGroup, hospitalName, urgency } = req.body;
-
-        const expiresAt = new Date();
-        expiresAt.setHours(expiresAt.getHours() + 48);
+        const { requestType, title, description, bloodGroup, hospitalName, location, donorIdentity, urgency } = req.body;
+        const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
         await EmergencyRequest.create({
             userId: activeUserId,
             requestType,
-            title: title.trim().substring(0, 100),
-            description: description.trim().substring(0, 500),
-            bloodGroup: requestType === 'Blood' ? bloodGroup : null,
-            hospitalName: hospitalName.trim(),
+            title,
+            description,
+            bloodGroup,
+            hospitalName,
+            location,
+            donorIdentity,
             urgency,
             expiresAt
         });
 
-        res.redirect('/emergency?success=Community+request+broadcasted');
-    } catch (error) {
-        res.redirect('/emergency?error=Failed+to+broadcast+request');
+        res.redirect('/emergency?success=Request+Broadcasted+Successfully');
+    } catch (err) {
+        console.error('[HealthOrbit] Broadcast error:', err.message);
+        res.redirect('/emergency?error=Failed+to+Broadcast+Request');
     }
 };
 
-const deleteCommunityRequest = async (req, res) => {
+const deleteBroadcast = async (req, res) => {
     try {
-        const activeUserId = req.userContextId || req.session.userId || req.user._id;
+        const activeUserId = req.userContextId || req.session?.userId || (req.user && req.user._id);
         await EmergencyRequest.findOneAndDelete({ _id: req.params.id, userId: activeUserId });
-        res.redirect('/emergency?success=Request+removed');
-    } catch (error) {
-        res.redirect('/emergency?error=Failed+to+remove+request');
+        res.redirect('/emergency?success=Request+Removed');
+    } catch (err) {
+        res.redirect('/emergency?error=Failed+to+Remove+Request');
+    }
+};
+
+const saveDonorProfile = async (req, res) => {
+    try {
+        const activeUserId = req.userContextId || req.session?.userId || (req.user && req.user._id);
+        const { bloodDonorEnabled, contactSharingEnabled, organDonorPreference } = req.body;
+        
+        await User.findByIdAndUpdate(activeUserId, {
+            'donorProfile.bloodDonorEnabled': bloodDonorEnabled === 'on',
+            'donorProfile.contactSharingEnabled': contactSharingEnabled === 'on',
+            'donorProfile.organDonorPreference': organDonorPreference
+        });
+        res.redirect('/emergency?success=Donor+Preferences+Saved');
+    } catch (err) {
+        res.redirect('/emergency?error=Failed+to+Save+Preferences');
+    }
+};
+
+const triggerSOS = async (req, res) => {
+    try {
+        const activeUserId = req.userContextId || req.session?.userId || (req.user && req.user._id);
+        await User.findByIdAndUpdate(activeUserId, { activeSOS: true });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+};
+
+const resolveSOS = async (req, res) => {
+    try {
+        const activeUserId = req.userContextId || req.session?.userId || (req.user && req.user._id);
+        await User.findByIdAndUpdate(activeUserId, { activeSOS: false });
+        res.redirect('/emergency?success=SOS+Resolved');
+    } catch (err) {
+        res.redirect('/emergency?error=Failed+to+Resolve+SOS');
+    }
+};
+
+const getSharedEmergencyCard = async (req, res) => {
+    try {
+        const { shareToken } = req.params;
+        const user = await User.findOne({ 'emergencyCard.shareToken': shareToken }).lean();
+        if (!user) return res.status(404).send('Emergency card not found or disabled.');
+
+        res.render('dashboard/emergency', {
+            user,
+            emergencyContact: user.emergencyContact || {},
+            isPublicView: true
+        });
+    } catch (err) {
+        res.status(500).send('Error loading emergency card');
+    }
+};
+
+const toggleEmergencyAccess = async (req, res) => {
+    try {
+        const activeUserId = req.userContextId || req.session?.userId || (req.user && req.user._id);
+        const { enabled } = req.body;
+
+        await User.findByIdAndUpdate(activeUserId, {
+            'emergencyCard.enabled': enabled === 'true' || enabled === true || enabled === 'on'
+        });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
     }
 };
 
 module.exports = {
-    getEmergencyWorkspace,
-    triggerSos,
-    resolveSos,
-    updateDonorProfile,
-    createCommunityRequest,
-    deleteCommunityRequest
+    getEmergencyCard,
+    broadcastRequest,
+    deleteBroadcast,
+    saveDonorProfile,
+    triggerSOS,
+    resolveSOS,
+    getSharedEmergencyCard,
+    toggleEmergencyAccess
 };

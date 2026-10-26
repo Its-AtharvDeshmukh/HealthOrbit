@@ -2,41 +2,42 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b5e55">
 <title>HealthOrbit — Wearable Telemetry</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&display=swap" rel="stylesheet">
 <!-- Universal Floating Island Sidebar CSS -->
 <link rel="stylesheet" href="/css/sidebar.css">
 <link rel="icon" href="/images/Logo.png">
 <style>
-/* 
-==================================================================
-  STRICTLY SCOPED CSS (PREFIXED WITH 'ho-') FOR WEARABLES
-================================================================== 
-*/
+/* ==================================================================
+   STRICTLY SCOPED CSS (PREFIXED WITH 'ho-') FOR WEARABLES — REDESIGN
+================================================================== */
 :root {
   --ho-bg-airy: #edf6f4;
+  --ho-teal-950: #06332e;
   --ho-teal-900: #0b5e55;
   --ho-teal-700: #0d7a6e;
   --ho-teal-600: #109485;
   --ho-mint-400: #42b89d;
+  --ho-mint-200: #9be8d3;
   --ho-coral: #e07a68;
   --ho-text-main: #0f1c1a;
   --ho-text-muted: #4e6b63;
-  
-  --ho-glass-clear: rgba(255, 255, 255, 0.45);
-  --ho-glass-solid: rgba(255, 255, 255, 0.85);
+
+  --ho-glass-clear: rgba(255, 255, 255, 0.5);
+  --ho-glass-solid: rgba(255, 255, 255, 0.88);
   --ho-glass-border: rgba(255, 255, 255, 0.95);
-  --ho-glass-border-subtle: rgba(255, 255, 255, 0.5);
-  
-  --ho-radius-xl: 32px;
+  --ho-glass-border-subtle: rgba(255, 255, 255, 0.55);
+
+  --ho-radius-xl: 30px;
   --ho-radius-lg: 20px;
-  --ho-radius-md: 12px;
-  
+  --ho-radius-md: 14px;
+
   --ho-shadow-glass: 0 20px 50px rgba(13, 122, 110, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
-  
-  /* Health Connect Specific Accents */
+  --ho-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
   --hc-blue: #4285F4;
   --hc-green: #34A853;
   --hc-yellow: #FBBC05;
@@ -45,263 +46,468 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background-color: var(--ho-bg-airy); color: var(--ho-text-main); overflow: hidden; -webkit-font-smoothing: antialiased; display: flex; }
+html { -webkit-tap-highlight-color: transparent; }
+body {
+  min-height: 100vh; min-height: 100dvh;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  background-color: var(--ho-bg-airy); color: var(--ho-text-main);
+  overflow: hidden; -webkit-font-smoothing: antialiased; display: flex;
+}
 
 /* ---------- AMBIENT ORBS ---------- */
 .ho-ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
 .ho-glow-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.65; animation: hoFloatOrb 20s ease-in-out infinite alternate; }
 .ho-orb-1 { width: 600px; height: 600px; background: #76d7c4; top: -150px; left: -100px; }
 .ho-orb-2 { width: 700px; height: 700px; background: #a9dfbf; bottom: -200px; right: -150px; animation-delay: -5s; }
+.ho-orb-3 { width: 380px; height: 380px; background: #fadbd8; top: 40%; left: 45%; opacity: .35; animation-delay: -9s; }
 @keyframes hoFloatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(60px, 70px) scale(1.15); } }
 
-/* ---------- MAIN WORKSPACE LAYOUT ---------- */
-.ho-app-layout { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 10; }
-.ho-main-content { 
-  flex: 1; min-width: 0; display: flex; flex-direction: column; 
-  height: 100vh; overflow-y: auto; scrollbar-width: none;
+
+
+
+.ho-orb-1 { width: 550px; height: 550px; background: #76d7c4 !important; top: -100px; left: -100px; }
+.ho-orb-2 { width: 600px; height: 600px; background: #fadbd8 !important; bottom: -150px; right: -100px; animation-delay: -5s; }
+.ho-orb-3 { width: 400px; height: 400px; background: #85c1e9; top: 35%; left: 35%; opacity: 0.3; animation-delay: -10s; }
+
+
+/* ---------- LAYOUT ---------- */
+.ho-app-layout { display: flex; width: 100vw; height: 100vh; height: 100dvh; position: relative; z-index: 10; }
+.ho-main-content {
+  flex: 1; min-width: 0; display: flex; flex-direction: column;
+  height: 100vh; height: 100dvh; overflow-y: auto; scrollbar-width: none;
   margin-left: 0 !important; padding-left: 0 !important;
+  scroll-behavior: smooth;
 }
 .ho-main-content::-webkit-scrollbar { display: none; }
 
-/* TOP NAVBAR */
+/* scroll progress bar */
+.ho-scroll-progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; z-index: 3000;
+  background: linear-gradient(90deg, var(--ho-mint-400), var(--ho-coral)); border-radius: 0 3px 3px 0; transition: width .1s linear; }
+
+/* ---------- TOPBAR ---------- */
 .ho-topbar {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 2.5rem 3rem 1.5rem; flex-shrink: 0; background: transparent;
+  display: flex; justify-content: space-between; align-items: center; gap: 1.5rem;
+  padding: 2.2rem 3rem 1.3rem; flex-shrink: 0; background: transparent;
   z-index: 20; position: sticky; top: 0;
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   mask-image: linear-gradient(to bottom, black 80%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent);
+  animation: hoDrop .7s var(--ho-ease) both;
 }
-.ho-topbar-text h1 { font-family: 'Fraunces', serif; font-weight: 800; font-size: 2.2rem; color: var(--ho-teal-900); margin-bottom: 0.3rem; letter-spacing: -1px;}
-.ho-topbar-text p { font-size: 0.95rem; color: var(--ho-text-muted); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;}
-.ho-pulse-dot { width: 8px; height: 8px; background: var(--hc-green); border-radius: 50%; box-shadow: 0 0 10px var(--hc-green); animation: hoPulse 2s infinite; }
-@keyframes hoPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.5); } }
+@keyframes hoDrop { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: none; } }
+.ho-greet { font-size: .8rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--ho-teal-600); margin-bottom: .35rem; display: flex; align-items: center; gap: .5rem; }
+.ho-topbar-text h1 { font-family: 'Fraunces', serif; font-weight: 800; font-size: 2.2rem; color: var(--ho-teal-900); margin-bottom: .35rem; letter-spacing: -1px; line-height: 1.1; }
+.ho-topbar-text h1 b { color: var(--ho-coral); }
+.ho-topbar-text p { font-size: .92rem; color: var(--ho-text-muted); font-weight: 600; display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; }
+.ho-pulse-dot { width: 8px; height: 8px; background: var(--hc-green); border-radius: 50%; box-shadow: 0 0 10px var(--hc-green); animation: hoPulse 2s infinite; flex-shrink: 0; }
+@keyframes hoPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(1.5); } }
+.ho-sync-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .22rem .65rem; border-radius: 999px; background: rgba(52,168,83,.12); color: #1e8e3e; font-size: .72rem; font-weight: 800; }
 
-.ho-btn-ghost { padding: 0.85rem 1.8rem; background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border); border-radius: 999px; color: var(--ho-teal-900); font-weight: 700; font-size: 0.95rem; cursor: pointer; text-decoration: none; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: inline-block; }
-.ho-btn-ghost:hover { background: #fff; box-shadow: 0 8px 25px rgba(13, 122, 110, 0.1); }
+.ho-topbar-actions { display: flex; gap: .7rem; align-items: center; }
+.ho-btn-ghost { padding: .85rem 1.6rem; background: var(--ho-glass-solid); border: 1.5px solid var(--ho-glass-border); border-radius: 999px; color: var(--ho-teal-900); font-weight: 700; font-size: .92rem; cursor: pointer; text-decoration: none; transition: .25s var(--ho-ease); box-shadow: 0 4px 15px rgba(0,0,0,.02); display: inline-flex; align-items: center; gap: .5rem; font-family: inherit; }
+.ho-btn-ghost:hover { background: #fff; box-shadow: 0 8px 25px rgba(13,122,110,.12); transform: translateY(-2px); }
+.ho-btn-ghost:active { transform: scale(.96); }
+.ho-btn-solid { background: linear-gradient(135deg, var(--ho-teal-600), var(--ho-teal-900)); color: #fff; border-color: transparent; box-shadow: 0 10px 22px rgba(11,94,85,.25); }
+.ho-btn-solid:hover { background: linear-gradient(135deg, var(--ho-teal-600), var(--ho-teal-900)); box-shadow: 0 14px 28px rgba(11,94,85,.32); }
+.ho-spin { animation: hoSpin .8s linear infinite; }
+@keyframes hoSpin { to { transform: rotate(360deg); } }
 
 /* ---------- MOSAIC GRID ---------- */
 .ho-mosaic-grid {
   display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: minmax(140px, auto); gap: 1.5rem;
-  padding: 0.5rem 3rem 4rem; flex: 1;
+  padding: .5rem 3rem 3rem; flex: 1;
 }
 
 /* Base Panel */
 .ho-panel {
+  --mx: 50%; --my: 50%;
   background: var(--ho-glass-clear);
   backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
   border: 1px solid var(--ho-glass-border); border-radius: var(--ho-radius-xl);
   padding: 1.8rem; display: flex; flex-direction: column; box-shadow: var(--ho-shadow-glass);
-  position: relative; overflow: hidden; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  animation: hoSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  position: relative; overflow: hidden; transition: .4s var(--ho-ease);
+  animation: hoSlideUp .7s var(--ho-ease) both;
 }
-@keyframes hoSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.ho-mosaic-grid > .ho-panel:nth-child(1) { animation-delay: .05s; }
+.ho-mosaic-grid > .ho-panel:nth-child(2) { animation-delay: .12s; }
+.ho-mosaic-grid > .ho-panel:nth-child(3) { animation-delay: .19s; }
+.ho-mosaic-grid > .ho-panel:nth-child(4) { animation-delay: .26s; }
+.ho-mosaic-grid > .ho-panel:nth-child(5) { animation-delay: .33s; }
+@keyframes hoSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
 
-.ho-panel:not(.ho-dark-panel):hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(13, 122, 110, 0.1); border-color: var(--ho-teal-600); background: rgba(255,255,255,0.7);}
-.ho-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; z-index: 2;}
-.ho-panel-head h3 { font-family: 'Fraunces', serif; font-size: 1.15rem; font-weight: 700; color: var(--ho-teal-900); display: flex; align-items: center; gap: 0.5rem;}
+/* cursor-follow glow */
+.ho-panel::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .3s ease;
+  background: radial-gradient(380px circle at var(--mx) var(--my), rgba(66,184,157,.16), transparent 60%);
+}
+@media (hover: hover) {
+  .ho-panel:hover::after { opacity: 1; }
+  .ho-panel:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(13,122,110,.1); border-color: var(--ho-teal-600); background: rgba(255,255,255,.7); }
+}
+.ho-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; z-index: 2; gap: .8rem; }
+.ho-panel-head h3 { font-family: 'Fraunces', serif; font-size: 1.15rem; font-weight: 700; color: var(--ho-teal-900); display: flex; align-items: center; gap: .5rem; }
+.ho-tag { font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: .25rem .6rem; border-radius: 999px; background: rgba(13,122,110,.08); color: var(--ho-teal-700); }
 
-/* --- 1. HEALTH CONNECT HERO (Spans 8) --- */
-.ho-hero { grid-column: span 8; background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(238, 246, 255, 0.9)); border: 1.5px solid var(--ho-glass-border); flex-direction: row; align-items: center; justify-content: space-between; padding: 2.5rem;}
-.ho-hero-text { flex: 1; z-index: 2;}
-.ho-hero-text h2 { font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 600; line-height: 1.1; margin-bottom: 0.8rem; color: var(--ho-teal-900);}
-.ho-hero-text p { font-size: 0.95rem; color: var(--ho-text-muted); line-height: 1.5; margin-bottom: 1.5rem; max-width: 90%;}
+/* --- 1. HERO (span 8) --- */
+.ho-hero {
+  grid-column: span 8; flex-direction: row; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 2.4rem;
+  background:
+    radial-gradient(90% 120% at 100% 0%, rgba(66,133,244,.12), transparent 60%),
+    linear-gradient(135deg, rgba(255,255,255,.92), rgba(238,246,255,.9));
+  border: 1.5px solid var(--ho-glass-border);
+}
+.ho-hero-text { flex: 1; z-index: 2; min-width: 0; }
+.ho-eyebrow { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--hc-blue); font-weight: 800; display: flex; align-items: center; gap: .5rem; margin-bottom: .6rem; }
+.ho-hero-text h2 { font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 600; line-height: 1.1; margin-bottom: .7rem; color: var(--ho-teal-900); }
+.ho-hero-text h2 em { font-style: normal; background: linear-gradient(100deg, var(--ho-teal-600), var(--ho-coral)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.ho-hero-text > p { font-size: .93rem; color: var(--ho-text-muted); line-height: 1.55; margin-bottom: 1.1rem; max-width: 92%; }
 
-.ho-hc-metrics { display: flex; gap: 2rem; margin-top: 1rem; }
-.ho-hc-stat { display: flex; flex-direction: column; gap: 0.2rem; }
-.ho-hc-stat span { font-size: 0.75rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: var(--ho-text-muted);}
-.ho-hc-stat strong { font-family: 'JetBrains Mono', monospace; font-size: 1.8rem; font-weight: 800; color: var(--ho-teal-900);}
-.ho-hc-stat strong small { font-size: 0.9rem; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--ho-text-muted);}
+/* live ECG strip */
+.ho-ecg { position: relative; width: 100%; max-width: 420px; height: 44px; margin-bottom: 1.1rem; border-radius: 12px; overflow: hidden;
+  background: rgba(13,122,110,.05); border: 1px solid rgba(13,122,110,.08); }
+.ho-ecg svg { width: 100%; height: 100%; display: block; }
+.ho-ecg .base { fill: none; stroke: rgba(13,122,110,.15); stroke-width: 1.5; }
+.ho-ecg .live { fill: none; stroke: var(--hc-red); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 60 240; filter: drop-shadow(0 0 4px rgba(234,67,53,.6)); animation: hoEcg 2.4s linear infinite; }
+@keyframes hoEcg { from { stroke-dashoffset: 300; } to { stroke-dashoffset: 0; } }
+.ho-ecg-label { position: absolute; top: 50%; right: .7rem; transform: translateY(-50%); font-family: 'JetBrains Mono', monospace; font-size: .7rem; font-weight: 700; color: var(--hc-red); display: flex; align-items: center; gap: .3rem; background: rgba(255,255,255,.8); padding: .15rem .5rem; border-radius: 999px; }
+.ho-beat { display: inline-block; animation: hoBeat 1s ease-in-out infinite; }
+@keyframes hoBeat { 0%,100% { transform: scale(1); } 15% { transform: scale(1.3); } 30% { transform: scale(1); } 45% { transform: scale(1.18); } }
 
-/* Google Fit Style Rings */
-.ho-ring-container { width: 160px; height: 160px; position: relative; display: flex; align-items: center; justify-content: center;}
-.ho-svg-rings { transform: rotate(-90deg); width: 100%; height: 100%; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1)); overflow: visible;}
-.ho-ring-bg { fill: none; stroke: rgba(13, 122, 110, 0.1); stroke-width: 12; stroke-linecap: round;}
-.ho-ring-fill { fill: none; stroke-linecap: round; stroke-width: 12; animation: hoDrawRing 2s ease-out forwards; }
-@keyframes hoDrawRing { 0% { stroke-dasharray: 0, 1000; } }
+.ho-hc-metrics { display: flex; gap: .8rem; flex-wrap: wrap; }
+.ho-hc-stat { display: flex; flex-direction: column; gap: .2rem; padding: .8rem 1.1rem; background: rgba(255,255,255,.7); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; cursor: pointer; transition: .25s var(--ho-ease); min-width: 120px; }
+.ho-hc-stat:hover { background: #fff; transform: translateY(-3px); box-shadow: 0 10px 22px rgba(13,122,110,.1); }
+.ho-hc-stat:active { transform: scale(.97); }
+.ho-hc-stat span.lbl { font-size: .68rem; text-transform: uppercase; font-weight: 800; letter-spacing: .05em; color: var(--ho-text-muted); }
+.ho-hc-stat strong { font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; font-weight: 800; color: var(--ho-teal-900); letter-spacing: -1px; }
+.ho-hc-stat strong small { font-size: .8rem; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--ho-text-muted); font-weight: 600; letter-spacing: 0; }
 
-/* --- 2. MULTI-DEVICE SYNC HUB (Spans 4) --- */
-.ho-sync-hub { grid-column: span 4; display: flex; flex-direction: column; }
-.ho-device-list { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; overflow-y: auto;}
-.ho-device-card { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.2rem; background: rgba(255,255,255,0.7); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; transition: 0.2s;}
-.ho-device-card:hover { background: #fff; border-color: var(--hc-blue); transform: translateX(4px); box-shadow: 0 4px 15px rgba(66, 133, 244, 0.1);}
-.ho-device-left { display: flex; align-items: center; gap: 1rem; }
-.ho-device-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
-.ho-device-info strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 700; margin-bottom: 0.2rem;}
-.ho-device-info span { font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600;}
-.ho-sync-status { width: 10px; height: 10px; border-radius: 50%; background: var(--hc-green); box-shadow: 0 0 8px var(--hc-green);}
+/* Triple activity rings */
+.ho-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: .9rem; flex-shrink: 0; z-index: 2; }
+.ho-ring-container { width: 190px; height: 190px; position: relative; display: flex; align-items: center; justify-content: center; }
+.ho-svg-rings { transform: rotate(-90deg); width: 100%; height: 100%; filter: drop-shadow(0 6px 12px rgba(0,0,0,.1)); overflow: visible; }
+.ho-ring-bg { fill: none; stroke: rgba(13,122,110,.1); stroke-width: 12; }
+.ho-ring-fill { fill: none; stroke-linecap: round; stroke-width: 12; transition: stroke-dashoffset 1.8s var(--ho-ease); }
+.ho-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.ho-ring-center strong { font-family: 'JetBrains Mono', monospace; font-size: 1.7rem; font-weight: 800; color: var(--ho-teal-900); line-height: 1; }
+.ho-ring-center span { font-size: .62rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--ho-text-muted); margin-top: .25rem; }
+.ho-ring-legend { display: flex; gap: .9rem; flex-wrap: wrap; justify-content: center; }
+.ho-ring-legend span { display: flex; align-items: center; gap: .35rem; font-size: .7rem; font-weight: 700; color: var(--ho-text-muted); }
+.ho-ring-legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 
-/* --- 3. HIGH-DENSITY DEEP VITALS MATRIX (Spans 8) --- */
+/* --- 2. SOURCES (span 4) --- */
+.ho-sync-hub { grid-column: span 4; }
+.ho-device-list { display: flex; flex-direction: column; gap: .8rem; flex: 1; overflow-y: auto; }
+.ho-device-card { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.1rem; background: rgba(255,255,255,.72); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; transition: .25s var(--ho-ease); gap: .8rem; }
+.ho-device-card:hover { background: #fff; border-color: var(--hc-blue); transform: translateX(4px); box-shadow: 0 4px 15px rgba(66,133,244,.1); }
+.ho-device-left { display: flex; align-items: center; gap: 1rem; min-width: 0; }
+.ho-device-icon { width: 42px; height: 42px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,.05); flex-shrink: 0; }
+.ho-device-info { min-width: 0; }
+.ho-device-info strong { display: block; font-size: .92rem; color: var(--ho-teal-900); font-weight: 700; margin-bottom: .15rem; }
+.ho-device-info span { font-size: .73rem; color: var(--ho-text-muted); font-weight: 600; }
+.ho-sync-status { width: 10px; height: 10px; border-radius: 50%; background: var(--hc-green); box-shadow: 0 0 0 0 rgba(52,168,83,.6); animation: hoPing 2s infinite; flex-shrink: 0; }
+@keyframes hoPing { 0% { box-shadow: 0 0 0 0 rgba(52,168,83,.6); } 100% { box-shadow: 0 0 0 10px rgba(52,168,83,0); } }
+
+/* --- 3. VITALS MATRIX (span 8) --- */
 .ho-vitals-matrix { grid-column: span 8; }
 .ho-matrix-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-.ho-matrix-card { background: rgba(255,255,255,0.6); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s; cursor: pointer;}
-.ho-matrix-card:hover { background: #fff; border-color: var(--ho-teal-600); box-shadow: 0 6px 20px rgba(13, 122, 110, 0.06); transform: translateY(-2px);}
+.ho-matrix-card { background: rgba(255,255,255,.62); border: 1px solid var(--ho-glass-border-subtle); border-radius: 18px; padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between; transition: .3s var(--ho-ease); cursor: pointer; position: relative; overflow: hidden;
+  animation: hoPop .6s var(--ho-ease) both; }
+.ho-matrix-card:nth-child(1) { animation-delay: .3s; } .ho-matrix-card:nth-child(2) { animation-delay: .36s; } .ho-matrix-card:nth-child(3) { animation-delay: .42s; }
+.ho-matrix-card:nth-child(4) { animation-delay: .48s; } .ho-matrix-card:nth-child(5) { animation-delay: .54s; } .ho-matrix-card:nth-child(6) { animation-delay: .6s; }
+@keyframes hoPop { from { opacity: 0; transform: translateY(18px) scale(.96); } to { opacity: 1; transform: none; } }
+.ho-matrix-card:hover { background: #fff; border-color: var(--ho-teal-600); box-shadow: 0 10px 26px rgba(13,122,110,.09); transform: translateY(-3px); }
+.ho-matrix-card:active { transform: scale(.97); }
+.ho-matrix-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent, var(--ho-teal-600)); opacity: .0; transition: opacity .3s; }
+.ho-matrix-card:hover::before { opacity: 1; }
 
-.ho-mc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;}
-.ho-mc-label { font-size: 0.75rem; font-weight: 800; color: var(--ho-text-muted); text-transform: uppercase; letter-spacing: 0.05em;}
-.ho-mc-val { font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; font-weight: 800; color: var(--ho-teal-900); display: flex; align-items: baseline; gap: 0.2rem; letter-spacing: -1px;}
-.ho-mc-val small { font-size: 0.8rem; color: var(--ho-text-muted); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; letter-spacing: 0;}
+.ho-mc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: .9rem; }
+.ho-mc-label { font-size: .7rem; font-weight: 800; color: var(--ho-text-muted); text-transform: uppercase; letter-spacing: .05em; }
+.ho-mc-icon { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.05); font-size: .95rem; }
+.ho-mc-val { font-family: 'JetBrains Mono', monospace; font-size: 1.55rem; font-weight: 800; color: var(--ho-teal-900); display: flex; align-items: baseline; gap: .25rem; letter-spacing: -1px; flex-wrap: wrap; }
+.ho-mc-val small { font-size: .78rem; color: var(--ho-text-muted); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; letter-spacing: 0; }
+.ho-delta { display: inline-flex; align-items: center; gap: .2rem; font-size: .68rem; font-weight: 800; padding: .15rem .45rem; border-radius: 999px; margin-top: .45rem; width: fit-content; background: rgba(13,122,110,.08); color: var(--ho-teal-700); font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0; }
+.ho-delta.up { background: rgba(52,168,83,.12); color: #1e8e3e; }
+.ho-delta.down { background: rgba(234,67,53,.1); color: #c5352a; }
 
-/* Mini Sparkline SVGs */
-.ho-sparkline { width: 100%; height: 30px; margin-top: 0.8rem; overflow: visible;}
-.ho-spark-path { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: hoDrawSpark 2s ease forwards;}
+.ho-sparkline { width: 100%; height: 34px; margin-top: .7rem; overflow: visible; }
+.ho-spark-path { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: hoDrawSpark 2s ease forwards; vector-effect: non-scaling-stroke; }
+.ho-spark-area { opacity: 0; animation: hoFade 1s 1.2s ease forwards; }
 @keyframes hoDrawSpark { to { stroke-dashoffset: 0; } }
+@keyframes hoFade { to { opacity: 1; } }
+.ho-goal-bar { margin-top: .9rem; width: 100%; height: 7px; background: rgba(66,133,244,.15); border-radius: 10px; overflow: hidden; }
+.ho-goal-bar div { height: 100%; width: 0; background: linear-gradient(90deg, var(--hc-blue), #7baaf7); border-radius: 10px; transition: width 1.6s var(--ho-ease); }
 
-/* --- 4. RECENT SESSIONS LIST (Spans 4) --- */
+/* --- 4. INGESTION STREAM (span 4) --- */
 .ho-workouts { grid-column: span 4; }
-.ho-workout-feed { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; overflow-y: auto;}
-.ho-workout-item { display: flex; align-items: flex-start; justify-content: space-between; padding: 1rem; background: rgba(255,255,255,0.7); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; transition: 0.2s;}
-.ho-workout-item:hover { background: #fff; border-color: var(--ho-teal-600); transform: translateX(4px); box-shadow: 0 4px 15px rgba(13, 122, 110, 0.05);}
-.ho-wo-left { display: flex; align-items: center; gap: 0.8rem; }
-.ho-wo-icon { font-size: 1.4rem; width: 38px; height: 38px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);}
-.ho-wo-details strong { display: block; font-size: 0.95rem; color: var(--ho-teal-900); font-weight: 700; margin-bottom: 0.2rem;}
-.ho-wo-details span { display: block; font-size: 0.75rem; color: var(--ho-text-muted); font-weight: 600; margin-bottom: 0.2rem;}
-.ho-wo-source { font-size: 0.65rem; color: var(--hc-blue); font-weight: 800; text-transform: uppercase;}
-.ho-wo-metrics { text-align: right; }
-.ho-wo-metrics strong { display: block; font-family: 'JetBrains Mono', monospace; font-size: 1rem; color: var(--ho-teal-900); font-weight: 700;}
-.ho-wo-metrics span { font-size: 0.7rem; color: var(--ho-text-muted); font-weight: 600;}
+.ho-filter-row { display: flex; gap: .4rem; overflow-x: auto; scrollbar-width: none; margin-bottom: 1rem; padding-bottom: 2px; z-index: 2; }
+.ho-filter-row::-webkit-scrollbar { display: none; }
+.ho-filter { flex: none; padding: .4rem .85rem; border-radius: 999px; font-size: .74rem; font-weight: 700; color: var(--ho-text-muted); background: rgba(255,255,255,.7); border: 1px solid var(--ho-glass-border-subtle); cursor: pointer; transition: .25s var(--ho-ease); font-family: inherit; }
+.ho-filter:hover { background: #fff; }
+.ho-filter.active { background: var(--ho-teal-900); color: #fff; border-color: var(--ho-teal-900); box-shadow: 0 6px 14px rgba(11,94,85,.25); }
+.ho-workout-feed { display: flex; flex-direction: column; gap: .75rem; flex: 1; overflow-y: auto; scrollbar-width: none; max-height: 560px; }
+.ho-workout-feed::-webkit-scrollbar { display: none; }
+.ho-workout-item { display: flex; align-items: center; justify-content: space-between; gap: .6rem; padding: .95rem; background: rgba(255,255,255,.72); border: 1px solid var(--ho-glass-border-subtle); border-radius: 16px; transition: .25s var(--ho-ease); animation: hoSlideIn .55s var(--ho-ease) both; }
+.ho-workout-item.hide { display: none; }
+@keyframes hoSlideIn { from { opacity: 0; transform: translateX(22px); } to { opacity: 1; transform: none; } }
+.ho-workout-item:hover { background: #fff; border-color: var(--ho-teal-600); transform: translateX(4px); box-shadow: 0 4px 15px rgba(13,122,110,.05); }
+.ho-wo-left { display: flex; align-items: center; gap: .8rem; min-width: 0; }
+.ho-wo-icon { font-size: 1.3rem; width: 40px; height: 40px; background: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.04); flex-shrink: 0; }
+.ho-wo-details { min-width: 0; }
+.ho-wo-details strong { display: block; font-size: .9rem; color: var(--ho-teal-900); font-weight: 700; margin-bottom: .15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ho-wo-details span { display: block; font-size: .72rem; color: var(--ho-text-muted); font-weight: 600; margin-bottom: .15rem; }
+.ho-wo-source { font-size: .62rem; color: var(--hc-blue); font-weight: 800; text-transform: uppercase; }
+.ho-wo-metrics { text-align: right; flex-shrink: 0; }
+.ho-wo-metrics strong { display: block; font-family: 'JetBrains Mono', monospace; font-size: .95rem; color: var(--ho-teal-900); font-weight: 700; }
+.ho-wo-metrics span { font-size: .66rem; color: #1e8e3e; font-weight: 800; display: inline-flex; align-items: center; gap: .2rem; }
+.ho-empty { padding: 2rem 1rem; text-align: center; color: var(--ho-text-muted); font-size: .9rem; line-height: 1.6; }
+.ho-empty .big { font-size: 2.4rem; display: block; margin-bottom: .6rem; animation: hoFloat 3s ease-in-out infinite; }
+@keyframes hoFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
-/* MODAL OVERLAY */
-.ho-modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(11, 94, 85, 0.4);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 2000; opacity: 0; visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
+/* --- 5. INSIGHTS (span 12) --- */
+.ho-insights { grid-column: span 12; }
+.ho-insight-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.ho-insight { display: flex; gap: 1rem; align-items: flex-start; padding: 1.1rem 1.2rem; border-radius: 18px; background: rgba(255,255,255,.65); border: 1px solid var(--ho-glass-border-subtle); transition: .3s var(--ho-ease); animation: hoPop .6s var(--ho-ease) both; }
+.ho-insight:hover { background: #fff; transform: translateY(-3px); box-shadow: 0 10px 24px rgba(13,122,110,.08); }
+.ho-insight-ico { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+.ho-insight strong { display: block; font-size: .92rem; color: var(--ho-teal-900); margin-bottom: .25rem; font-weight: 800; }
+.ho-insight p { font-size: .8rem; color: var(--ho-text-muted); line-height: 1.5; font-weight: 500; }
+.ho-disclaimer { margin-top: 1rem; font-size: .72rem; color: var(--ho-text-muted); font-weight: 600; opacity: .85; }
+
+/* ---------- MODAL ---------- */
+.ho-modal-overlay { position: fixed; inset: 0; background: rgba(6,51,46,.45); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 2000; opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease; }
 .ho-modal-overlay.active { opacity: 1; visibility: visible; }
-
-.ho-modal-panel {
-  width: 100%; max-width: 500px;
-  background: #fff;
-  border-radius: var(--ho-radius-xl);
-  padding: 2.5rem;
-  box-shadow: 0 30px 60px rgba(0,0,0,0.15);
-  transform: translateY(40px) scale(0.95);
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex; flex-direction: column; gap: 1.5rem;
-}
-.ho-modal-overlay.active .ho-modal-panel { transform: translateY(0) scale(1); }
-
+.ho-modal-panel { width: 100%; max-width: 500px; max-height: 92vh; max-height: 92dvh; overflow-y: auto; scrollbar-width: none; background: #fff; border-radius: var(--ho-radius-xl); padding: 2.2rem; box-shadow: 0 30px 60px rgba(0,0,0,.18); transform: translateY(40px) scale(.95); transition: transform .45s var(--ho-ease); display: flex; flex-direction: column; gap: 1.4rem; position: relative; }
+.ho-modal-panel::-webkit-scrollbar { display: none; }
+.ho-modal-overlay.active .ho-modal-panel { transform: none; }
+.ho-modal-handle { display: none; width: 44px; height: 4px; border-radius: 999px; background: #d5e4e1; margin: -.6rem auto -.4rem; flex-shrink: 0; }
 .ho-modal-header { display: flex; justify-content: space-between; align-items: flex-start; }
 .ho-modal-title-group { display: flex; align-items: center; gap: 1rem; }
 .ho-modal-icon { width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-.ho-modal-title { font-size: 1.4rem; font-family: 'Fraunces', serif; font-weight: 800; color: var(--ho-teal-900); }
-.ho-modal-date { font-size: 0.85rem; color: var(--ho-text-muted); font-weight: 600; margin-top: 0.2rem; display: block;}
-.ho-modal-close { background: rgba(13, 122, 110, 0.08); border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; color: var(--ho-teal-900); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;}
-.ho-modal-close:hover { background: rgba(13, 122, 110, 0.15); transform: scale(1.05); }
-
-.ho-modal-val-group { display: flex; flex-direction: column; gap: 0.5rem; }
-.ho-modal-value-large { font-family: 'JetBrains Mono', monospace; font-size: 3.5rem; font-weight: 800; color: var(--ho-text-main); display: flex; align-items: baseline; gap: 0.5rem; line-height: 1;}
-.ho-modal-value-large small { font-size: 1.2rem; font-weight: 600; color: var(--ho-text-muted); font-family: 'Plus Jakarta Sans', sans-serif;}
-
-.ho-modal-range { 
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  padding: 6px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; width: fit-content;
-}
-.range-optimal { background: rgba(46, 204, 113, 0.15); color: #27ae60; }
-
-.ho-modal-chart-area { height: 140px; width: 100%; position: relative; border-bottom: 1px solid var(--ho-glass-border-subtle); padding-bottom: 1rem;}
+.ho-modal-title { font-size: 1.35rem; font-family: 'Fraunces', serif; font-weight: 800; color: var(--ho-teal-900); }
+.ho-modal-date { font-size: .82rem; color: var(--ho-text-muted); font-weight: 600; margin-top: .2rem; display: block; }
+.ho-modal-close { background: rgba(13,122,110,.08); border: none; width: 38px; height: 38px; border-radius: 50%; font-size: 1.1rem; color: var(--ho-teal-900); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; flex-shrink: 0; }
+.ho-modal-close:hover { background: rgba(13,122,110,.15); transform: scale(1.06) rotate(90deg); }
+.ho-modal-val-group { display: flex; flex-direction: column; gap: .6rem; }
+.ho-modal-value-large { font-family: 'JetBrains Mono', monospace; font-size: 3.4rem; font-weight: 800; color: var(--ho-text-main); display: flex; align-items: baseline; gap: .5rem; line-height: 1; letter-spacing: -2px; flex-wrap: wrap; }
+.ho-modal-value-large small { font-size: 1.1rem; font-weight: 600; color: var(--ho-text-muted); font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0; }
+.ho-modal-range { display: inline-flex; align-items: center; gap: .4rem; padding: 6px 12px; border-radius: 999px; font-size: .78rem; font-weight: 700; width: fit-content; }
+.range-optimal { background: rgba(46,204,113,.15); color: #27ae60; }
+.range-warn { background: rgba(251,188,5,.18); color: #b07d00; }
+.range-alert { background: rgba(234,67,53,.12); color: #c5352a; }
+.ho-modal-chart-area { height: 150px; width: 100%; position: relative; border-bottom: 1px solid var(--ho-glass-border-subtle); padding-bottom: 1rem; }
 .ho-mc-svg { width: 100%; height: 100%; overflow: visible; }
-.ho-mc-path { fill: none; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.15)); stroke-dasharray: 1000; stroke-dashoffset: 1000; }
-.ho-modal-overlay.active .ho-mc-path { animation: hoDrawModalChart 1.5s ease-out forwards; animation-delay: 0.2s;}
+.ho-mc-path { fill: none; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 6px 8px rgba(0,0,0,.15)); stroke-dasharray: 1000; stroke-dashoffset: 1000; vector-effect: non-scaling-stroke; }
+.ho-mc-area { opacity: 0; transition: opacity .6s ease; }
+.ho-modal-overlay.active .ho-mc-path { animation: hoDrawModalChart 1.4s ease-out forwards; animation-delay: .2s; }
+.ho-modal-overlay.active .ho-mc-area { opacity: 1; transition-delay: .9s; }
 @keyframes hoDrawModalChart { to { stroke-dashoffset: 0; } }
+.ho-modal-details { display: flex; flex-direction: column; gap: .7rem; }
+.ho-detail-row { display: flex; justify-content: space-between; align-items: center; padding: .9rem 1rem; background: var(--ho-bg-airy); border-radius: 12px; gap: 1rem; }
+.ho-dr-label { font-size: .85rem; font-weight: 700; color: var(--ho-text-muted); }
+.ho-dr-val { font-family: 'JetBrains Mono', monospace; font-size: .92rem; font-weight: 800; color: var(--ho-teal-900); text-align: right; }
+.ho-stat-trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; }
+.ho-stat-trio div { background: var(--ho-bg-airy); border-radius: 12px; padding: .75rem .5rem; text-align: center; }
+.ho-stat-trio span { display: block; font-size: .62rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--ho-text-muted); margin-bottom: .25rem; }
+.ho-stat-trio strong { font-family: 'JetBrains Mono', monospace; font-size: 1rem; color: var(--ho-teal-900); }
 
-.ho-modal-details { display: flex; flex-direction: column; gap: 0.8rem; }
-.ho-detail-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--ho-bg-airy); border-radius: 12px; }
-.ho-dr-label { font-size: 0.9rem; font-weight: 700; color: var(--ho-text-muted); }
-.ho-dr-val { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 800; color: var(--ho-teal-900); }
+/* Toast */
+.ho-toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 30px); background: var(--ho-teal-950); color: #fff; padding: .8rem 1.3rem; border-radius: 999px; font-size: .85rem; font-weight: 700; box-shadow: 0 14px 30px rgba(0,0,0,.25); opacity: 0; pointer-events: none; z-index: 4000; transition: .45s var(--ho-ease); display: flex; align-items: center; gap: .5rem; }
+.ho-toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* ==================================================================
+   RESPONSIVE
+================================================================== */
 @media (max-width: 1400px) {
   .ho-hero, .ho-vitals-matrix { grid-column: span 8; }
   .ho-sync-hub, .ho-workouts { grid-column: span 4; }
   .ho-matrix-grid { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 1024px) {
-  .ho-mosaic-grid { grid-template-columns: repeat(6, 1fr); }
-  .ho-hero, .ho-sync-hub, .ho-vitals-matrix, .ho-workouts { grid-column: span 6; }
-  body .ho-main-content { margin-top: 5.5rem; padding: 0 !important; }
+@media (max-width: 1180px) {
+  .ho-hero { flex-direction: column; align-items: flex-start; }
+  .ho-ring-wrap { align-self: center; }
 }
+@media (max-width: 1024px) {
+  .ho-mosaic-grid { grid-template-columns: repeat(6, 1fr); padding: .5rem 1.8rem 3rem; }
+  .ho-hero, .ho-sync-hub, .ho-vitals-matrix, .ho-workouts, .ho-insights { grid-column: span 6; }
+  .ho-topbar { padding: 1.8rem 1.8rem 1.2rem; }
+  body .ho-main-content { margin-top: 5.5rem; padding: 0 !important; height: calc(100vh - 5.5rem); height: calc(100dvh - 5.5rem); }
+  .ho-hero { flex-direction: row; align-items: center; }
+  .ho-insight-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------- MOBILE REDESIGN ---------- */
 @media (max-width: 768px) {
-  .ho-topbar { flex-direction: column; align-items: flex-start; padding: 1.5rem; gap: 1rem;}
-  .ho-mosaic-grid { display: flex; flex-direction: column; padding: 1rem; gap: 1rem;}
-  .ho-hero { flex-direction: column; text-align: left; align-items: flex-start; }
-  .ho-ring-container { margin-top: 2rem; align-self: center; }
-  .ho-hc-metrics { flex-direction: column; gap: 1rem; }
+  .ho-glow-orb { filter: blur(70px); }
+  .ho-orb-1 { width: 300px; height: 300px; } .ho-orb-2 { width: 320px; height: 320px; } .ho-orb-3 { display: none; }
+
+  .ho-topbar { flex-direction: column; align-items: stretch; padding: 1.2rem 1.1rem .9rem; gap: .9rem; position: relative; mask-image: none; -webkit-mask-image: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .ho-greet { font-size: .7rem; }
+  .ho-topbar-text h1 { font-size: 1.65rem; letter-spacing: -.5px; }
+  .ho-topbar-text p { font-size: .8rem; }
+  .ho-topbar-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .ho-btn-ghost { justify-content: center; padding: .85rem .8rem; font-size: .85rem; min-height: 46px; }
+
+  .ho-mosaic-grid { display: flex; flex-direction: column; padding: .4rem 1rem calc(env(safe-area-inset-bottom, 0px) + 1.5rem); gap: 1rem; }
+  .ho-panel { padding: 1.25rem; border-radius: 24px; }
+  .ho-panel-head { margin-bottom: .9rem; }
+  .ho-panel-head h3 { font-size: 1.05rem; }
+
+  /* Hero becomes a dark vitals card */
+  .ho-hero { flex-direction: column; align-items: stretch; text-align: left; padding: 1.4rem 1.2rem 1.5rem; gap: 1.2rem; color: #fff;
+    background: radial-gradient(120% 80% at 100% 0%, rgba(66,184,157,.38), transparent 60%), radial-gradient(90% 70% at 0% 100%, rgba(224,122,104,.25), transparent 60%), linear-gradient(160deg, #0b5e55, #06332e);
+    border-color: rgba(255,255,255,.12); }
+  .ho-hero:hover { background: radial-gradient(120% 80% at 100% 0%, rgba(66,184,157,.38), transparent 60%), radial-gradient(90% 70% at 0% 100%, rgba(224,122,104,.25), transparent 60%), linear-gradient(160deg, #0b5e55, #06332e); }
+  .ho-eyebrow { color: var(--ho-mint-200); }
+  .ho-hero-text h2 { font-size: 1.6rem; color: #fff; }
+  .ho-hero-text h2 em { background: linear-gradient(100deg, #9be8d3, #ffd2c8); -webkit-background-clip: text; background-clip: text; }
+  .ho-hero-text > p { color: rgba(226,245,240,.78); font-size: .84rem; max-width: 100%; }
+  .ho-ecg { max-width: 100%; background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.12); }
+  .ho-ecg .base { stroke: rgba(155,232,211,.2); }
+  .ho-ecg .live { stroke: #ff8f7d; }
+  .ho-ecg-label { background: rgba(6,51,46,.7); color: #ffb4a4; }
+
+  /* swipeable stat tiles */
+  .ho-hc-metrics { flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -1.2rem; padding: 0 1.2rem .3rem; scrollbar-width: none; gap: .65rem; }
+  .ho-hc-metrics::-webkit-scrollbar { display: none; }
+  .ho-hc-stat { flex: 0 0 auto; scroll-snap-align: start; background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.16); min-width: 130px; }
+  .ho-hc-stat:hover { background: rgba(255,255,255,.16); }
+  .ho-hc-stat span.lbl { color: rgba(226,245,240,.7); }
+  .ho-hc-stat strong { color: #fff !important; }
+  .ho-hc-stat strong small { color: rgba(226,245,240,.7); }
+
+  .ho-ring-wrap { flex-direction: row; align-items: center; justify-content: space-between; gap: 1rem; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 20px; padding: .9rem 1rem; }
+  .ho-ring-container { width: 128px; height: 128px; flex-shrink: 0; }
+  .ho-ring-bg { stroke: rgba(255,255,255,.12); }
+  .ho-ring-center strong { color: #fff; font-size: 1.2rem; }
+  .ho-ring-center span { color: rgba(226,245,240,.7); font-size: .55rem; }
+  .ho-ring-legend { flex-direction: column; align-items: flex-start; gap: .55rem; }
+  .ho-ring-legend span { color: #e9fbf6; font-size: .76rem; }
+
+  .ho-matrix-grid { grid-template-columns: repeat(2, 1fr); gap: .7rem; }
+  .ho-matrix-card { padding: .9rem; border-radius: 16px; }
+  .ho-mc-val { font-size: 1.2rem; }
+  .ho-mc-label { font-size: .62rem; }
+  .ho-mc-icon { width: 26px; height: 26px; font-size: .8rem; }
+  .ho-modal-value-large { font-size: 2.8rem; }
+
+  .ho-workout-feed { max-height: none; }
+  .ho-workout-item { padding: .8rem; }
+  .ho-insight-grid { grid-template-columns: 1fr; }
+
+  /* modal => bottom sheet */
+  .ho-modal-overlay { align-items: flex-end; }
+  .ho-modal-panel { max-width: 100%; border-bottom-left-radius: 0; border-bottom-right-radius: 0; padding: 1.4rem 1.25rem calc(env(safe-area-inset-bottom, 0px) + 1.6rem); transform: translateY(100%); max-height: 90dvh; transition: transform .5s var(--ho-ease); }
+  .ho-modal-handle { display: block; }
+  .ho-toast { bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); }
+}
+@media (max-width: 380px) {
   .ho-matrix-grid { grid-template-columns: 1fr; }
-  .ho-modal-panel { position: absolute; bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; transform: translateY(100%); padding: 2rem 1.5rem; max-width: 100%;}
+  .ho-ring-wrap { flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
 </style>
 </head>
 <body>
 
+<div class="ho-scroll-progress" id="scrollProgress"></div>
+
 <div class="ho-ambient-canvas">
   <div class="ho-glow-orb ho-orb-1"></div>
   <div class="ho-glow-orb ho-orb-2"></div>
+  <div class="ho-glow-orb ho-orb-3"></div>
 </div>
 
 <div class="ho-app-layout">
-  
+
   <!-- UNIVERSAL SIDEBAR IMPORT -->
   <%- include('../partials/sidebar') %>
 
   <!-- SCOPED MAIN CONTENT -->
-  <main class="ho-main-content">
-    
+  <main class="ho-main-content" id="mainScroll">
+
     <header class="ho-topbar">
       <div class="ho-topbar-text">
-        <h1><b style="color: #e07a68;">Health Connect</b> Telemetry</h1>
-        <p><span class="ho-pulse-dot"></span> Ingested live via HealthOrbit Android Companion App</p>
+        <div class="ho-greet"><span id="greetText">Hello</span> · <span id="todayText"></span></div>
+        <h1><b>Health Connect</b> Telemetry</h1>
+        <p>
+          <span class="ho-pulse-dot"></span> Ingested live via HealthOrbit Android Companion App
+          <span class="ho-sync-chip" id="lastSyncChip">● Awaiting sync</span>
+        </p>
       </div>
       <div class="ho-topbar-actions">
-        <a href="/timeline" class="ho-btn-ghost">View Full Timeline</a>
+        <button type="button" class="ho-btn-ghost" id="refreshBtn" onclick="refreshTelemetry()">
+          <svg id="refreshIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+          Refresh
+        </button>
+        <a href="/timeline" class="ho-btn-ghost ho-btn-solid">Full Timeline</a>
       </div>
     </header>
 
     <div class="ho-mosaic-grid">
-      
+
       <!-- 1. HEALTH CONNECT HERO (Span 8) -->
       <div class="ho-panel ho-hero">
         <div class="ho-hero-text">
-          <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--hc-blue); font-weight: 800; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+          <span class="ho-eyebrow">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
             Health Connect Unified Pipeline
           </span>
-          <h2>Telemetry Synchronized.</h2>
+          <h2>Telemetry <em>Synchronized.</em></h2>
           <p>HealthOrbit is actively merging telemetry from Google Fit, Samsung Health, and connected smartwatches into your centralized health orbit.</p>
-          
+
+          <!-- Live heartbeat strip -->
+          <div class="ho-ecg" aria-hidden="true">
+            <svg viewBox="0 0 300 44" preserveAspectRatio="none">
+              <path class="base" d="M0 22 H50 L58 22 L64 6 L72 38 L80 22 H125 L133 22 L139 10 L147 34 L154 22 H200 L208 22 L214 8 L222 36 L230 22 H300"/>
+              <path class="live" pathLength="300" d="M0 22 H50 L58 22 L64 6 L72 38 L80 22 H125 L133 22 L139 10 L147 34 L154 22 H200 L208 22 L214 8 L222 36 L230 22 H300"/>
+            </svg>
+            <div class="ho-ecg-label"><span class="ho-beat" id="beatHeart">♥</span> <span id="ecgBpm">--</span> BPM</div>
+          </div>
+
           <div class="ho-hc-metrics">
-            <div class="ho-hc-stat" style="cursor: pointer;" onclick="openMetricModal('heart_rate')">
-              <span>Heart Rate</span>
+            <div class="ho-hc-stat" onclick="openMetricModal('heart_rate')">
+              <span class="lbl">Heart Rate</span>
               <strong style="color: var(--hc-red);">
-                <%= latestMetrics['heart_rate'] ? Math.round(latestMetrics['heart_rate'].numericValue || latestMetrics['heart_rate'].value) : '--' %> 
+                <span class="js-count"><%= latestMetrics['heart_rate'] ? Math.round(latestMetrics['heart_rate'].numericValue || latestMetrics['heart_rate'].value) : '--' %></span>
                 <small>bpm</small>
               </strong>
             </div>
-            <div class="ho-hc-stat" style="cursor: pointer;" onclick="openMetricModal('steps')">
-              <span>Steps</span>
+            <div class="ho-hc-stat" onclick="openMetricModal('steps')">
+              <span class="lbl">Steps</span>
               <strong style="color: var(--hc-green);">
-                <%= latestMetrics['steps'] ? Number(latestMetrics['steps'].numericValue || latestMetrics['steps'].value).toLocaleString() : '--' %> 
+                <span class="js-count"><%= latestMetrics['steps'] ? Number(latestMetrics['steps'].numericValue || latestMetrics['steps'].value).toLocaleString() : '--' %></span>
                 <small>steps</small>
               </strong>
             </div>
-            <div class="ho-hc-stat" style="cursor: pointer;" onclick="openMetricModal('calories')">
-              <span>Active Energy</span>
+            <div class="ho-hc-stat" onclick="openMetricModal('calories')">
+              <span class="lbl">Active Energy</span>
               <strong style="color: var(--ho-coral);">
-                <%= latestMetrics['calories'] ? Math.round(latestMetrics['calories'].numericValue || latestMetrics['calories'].value) : '--' %> 
+                <span class="js-count"><%= latestMetrics['calories'] ? Math.round(latestMetrics['calories'].numericValue || latestMetrics['calories'].value) : '--' %></span>
                 <small>kcal</small>
               </strong>
             </div>
           </div>
         </div>
 
-        <div class="ho-ring-container">
-          <svg class="ho-svg-rings" viewBox="0 0 160 160">
-            <circle class="ho-ring-bg" cx="80" cy="80" r="65"></circle>
-            <circle class="ho-ring-bg" cx="80" cy="80" r="48"></circle>
-            <circle class="ho-ring-fill" cx="80" cy="80" r="65" stroke="var(--hc-green)" stroke-dasharray="408" style="stroke-dashoffset: 120;"></circle>
-            <circle class="ho-ring-fill" cx="80" cy="80" r="48" stroke="var(--hc-blue)" stroke-dasharray="301" style="stroke-dashoffset: 90; animation-delay: 0.2s;"></circle>
-          </svg>
+        <div class="ho-ring-wrap">
+          <div class="ho-ring-container">
+            <svg class="ho-svg-rings" viewBox="0 0 160 160">
+              <circle class="ho-ring-bg" cx="80" cy="80" r="65"></circle>
+              <circle class="ho-ring-bg" cx="80" cy="80" r="48"></circle>
+              <circle class="ho-ring-bg" cx="80" cy="80" r="31"></circle>
+              <circle class="ho-ring-fill" id="ringSteps" cx="80" cy="80" r="65" stroke="var(--hc-green)" stroke-dasharray="408.4" stroke-dashoffset="408.4"></circle>
+              <circle class="ho-ring-fill" id="ringCal" cx="80" cy="80" r="48" stroke="var(--hc-blue)" stroke-dasharray="301.6" stroke-dashoffset="301.6"></circle>
+              <circle class="ho-ring-fill" id="ringDist" cx="80" cy="80" r="31" stroke="var(--ho-coral)" stroke-dasharray="194.8" stroke-dashoffset="194.8"></circle>
+            </svg>
+            <div class="ho-ring-center"><strong id="ringPct">0%</strong><span>Daily goal</span></div>
+          </div>
+          <div class="ho-ring-legend">
+            <span><i style="background: var(--hc-green)"></i>Steps <b id="lgSteps">–</b></span>
+            <span><i style="background: var(--hc-blue)"></i>Energy <b id="lgCal">–</b></span>
+            <span><i style="background: var(--ho-coral)"></i>Distance <b id="lgDist">–</b></span>
+          </div>
         </div>
       </div>
 
@@ -309,15 +515,16 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
       <div class="ho-panel ho-sync-hub">
         <div class="ho-panel-head">
           <h3><span>📡</span> Hardware Sources</h3>
+          <span class="ho-tag">3 linked</span>
         </div>
-        
+
         <div class="ho-device-list">
           <div class="ho-device-card">
             <div class="ho-device-left">
               <div class="ho-device-icon">📱</div>
               <div class="ho-device-info">
                 <strong>Android Health Connect</strong>
-                <span>Status: Connected & Streaming</span>
+                <span>Status: Connected &amp; Streaming</span>
               </div>
             </div>
             <div class="ho-sync-status status-active"></div>
@@ -351,16 +558,17 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
       <div class="ho-panel ho-vitals-matrix">
         <div class="ho-panel-head">
           <h3><span>🔬</span> Verified Biometric Matrix</h3>
+          <span class="ho-tag">Tap a card</span>
         </div>
-        
+
         <div class="ho-matrix-grid">
-          
+
           <!-- Blood Pressure -->
-          <div class="ho-matrix-card" onclick="openMetricModal('blood_pressure')">
+          <div class="ho-matrix-card" style="--accent: var(--ho-coral);" onclick="openMetricModal('blood_pressure')">
             <div>
               <div class="ho-mc-top">
                 <span class="ho-mc-label">Blood Pressure</span>
-                <span style="color: var(--ho-coral);">❤️</span>
+                <span class="ho-mc-icon" style="color: var(--ho-coral);">❤️</span>
               </div>
               <div class="ho-mc-val">
                 <% if (latestMetrics['blood_pressure_systolic'] && latestMetrics['blood_pressure_diastolic']) { %>
@@ -369,103 +577,118 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
                   --<small>mmHg</small>
                 <% } %>
               </div>
+              <span class="ho-delta" data-delta="blood_pressure_systolic" style="display:none;"></span>
             </div>
-            <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
-              <path class="ho-spark-path" stroke="var(--ho-coral)" d="M 0,20 C 20,22 40,5 50,15 C 60,25 80,10 100,15" />
+            <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none" data-spark="blood_pressure_systolic" data-color="#e07a68">
+              <path class="ho-spark-area" fill="rgba(224,122,104,.12)" d=""/>
+              <path class="ho-spark-path" pathLength="1000" stroke="var(--ho-coral)" d="M 0,20 C 20,22 40,5 50,15 C 60,25 80,10 100,15" />
             </svg>
           </div>
 
           <!-- Heart Rate -->
-          <div class="ho-matrix-card" onclick="openMetricModal('heart_rate')">
+          <div class="ho-matrix-card" style="--accent: var(--hc-red);" onclick="openMetricModal('heart_rate')">
             <div>
               <div class="ho-mc-top">
                 <span class="ho-mc-label">Heart Rate</span>
-                <span style="color: var(--hc-red);">💓</span>
+                <span class="ho-mc-icon" style="color: var(--hc-red);">💓</span>
               </div>
               <div class="ho-mc-val">
-                <%= latestMetrics['heart_rate'] ? Math.round(latestMetrics['heart_rate'].numericValue || latestMetrics['heart_rate'].value) : '--' %><small>bpm</small>
+                <span class="js-count"><%= latestMetrics['heart_rate'] ? Math.round(latestMetrics['heart_rate'].numericValue || latestMetrics['heart_rate'].value) : '--' %></span><small>bpm</small>
               </div>
+              <span class="ho-delta" data-delta="heart_rate" style="display:none;"></span>
             </div>
-            <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
-              <path class="ho-spark-path" stroke="var(--hc-red)" d="M 0,15 C 20,10 30,25 50,15 C 70,5 80,20 100,15" style="animation-delay: 0.1s;" />
+            <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none" data-spark="heart_rate" data-color="#EA4335">
+              <path class="ho-spark-area" fill="rgba(234,67,53,.1)" d=""/>
+              <path class="ho-spark-path" pathLength="1000" stroke="var(--hc-red)" d="M 0,15 C 20,10 30,25 50,15 C 70,5 80,20 100,15" style="animation-delay: .1s;" />
             </svg>
           </div>
 
           <!-- Steps -->
-          <div class="ho-matrix-card" onclick="openMetricModal('steps')">
+          <div class="ho-matrix-card" style="--accent: var(--hc-green);" onclick="openMetricModal('steps')">
             <div>
               <div class="ho-mc-top">
                 <span class="ho-mc-label">Physical Steps</span>
-                <span style="color: var(--hc-green);">👟</span>
+                <span class="ho-mc-icon" style="color: var(--hc-green);">👟</span>
               </div>
               <div class="ho-mc-val">
-                <%= latestMetrics['steps'] ? Number(latestMetrics['steps'].numericValue || latestMetrics['steps'].value).toLocaleString() : '--' %><small>steps</small>
+                <span class="js-count"><%= latestMetrics['steps'] ? Number(latestMetrics['steps'].numericValue || latestMetrics['steps'].value).toLocaleString() : '--' %></span><small>steps</small>
               </div>
+              <span class="ho-delta" data-delta="steps" style="display:none;"></span>
             </div>
-            <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
-              <path class="ho-spark-path" stroke="var(--hc-green)" d="M 0,15 L 20,14 L 40,16 L 60,15 L 80,15 L 100,16" style="animation-delay: 0.2s;" />
+            <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none" data-spark="steps" data-color="#34A853">
+              <path class="ho-spark-area" fill="rgba(52,168,83,.1)" d=""/>
+              <path class="ho-spark-path" pathLength="1000" stroke="var(--hc-green)" d="M 0,15 L 20,14 L 40,16 L 60,15 L 80,15 L 100,16" style="animation-delay: .2s;" />
             </svg>
           </div>
 
           <!-- Calories Burned -->
-          <div class="ho-matrix-card" onclick="openMetricModal('calories')">
+          <div class="ho-matrix-card" style="--accent: var(--ho-coral);" onclick="openMetricModal('calories')">
             <div>
               <div class="ho-mc-top">
                 <span class="ho-mc-label">Active Calories</span>
-                <span style="color: var(--ho-coral);">🔥</span>
+                <span class="ho-mc-icon" style="color: var(--ho-coral);">🔥</span>
               </div>
               <div class="ho-mc-val">
-                <%= latestMetrics['calories'] ? Math.round(latestMetrics['calories'].numericValue || latestMetrics['calories'].value) : '--' %><small>kcal</small>
+                <span class="js-count"><%= latestMetrics['calories'] ? Math.round(latestMetrics['calories'].numericValue || latestMetrics['calories'].value) : '--' %></span><small>kcal</small>
               </div>
+              <span class="ho-delta" data-delta="calories" style="display:none;"></span>
             </div>
-            <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
-              <path class="ho-spark-path" stroke="var(--ho-coral)" d="M 0,10 C 30,12 60,8 100,10" style="animation-delay: 0.3s;" />
+            <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none" data-spark="calories" data-color="#e07a68">
+              <path class="ho-spark-area" fill="rgba(224,122,104,.1)" d=""/>
+              <path class="ho-spark-path" pathLength="1000" stroke="var(--ho-coral)" d="M 0,10 C 30,12 60,8 100,10" style="animation-delay: .3s;" />
             </svg>
           </div>
 
           <!-- Distance Traveled -->
-          <div class="ho-matrix-card" onclick="openMetricModal('distance')">
+          <div class="ho-matrix-card" style="--accent: var(--hc-blue);" onclick="openMetricModal('distance')">
             <div>
               <div class="ho-mc-top">
                 <span class="ho-mc-label">Distance</span>
-                <span style="color: var(--hc-blue);">📍</span>
+                <span class="ho-mc-icon" style="color: var(--hc-blue);">📍</span>
               </div>
               <div class="ho-mc-val">
-                <%= latestMetrics['distance'] ? Number(latestMetrics['distance'].numericValue || latestMetrics['distance'].value).toFixed(1) : '--' %><small>km</small>
+                <span class="js-count" data-decimals="1"><%= latestMetrics['distance'] ? Number(latestMetrics['distance'].numericValue || latestMetrics['distance'].value).toFixed(1) : '--' %></span><small>km</small>
               </div>
             </div>
-            <div style="margin-top: 1rem; width: 100%; height: 6px; background: rgba(66, 133, 244, 0.15); border-radius: 10px;">
-              <div style="width: 80%; height: 100%; background: var(--hc-blue); border-radius: 10px;"></div>
-            </div>
+            <div class="ho-goal-bar"><div id="distBar"></div></div>
           </div>
 
           <!-- Ingestion Count -->
-          <div class="ho-matrix-card">
+          <div class="ho-matrix-card" style="--accent: var(--ho-teal-600);">
             <div>
               <div class="ho-mc-top">
                 <span class="ho-mc-label">Total Syncs</span>
-                <span style="color: var(--ho-teal-600);">🔄</span>
+                <span class="ho-mc-icon" style="color: var(--ho-teal-600);">🔄</span>
               </div>
-              <div class="ho-mc-val"><%= wearables ? wearables.length : 0 %><small>records</small></div>
+              <div class="ho-mc-val"><span class="js-count"><%= wearables ? wearables.length : 0 %></span><small>records</small></div>
             </div>
             <svg class="ho-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
-              <path class="ho-spark-path" stroke="var(--ho-teal-600)" d="M 0,25 C 20,20 40,30 60,15 C 80,0 90,10 100,20" style="animation-delay: 0.4s;" />
+              <path class="ho-spark-path" pathLength="1000" stroke="var(--ho-teal-600)" d="M 0,25 C 20,20 40,30 60,15 C 80,0 90,10 100,20" style="animation-delay: .4s;" />
             </svg>
           </div>
 
         </div>
       </div>
 
-      <!-- 4. RECENT SESSIONS LIST (Span 4) -->
+      <!-- 4. INGESTION STREAM (Span 4) -->
       <div class="ho-panel ho-workouts">
         <div class="ho-panel-head">
           <h3><span>📋</span> Ingestion Stream</h3>
+          <span class="ho-tag">Live</span>
         </div>
-        
-        <div class="ho-workout-feed">
+
+        <div class="ho-filter-row" id="filterRow">
+          <button type="button" class="ho-filter active" data-f="all">All</button>
+          <button type="button" class="ho-filter" data-f="heart">Heart</button>
+          <button type="button" class="ho-filter" data-f="step">Steps</button>
+          <button type="button" class="ho-filter" data-f="pressure">BP</button>
+          <button type="button" class="ho-filter" data-f="calorie">Energy</button>
+        </div>
+
+        <div class="ho-workout-feed" id="feed">
           <% if (wearables && wearables.length > 0) { %>
-            <% wearables.slice(0, 5).forEach(item => { %>
-              <div class="ho-workout-item">
+            <% wearables.slice(0, 8).forEach((item, idx) => { %>
+              <div class="ho-workout-item" data-key="<%= item.metricKey %>" style="animation-delay: <%= (0.35 + idx * 0.06).toFixed(2) %>s;">
                 <div class="ho-wo-left">
                   <div class="ho-wo-icon">
                     <% if (item.metricKey.includes('heart')) { %>💓
@@ -482,16 +705,28 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
                 </div>
                 <div class="ho-wo-metrics">
                   <strong><%= item.value %> <%= item.unit %></strong>
-                  <span>Verified</span>
+                  <span>✔ Verified</span>
                 </div>
               </div>
             <% }) %>
+            <div class="ho-empty hide-when-filtered" id="filterEmpty" style="display:none;">No records for this filter yet.</div>
           <% } else { %>
-            <div style="padding: 2rem; text-align: center; color: var(--ho-text-muted); font-size: 0.9rem;">
+            <div class="ho-empty">
+              <span class="big">⌚</span>
               No wearable records ingested yet. Open the Android companion app and tap <strong>Sync Health Records Now</strong>.
             </div>
           <% } %>
         </div>
+      </div>
+
+      <!-- 5. SMART INSIGHTS (Span 12) -->
+      <div class="ho-panel ho-insights">
+        <div class="ho-panel-head">
+          <h3><span>✨</span> Smart Insights</h3>
+          <span class="ho-tag">Auto-generated</span>
+        </div>
+        <div class="ho-insight-grid" id="insightGrid"></div>
+        <p class="ho-disclaimer">Insights are informational summaries of your synced data and are not a medical diagnosis. Consult a clinician for medical advice.</p>
       </div>
 
     </div>
@@ -503,17 +738,19 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 
 <!-- DYNAMIC METRIC MODAL -->
 <div class="ho-modal-overlay" id="metricModal" onclick="closeMetricModal(event)">
-  <div class="ho-modal-panel" onclick="event.stopPropagation()">
-    
+  <div class="ho-modal-panel" id="modalPanel" onclick="event.stopPropagation()">
+
+    <div class="ho-modal-handle" id="modalHandle"></div>
+
     <div class="ho-modal-header">
       <div class="ho-modal-title-group">
         <div class="ho-modal-icon" id="modalIcon">❤️</div>
         <div>
           <h3 class="ho-modal-title" id="modalTitle">Metric</h3>
-          <span class="ho-modal-date">Synchronized Telemetry</span>
+          <span class="ho-modal-date" id="modalSub">Synchronized Telemetry</span>
         </div>
       </div>
-      <button class="ho-modal-close" onclick="closeMetricModal()">✕</button>
+      <button class="ho-modal-close" onclick="closeMetricModal()" aria-label="Close">✕</button>
     </div>
 
     <div class="ho-modal-val-group">
@@ -527,46 +764,248 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 
     <div class="ho-modal-chart-area">
       <svg class="ho-mc-svg" viewBox="0 0 400 120" preserveAspectRatio="none">
-        <path id="modalChartPath" class="ho-mc-path" stroke="var(--hc-red)" d="M 0,60 C 50,70 100,20 150,40 C 200,60 250,-10 300,30 C 350,70 380,50 400,60" />
+        <defs>
+          <linearGradient id="modalGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="currentColor" stop-opacity=".28"/>
+            <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path id="modalAreaPath" class="ho-mc-area" fill="url(#modalGrad)" d=""/>
+        <path id="modalChartPath" class="ho-mc-path" pathLength="1000" stroke="var(--hc-red)" d="M 0,60 C 50,70 100,20 150,40 C 200,60 250,-10 300,30 C 350,70 380,50 400,60" />
       </svg>
     </div>
 
+    <div class="ho-stat-trio" id="modalTrio"></div>
     <div class="ho-modal-details" id="modalDetailsList"></div>
 
   </div>
 </div>
 
+<div class="ho-toast" id="toast"><span>✔</span><span id="toastText">Updated</span></div>
+
 <script>
-  const liveMetrics = <%- JSON.stringify(latestMetrics || {}) %>;
+  /* ------------------------------------------------------------------
+     DATA FROM SERVER (unchanged bindings)
+  ------------------------------------------------------------------ */
+  const liveMetrics = <%- JSON.stringify(latestMetrics || {}).replace(/</g, '\\u003c') %>;
+  const liveRows = <%- JSON.stringify((wearables || []).map(function (w) {
+    return { k: w.metricKey, n: w.metricName, v: w.value, nv: w.numericValue, u: w.unit, t: w.recordedAt, p: w.provider };
+  })).replace(/</g, '\\u003c') %>;
 
   const metricMeta = {
-    heart_rate: {
-      title: "Heart Rate", icon: "💓", unit: "bpm", color: "var(--hc-red)", bgColor: "rgba(234, 67, 53, 0.1)",
-      range: "Baseline: 60 - 100 bpm",
-      chartPath: "M 0,60 C 50,70 100,20 150,40 C 200,60 250,-10 300,30 C 350,70 380,50 400,60"
-    },
-    steps: {
-      title: "Physical Steps", icon: "👟", unit: "steps", color: "var(--hc-green)", bgColor: "rgba(52, 168, 83, 0.1)",
-      range: "Target: 10,000 steps/day",
-      chartPath: "M 0,110 C 50,110 80,80 120,80 C 160,80 180,50 220,50 C 260,50 300,20 340,20 C 380,20 400,10 400,10"
-    },
-    calories: {
-      title: "Active Energy Burned", icon: "🔥", unit: "kcal", color: "var(--ho-coral)", bgColor: "rgba(224, 122, 104, 0.1)",
-      range: "Target: 500 kcal/day",
-      chartPath: "M 0,120 L 50,110 L 100,90 L 150,95 L 200,70 L 250,50 L 300,40 L 350,20 L 400,10"
-    },
-    distance: {
-      title: "Distance Covered", icon: "📍", unit: "km", color: "var(--hc-blue)", bgColor: "rgba(66, 133, 244, 0.1)",
-      range: "Physical Mobility Telemetry",
-      chartPath: "M 0,100 C 40,85 80,40 120,60 C 160,80 200,20 240,40 C 280,60 320,10 360,50 C 380,70 400,20 400,20"
-    },
-    blood_pressure: {
-      title: "Blood Pressure", icon: "🩺", unit: "mmHg", color: "var(--hc-blue)", bgColor: "rgba(66, 133, 244, 0.1)",
-      range: "Clinical Target: <120/80 mmHg",
-      chartPath: "M 0,50 C 40,30 80,70 120,40 C 160,20 200,80 240,50 C 280,30 320,60 360,40 C 380,30 400,50 400,50"
-    }
+    heart_rate: { title: "Heart Rate", icon: "💓", unit: "bpm", color: "var(--hc-red)", hex: "#EA4335", bgColor: "rgba(234, 67, 53, 0.1)", range: "Baseline: 60 - 100 bpm",
+      chartPath: "M 0,60 C 50,70 100,20 150,40 C 200,60 250,-10 300,30 C 350,70 380,50 400,60" },
+    steps: { title: "Physical Steps", icon: "👟", unit: "steps", color: "var(--hc-green)", hex: "#34A853", bgColor: "rgba(52, 168, 83, 0.1)", range: "Target: 10,000 steps/day",
+      chartPath: "M 0,110 C 50,110 80,80 120,80 C 160,80 180,50 220,50 C 260,50 300,20 340,20 C 380,20 400,10 400,10" },
+    calories: { title: "Active Energy Burned", icon: "🔥", unit: "kcal", color: "var(--ho-coral)", hex: "#e07a68", bgColor: "rgba(224, 122, 104, 0.1)", range: "Target: 500 kcal/day",
+      chartPath: "M 0,120 L 50,110 L 100,90 L 150,95 L 200,70 L 250,50 L 300,40 L 350,20 L 400,10" },
+    distance: { title: "Distance Covered", icon: "📍", unit: "km", color: "var(--hc-blue)", hex: "#4285F4", bgColor: "rgba(66, 133, 244, 0.1)", range: "Physical Mobility Telemetry",
+      chartPath: "M 0,100 C 40,85 80,40 120,60 C 160,80 200,20 240,40 C 280,60 320,10 360,50 C 380,70 400,20 400,20" },
+    blood_pressure: { title: "Blood Pressure", icon: "🩺", unit: "mmHg", color: "var(--hc-blue)", hex: "#4285F4", bgColor: "rgba(66, 133, 244, 0.1)", range: "Clinical Target: <120/80 mmHg", seriesKey: "blood_pressure_systolic",
+      chartPath: "M 0,50 C 40,30 80,70 120,40 C 160,20 200,80 240,50 C 280,30 320,60 360,40 C 380,30 400,50 400,50" }
   };
 
+  /* ------------------------------------------------------------------
+     HELPERS
+  ------------------------------------------------------------------ */
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const num = (v) => { const n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? null : n; };
+  const metricNum = (m) => m ? num(m.numericValue != null ? m.numericValue : m.value) : null;
+
+  // time-ordered series (oldest -> newest), last 14 points
+  function getSeries(key) {
+    const pts = liveRows.filter(r => r.k === key).map(r => ({ v: num(r.nv != null ? r.nv : r.v), t: new Date(r.t).getTime() }))
+      .filter(p => p.v !== null && !isNaN(p.t)).sort((a, b) => a.t - b.t);
+    return pts.slice(-14).map(p => p.v);
+  }
+
+  function buildPath(series, W, H, pad) {
+    const min = Math.min.apply(null, series), max = Math.max.apply(null, series), span = (max - min) || 1;
+    const step = W / (series.length - 1);
+    const pts = series.map((v, i) => [i * step, pad + (H - pad * 2) * (1 - (v - min) / span)]);
+    let d = 'M ' + pts[0][0].toFixed(1) + ',' + pts[0][1].toFixed(1);
+    for (let i = 1; i < pts.length; i++) {
+      const cx = ((pts[i - 1][0] + pts[i][0]) / 2).toFixed(1);
+      d += ' C ' + cx + ',' + pts[i - 1][1].toFixed(1) + ' ' + cx + ',' + pts[i][1].toFixed(1) + ' ' + pts[i][0].toFixed(1) + ',' + pts[i][1].toFixed(1);
+    }
+    return { line: d, area: d + ' L ' + W + ',' + H + ' L 0,' + H + ' Z' };
+  }
+
+  function toast(msg) {
+    const t = $('#toast'); $('#toastText').textContent = msg;
+    t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  /* ------------------------------------------------------------------
+     GREETING + LAST SYNC
+  ------------------------------------------------------------------ */
+  (function header() {
+    const h = new Date().getHours();
+    $('#greetText').textContent = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+    $('#todayText').textContent = new Date().toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
+    if (liveRows.length) {
+      const latest = Math.max.apply(null, liveRows.map(r => new Date(r.t).getTime()).filter(x => !isNaN(x)));
+      if (isFinite(latest)) {
+        const mins = Math.max(0, Math.round((Date.now() - latest) / 60000));
+        const txt = mins < 1 ? 'just now' : mins < 60 ? mins + ' min ago' : mins < 1440 ? Math.round(mins / 60) + ' hr ago' : Math.round(mins / 1440) + ' d ago';
+        $('#lastSyncChip').textContent = '● Last sync ' + txt;
+      }
+    }
+  })();
+
+  /* ------------------------------------------------------------------
+     COUNT-UP NUMBERS
+  ------------------------------------------------------------------ */
+  function countUp(el) {
+    const raw = el.textContent.trim();
+    const target = num(raw);
+    if (target === null) return;
+    const dec = parseInt(el.dataset.decimals || '0', 10);
+    const dur = 1400, start = performance.now();
+    const hasComma = raw.indexOf(',') > -1;
+    function tick(now) {
+      const p = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - p, 4);
+      const v = target * e;
+      el.textContent = hasComma ? Math.round(v).toLocaleString() : v.toFixed(dec);
+      if (p < 1) requestAnimationFrame(tick); else el.textContent = raw;
+    }
+    requestAnimationFrame(tick);
+  }
+  $$('.js-count').forEach(countUp);
+
+  /* ------------------------------------------------------------------
+     RINGS + GOALS
+  ------------------------------------------------------------------ */
+  (function rings() {
+    const steps = metricNum(liveMetrics.steps) || 0;
+    const cal = metricNum(liveMetrics.calories) || 0;
+    const dist = metricNum(liveMetrics.distance) || 0;
+    const pSteps = Math.min(1, steps / 10000), pCal = Math.min(1, cal / 500), pDist = Math.min(1, dist / 5);
+
+    setTimeout(function () {
+      $('#ringSteps').style.strokeDashoffset = 408.4 * (1 - pSteps);
+      $('#ringCal').style.strokeDashoffset = 301.6 * (1 - pCal);
+      $('#ringDist').style.strokeDashoffset = 194.8 * (1 - pDist);
+      const bar = $('#distBar'); if (bar) bar.style.width = Math.round(pDist * 100) + '%';
+    }, 350);
+
+    const avg = Math.round(((pSteps + pCal + pDist) / 3) * 100);
+    const pctEl = $('#ringPct'), start = performance.now();
+    (function t(now) { const p = Math.min(1, (now - start - 350) / 1600); if (p > 0) pctEl.textContent = Math.round(avg * (1 - Math.pow(1 - p, 3))) + '%'; if (p < 1) requestAnimationFrame(t); })(performance.now());
+    $('#lgSteps').textContent = Math.round(pSteps * 100) + '%';
+    $('#lgCal').textContent = Math.round(pCal * 100) + '%';
+    $('#lgDist').textContent = Math.round(pDist * 100) + '%';
+  })();
+
+  /* ------------------------------------------------------------------
+     HEARTBEAT SPEED = REAL BPM
+  ------------------------------------------------------------------ */
+  (function heartbeat() {
+    const bpm = metricNum(liveMetrics.heart_rate);
+    if (!bpm) return;
+    $('#ecgBpm').textContent = Math.round(bpm);
+    const dur = Math.max(.35, Math.min(2, 60 / bpm));
+    $$('.ho-beat').forEach(el => el.style.animationDuration = dur + 's');
+    const live = $('.ho-ecg .live'); if (live) live.style.animationDuration = (dur * 2.4).toFixed(2) + 's';
+  })();
+
+  /* ------------------------------------------------------------------
+     REAL SPARKLINES + TREND CHIPS
+  ------------------------------------------------------------------ */
+  $$('svg[data-spark]').forEach(function (svg) {
+    const s = getSeries(svg.dataset.spark);
+    if (s.length < 2) return;
+    const p = buildPath(s, 100, 30, 3);
+    $('.ho-spark-path', svg).setAttribute('d', p.line);
+    $('.ho-spark-area', svg).setAttribute('d', p.area);
+  });
+  $$('[data-delta]').forEach(function (el) {
+    const s = getSeries(el.dataset.delta);
+    if (s.length < 2 || !s[0]) return;
+    const d = ((s[s.length - 1] - s[0]) / s[0]) * 100;
+    el.style.display = 'inline-flex';
+    el.className = 'ho-delta ' + (d > 0.5 ? 'up' : d < -0.5 ? 'down' : '');
+    el.textContent = (d > 0.5 ? '▲ ' : d < -0.5 ? '▼ ' : '● ') + Math.abs(d).toFixed(1) + '% trend';
+  });
+
+  /* ------------------------------------------------------------------
+     SMART INSIGHTS
+  ------------------------------------------------------------------ */
+  (function insights() {
+    const out = [];
+    const hr = metricNum(liveMetrics.heart_rate);
+    const steps = metricNum(liveMetrics.steps);
+    const sys = metricNum(liveMetrics.blood_pressure_systolic), dia = metricNum(liveMetrics.blood_pressure_diastolic);
+    const cal = metricNum(liveMetrics.calories);
+
+    if (hr !== null) {
+      if (hr < 60) out.push(['💓', 'rgba(66,133,244,.12)', 'Low resting range', 'Your latest heart rate is ' + Math.round(hr) + ' bpm, below the typical 60–100 range. This is common in very fit people; check in with a clinician if you feel unwell.']);
+      else if (hr <= 100) out.push(['💓', 'rgba(52,168,83,.12)', 'Heart rate looks steady', 'Your latest reading of ' + Math.round(hr) + ' bpm sits inside the typical 60–100 bpm range.']);
+      else out.push(['💓', 'rgba(234,67,53,.12)', 'Elevated heart rate', 'Your latest reading is ' + Math.round(hr) + ' bpm. If you were resting, consider re-measuring after a few calm minutes.']);
+    }
+    if (steps !== null) {
+      const pct = Math.round(steps / 100);
+      out.push(['👟', 'rgba(52,168,83,.12)', pct >= 100 ? 'Step goal reached 🎉' : 'Step goal: ' + pct + '%', pct >= 100 ? 'You have passed 10,000 steps today. Great consistency.' : 'You need about ' + Math.max(0, 10000 - Math.round(steps)).toLocaleString() + ' more steps to reach your daily target.']);
+    }
+    if (sys !== null && dia !== null) {
+      const ok = sys < 120 && dia < 80;
+      out.push(['🩺', ok ? 'rgba(52,168,83,.12)' : 'rgba(251,188,5,.18)', ok ? 'Blood pressure optimal' : 'Blood pressure above target', 'Latest ' + Math.round(sys) + '/' + Math.round(dia) + ' mmHg. ' + (ok ? 'This is under the 120/80 clinical target.' : 'The clinical target is under 120/80 mmHg. Track it over several days and share trends with your doctor.')]);
+    } else if (cal !== null) {
+      out.push(['🔥', 'rgba(224,122,104,.14)', 'Active energy', 'You have burned about ' + Math.round(cal) + ' kcal of a 500 kcal daily target (' + Math.min(100, Math.round(cal / 5)) + '%).']);
+    }
+    if (!out.length) out.push(['⌚', 'rgba(13,122,110,.1)', 'Waiting for data', 'Once your companion app syncs, personalised insights will appear here.']);
+
+    $('#insightGrid').innerHTML = out.slice(0, 3).map(function (i, idx) {
+      return '<div class="ho-insight" style="animation-delay:' + (0.5 + idx * 0.08) + 's"><div class="ho-insight-ico" style="background:' + i[1] + '">' + i[0] + '</div><div><strong>' + i[2] + '</strong><p>' + i[3] + '</p></div></div>';
+    }).join('');
+  })();
+
+  /* ------------------------------------------------------------------
+     STREAM FILTERS
+  ------------------------------------------------------------------ */
+  $$('.ho-filter').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      $$('.ho-filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.f; let shown = 0;
+      $$('.ho-workout-item').forEach(function (it) {
+        const match = f === 'all' || (it.dataset.key || '').indexOf(f) > -1;
+        it.classList.toggle('hide', !match);
+        if (match) { shown++; it.style.animation = 'none'; void it.offsetWidth; it.style.animation = 'hoSlideIn .45s var(--ho-ease) both'; it.style.animationDelay = (shown * 0.05) + 's'; }
+      });
+      const e = $('#filterEmpty'); if (e) e.style.display = shown ? 'none' : 'block';
+    });
+  });
+
+  /* ------------------------------------------------------------------
+     SCROLL PROGRESS + CURSOR GLOW
+  ------------------------------------------------------------------ */
+  const mainScroll = $('#mainScroll');
+  mainScroll.addEventListener('scroll', function () {
+    const max = mainScroll.scrollHeight - mainScroll.clientHeight;
+    $('#scrollProgress').style.width = (max > 0 ? (mainScroll.scrollTop / max) * 100 : 0) + '%';
+  }, { passive: true });
+  $$('.ho-panel').forEach(function (p) {
+    p.addEventListener('pointermove', function (e) {
+      const r = p.getBoundingClientRect();
+      p.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      p.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+
+  /* ------------------------------------------------------------------
+     REFRESH
+  ------------------------------------------------------------------ */
+  function refreshTelemetry() {
+    $('#refreshIcon').classList.add('ho-spin');
+    toast('Refreshing telemetry…');
+    setTimeout(function () { window.location.reload(); }, 700);
+  }
+
+  /* ------------------------------------------------------------------
+     MODAL (same open/close API as before)
+  ------------------------------------------------------------------ */
   const modal = document.getElementById('metricModal');
 
   function openMetricModal(key) {
@@ -575,16 +1014,31 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 
     let val = '--';
     let unit = meta.unit;
+    let rangeCls = 'range-optimal', rangeTxt = meta.range;
 
     if (key === 'blood_pressure') {
       const sys = liveMetrics['blood_pressure_systolic'];
       const dia = liveMetrics['blood_pressure_diastolic'];
       if (sys && dia) {
-        val = `${Math.round(sys.numericValue || sys.value)}/${Math.round(dia.numericValue || dia.value)}`;
+        const s = Math.round(sys.numericValue || sys.value), d = Math.round(dia.numericValue || dia.value);
+        val = s + '/' + d;
+        if (s < 120 && d < 80) { rangeCls = 'range-optimal'; rangeTxt = '✔ Optimal · target <120/80'; }
+        else if (s < 140 && d < 90) { rangeCls = 'range-warn'; rangeTxt = 'Above target · target <120/80'; }
+        else { rangeCls = 'range-alert'; rangeTxt = 'High · discuss with your clinician'; }
       }
     } else if (liveMetrics[key]) {
       val = liveMetrics[key].value;
       if (liveMetrics[key].unit) unit = liveMetrics[key].unit;
+      const n = metricNum(liveMetrics[key]);
+      if (key === 'heart_rate' && n !== null) {
+        if (n < 60) { rangeCls = 'range-warn'; rangeTxt = 'Below typical · baseline 60–100 bpm'; }
+        else if (n <= 100) { rangeCls = 'range-optimal'; rangeTxt = '✔ Normal · baseline 60–100 bpm'; }
+        else { rangeCls = 'range-alert'; rangeTxt = 'Elevated · baseline 60–100 bpm'; }
+      } else if (key === 'steps' && n !== null) {
+        rangeCls = n >= 10000 ? 'range-optimal' : 'range-warn'; rangeTxt = Math.min(100, Math.round(n / 100)) + '% of 10,000 daily target';
+      } else if (key === 'calories' && n !== null) {
+        rangeCls = n >= 500 ? 'range-optimal' : 'range-warn'; rangeTxt = Math.min(100, Math.round(n / 5)) + '% of 500 kcal daily target';
+      }
     }
 
     const iconEl = document.getElementById('modalIcon');
@@ -596,10 +1050,29 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
     document.getElementById('modalValue').innerText = val;
     document.getElementById('modalUnit').innerText = unit;
 
-    document.getElementById('modalRangeText').innerText = meta.range;
+    const badge = document.getElementById('modalRangeBadge');
+    badge.className = 'ho-modal-range ' + rangeCls;
+    document.getElementById('modalRangeText').innerText = rangeTxt;
 
+    // chart: real series when we have >=2 points, preset otherwise
+    const series = getSeries(meta.seriesKey || key);
     const pathEl = document.getElementById('modalChartPath');
-    pathEl.setAttribute('d', meta.chartPath);
+    const areaEl = document.getElementById('modalAreaPath');
+    const chartWrap = $('.ho-modal-chart-area');
+    chartWrap.style.color = meta.hex;
+    if (series.length >= 2) {
+      const p = buildPath(series, 400, 120, 10);
+      pathEl.setAttribute('d', p.line); areaEl.setAttribute('d', p.area);
+      document.getElementById('modalSub').innerText = 'Last ' + series.length + ' synced readings';
+      const mn = Math.min.apply(null, series), mx = Math.max.apply(null, series), av = series.reduce((a, b) => a + b, 0) / series.length;
+      const f = (n) => (Math.abs(n) >= 100 ? Math.round(n).toLocaleString() : n.toFixed(1));
+      $('#modalTrio').style.display = 'grid';
+      $('#modalTrio').innerHTML = '<div><span>Min</span><strong>' + f(mn) + '</strong></div><div><span>Avg</span><strong>' + f(av) + '</strong></div><div><span>Max</span><strong>' + f(mx) + '</strong></div>';
+    } else {
+      pathEl.setAttribute('d', meta.chartPath); areaEl.setAttribute('d', '');
+      document.getElementById('modalSub').innerText = 'Synchronized Telemetry';
+      $('#modalTrio').style.display = 'none';
+    }
     pathEl.style.stroke = meta.color;
 
     const detailsContainer = document.getElementById('modalDetailsList');
@@ -614,14 +1087,31 @@ body { min-height: 100vh; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
       </div>
     `;
 
+    // restart the draw animation each time
+    pathEl.style.animation = 'none'; void pathEl.getBoundingClientRect(); pathEl.style.animation = '';
+    document.getElementById('modalPanel').style.transform = '';
     modal.classList.add('active');
   }
 
   function closeMetricModal(e) {
     if (!e || e.target === modal) {
       modal.classList.remove('active');
+      document.getElementById('modalPanel').style.transform = '';
     }
   }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMetricModal(); });
+
+  /* swipe-down to dismiss bottom sheet (mobile) */
+  (function swipe() {
+    const panel = document.getElementById('modalPanel');
+    let startY = 0, dy = 0, dragging = false;
+    panel.addEventListener('touchstart', function (e) { if (panel.scrollTop > 0) return; startY = e.touches[0].clientY; dragging = true; dy = 0; panel.style.transition = 'none'; }, { passive: true });
+    panel.addEventListener('touchmove', function (e) { if (!dragging) return; dy = Math.max(0, e.touches[0].clientY - startY); panel.style.transform = 'translateY(' + dy + 'px)'; }, { passive: true });
+    panel.addEventListener('touchend', function () {
+      if (!dragging) return; dragging = false; panel.style.transition = '';
+      if (dy > 110) closeMetricModal(); else panel.style.transform = '';
+    });
+  })();
 </script>
 
 </body>
