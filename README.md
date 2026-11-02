@@ -26,7 +26,7 @@ HealthOrbit is an **integrated digital health information platform** built to or
 
 Instead of treating each source as a separate feature, HealthOrbit connects them through one authenticated account and one longitudinal health context.
 
-> **HealthOrbit is an information-management and assistance platform. It does not diagnose disease, prescribe medication, or replace qualified healthcare professionals.**
+> **HealthOrbit is an information-management and AI assistance platform. It does not diagnose disease, prescribe medication, or replace qualified healthcare professionals.**
 
 ---
 
