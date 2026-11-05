@@ -52,7 +52,7 @@ flowchart LR
 
 HealthOrbit is designed around one idea:
 
-> **Preserve the original health information, normalize what can be measured, keep its source and time, and only then build useful context around it.**
+> **Preserve the Original Health Information, normalize what can be measured, keep its source and time, and only then build useful context around it.**
 
 ---
 
